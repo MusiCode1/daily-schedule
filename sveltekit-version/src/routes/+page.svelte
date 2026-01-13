@@ -5,11 +5,12 @@
   import AddModal from '$lib/components/AddModal.svelte';
   import CelebrationModal from '$lib/components/CelebrationModal.svelte';
   import ListSwitcher from '$lib/components/ListSwitcher.svelte';
-  import UserSelector from '$lib/components/UserSelector.svelte';
   import { goto } from '$app/navigation';
   import { TasksBoardController } from '$lib/logic/tasksBoard.svelte';
   import { ListsNavigationController } from '$lib/logic/listsNavigation.svelte';
   import { SessionController } from '$lib/logic/session.svelte';
+  import { onMount } from 'svelte';
+  import SplashScreen from '$lib/components/SplashScreen.svelte';
 
   // -- אתחול Controllers --
   const session = new SessionController();
@@ -24,12 +25,22 @@
   // ניתן להעביר ל-controller אבל פשוט מספיק כאן עבור ה-view state
   let activeIndex = $derived(board.tasks.findIndex((t) => !t.isDone));
 
+  let isLoaded = $state(false);
+
+  onMount(() => {
+    isLoaded = true;
+  });
+
+  $effect(() => {
+    if (isLoaded && !session.currentUser) {
+      goto('/login');
+    }
+  });
 </script>
 
-{#if !session.currentUser}
-  <!-- מסך בחירת משתמש -->
-  <UserSelector users={session.users} />
-{:else}
+{#if !isLoaded}
+  <SplashScreen />
+{:else if session.currentUser}
   <!-- מסך הלוח המלא -->
   <header>
     <div class="header-controls">
@@ -197,10 +208,6 @@
     flex-direction: column;
     align-items: center;
     gap: 0.8rem;
-  }
-  
-  :global(.list-switcher) {
-     margin-bottom: 1rem;
   }
 
   .drag-wrapper {
