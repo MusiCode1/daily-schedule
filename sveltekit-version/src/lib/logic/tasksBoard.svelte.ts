@@ -5,6 +5,14 @@ import { audioSequencer } from '$lib/services/audioSequencer';
 import type { Task } from '$lib/types';
 import { DragDropManager } from './dragDrop.svelte';
 
+export interface CelebrationData {
+	type: 'task' | 'general';
+	completedTask?: { name: string; image: string | null };
+	nextTask?: { name: string; image: string | null };
+	praise: string;
+	gender: 'boy' | 'girl';
+}
+
 export class TasksBoardController {
 	// -- מצב ממשק משתמש --
 	isEditMode = $state(false);
@@ -13,7 +21,7 @@ export class TasksBoardController {
 
 	// מצב חגיגה
 	showCelebration = $state(false);
-	celebrationMessage = $state('');
+	celebrationData: CelebrationData | null = $state(null);
 
 	// -- תלויות --
 	dnd: DragDropManager;
@@ -51,17 +59,19 @@ export class TasksBoardController {
 		this.isEditMode = !this.isEditMode;
 	}
 
-	toggleTask(taskId: string) {
+	async toggleTask(taskId: string) {
 		if (this.isEditMode || !this.currentUser || !this.activeList) return;
 
 		const currentTaskIndex = this.tasks.findIndex((t) => t.id === taskId);
+		const currentTask = this.tasks[currentTaskIndex];
 		const nextTask = this.tasks[currentTaskIndex + 1];
 
 		const newTasks = this.tasks.map((t) => {
 			if (t.id === taskId) {
 				const isDone = !t.isDone;
 				if (isDone) {
-					this.triggerCelebration(t.name, nextTask?.name);
+					// אנחנו קוראים לזה אבל לא מחכים לו כאן, כדי לא לעכב את עדכון ה-UI של ה-V
+					this.triggerCelebration(currentTask, nextTask);
 				}
 				return { ...t, isDone };
 			}
@@ -71,31 +81,54 @@ export class TasksBoardController {
 		listStore.updateTasks(this.currentUser.id, this.activeList.id, newTasks);
 	}
 
-	triggerCelebration(taskName?: string, nextTaskName?: string) {
+	async triggerCelebration(completedTask?: Task, nextTask?: Task) {
 		if (!this.currentUser) return;
 
 		// השתמש בחיזוק כללי אם אין הקשר משימה, או ברצף מלא אם יש הקשר
-		if (taskName) {
-			const { text, sequence } = boostService.getFeedbackSequence(
+		if (completedTask) {
+			const { sequence, praise } = boostService.getFeedbackSequence(
 				this.currentUser.gender,
-				taskName,
-				nextTaskName
+				completedTask.name,
+				nextTask?.name
 			);
-			this.celebrationMessage = text;
+
+			this.celebrationData = {
+				type: 'task',
+				completedTask: { name: completedTask.name, image: completedTask.imageSrc },
+				nextTask: nextTask ? { name: nextTask.name, image: nextTask.imageSrc } : undefined,
+				praise,
+				gender: this.currentUser.gender
+			};
+
 			this.showCelebration = true;
-			audioSequencer.playSequence(sequence);
+
+			// המתנה לסיום האודיו לפני סגירת המודאל
+			await audioSequencer.playSequence(sequence);
+			this.closeCelebration();
 		} else {
 			// גיבוי (פשוט)
 			const boostText = boostService.getRandomBoost(this.currentUser.gender);
-			this.celebrationMessage = boostText;
+
+			this.celebrationData = {
+				type: 'general',
+				praise: boostText,
+				gender: this.currentUser.gender
+			};
+
 			this.showCelebration = true;
 			// audioService.playDing() מטופל בדרך כלל בתוך לוגיקת החיזוקים,
 			// אך מופשט כאן עבור ה-Controller
+
+			// במקרה הפשוט, נסגור אחרי זמן קצוב כי אין סיקוונסר
+			setTimeout(() => {
+				this.closeCelebration();
+			}, 3000);
 		}
 	}
 
 	closeCelebration() {
 		this.showCelebration = false;
+		this.celebrationData = null;
 		// אופציונלי: עצירת אודיו בסגירת המודאל?
 	}
 

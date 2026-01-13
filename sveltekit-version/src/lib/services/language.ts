@@ -49,8 +49,9 @@ export const TEXTS = {
 	// משוב / חיזוקים
 	WELL_DONE: 'כל הכבוד!',
 	ALL_DONE_MESSAGE: 'סיימת את כל המשימות להיום!',
-	FINISHED_TASK: (gender: Gender, taskName: string) =>
-		`סיימת ${gender === 'boy' ? 'את' : 'את'} ${taskName}`,
+	FINISHED_PREFIX: (gender: Gender) => (gender === 'boy' ? 'סיימת את' : 'סיימת את'),
+	NOW_PREFIX: 'עכשיו,',
+	FINISHED_TASK: (gender: Gender, taskName: string) => `סיימת את ${taskName}`,
 	NOW_NEXT: (nextTaskName: string) => `. עכשיו, ${nextTaskName}`
 };
 
@@ -59,7 +60,7 @@ export const LanguageService = {
 		gender: Gender,
 		taskName: string,
 		nextTaskName?: string
-	): { text: string; sequence: Array<{ type: 'file' | 'tts'; content: string }> } {
+	): { text: string; sequence: Array<{ type: 'file' | 'tts'; content: string }>; praise: string } {
 		const sequence: Array<{ type: 'file' | 'tts'; content: string }> = [];
 		let fullTextParts: string[] = [];
 
@@ -113,7 +114,8 @@ export const LanguageService = {
 
 		return {
 			text: fullTextParts.join(''),
-			sequence
+			sequence,
+			praise: boostText
 		};
 	},
 

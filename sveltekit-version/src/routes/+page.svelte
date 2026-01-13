@@ -136,8 +136,7 @@
 
   <CelebrationModal
     isOpen={board.showCelebration}
-    message={board.celebrationMessage}
-    duration={5000}
+    data={board.celebrationData}
     onclose={() => board.closeCelebration()}
   />
 {/if}
