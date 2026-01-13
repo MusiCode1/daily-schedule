@@ -1,0 +1,90 @@
+import { globalState } from './globalState.svelte';
+import type { List, Task } from '../types';
+import { createDefaultLists } from '../data/defaults';
+import { TEXTS } from '../services/language';
+
+export class ListStore {
+	getUserLists(userId: string): List[] {
+		if (!globalState.state.lists[userId]) {
+			globalState.state.lists[userId] = [];
+		}
+		return globalState.state.lists[userId];
+	}
+
+	getActiveList(userId: string): List | undefined {
+		let activeId = globalState.state.activeListId[userId];
+		const lists = this.getUserLists(userId);
+
+		if (!activeId && lists.length > 0) {
+			activeId = lists[0].id;
+			this.setActiveList(userId, activeId);
+		}
+
+		return lists.find((l) => l.id === activeId) || lists[0];
+	}
+
+	setActiveList(userId: string, listId: string) {
+		globalState.state.activeListId[userId] = listId;
+		globalState.save();
+	}
+
+	addList(userId: string, name: string) {
+		const id = crypto.randomUUID();
+		const newList: List = { id, name, greeting: TEXTS.DEFAULT_GREETING, tasks: [] };
+
+		if (!globalState.state.lists[userId]) {
+			globalState.state.lists[userId] = [];
+		}
+
+		globalState.state.lists[userId].push(newList);
+		this.setActiveList(userId, id);
+		globalState.save();
+		return id;
+	}
+
+	deleteList(userId: string, listId: string) {
+		if (!globalState.state.lists[userId]) return;
+
+		// Don't allow deleting the last list
+		if (globalState.state.lists[userId].length <= 1) return;
+
+		globalState.state.lists[userId] = globalState.state.lists[userId].filter(
+			(l) => l.id !== listId
+		);
+
+		// If we deleted the active list, switch to the first one
+		if (globalState.state.activeListId[userId] === listId) {
+			globalState.state.activeListId[userId] = globalState.state.lists[userId][0].id;
+			globalState.save();
+		} else {
+			globalState.save();
+		}
+	}
+
+	updateList(userId: string, listId: string, updates: Partial<List>) {
+		const list = globalState.state.lists[userId]?.find((l) => l.id === listId);
+		if (list) {
+			Object.assign(list, updates);
+			globalState.save();
+		}
+	}
+
+	// -- Task Management --
+
+	updateTasks(userId: string, listId: string, newTasks: Task[]) {
+		const list = globalState.state.lists[userId]?.find((l) => l.id === listId);
+		if (list) {
+			list.tasks = newTasks;
+			globalState.save();
+		}
+	}
+
+	// Helper to initialize defaults for a new user
+	initializeDefaultLists(userId: string) {
+		globalState.state.lists[userId] = createDefaultLists();
+		this.setActiveList(userId, globalState.state.lists[userId][0].id);
+		globalState.save();
+	}
+}
+
+export const listStore = new ListStore();

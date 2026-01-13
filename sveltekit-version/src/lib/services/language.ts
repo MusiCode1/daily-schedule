@@ -1,0 +1,124 @@
+// src/lib/services/language.ts
+import { ACTIVITIES } from '$lib/data/defaults';
+import type { Gender } from '$lib/types';
+import { BOOST_WORDS, type BoostWord } from '$lib/data/boosts';
+
+export const TEXTS = {
+	APP_TITLE: 'לוח סדר יום',
+
+	// Settings / User Selector
+	SETTINGS_TITLE: 'הגדרות מערכת',
+	USERS_TAB: 'משתמשים',
+	LISTS_TAB: 'רשימות',
+	GENERAL_TAB: 'כללי',
+	USER_MANAGEMENT: 'ניהול משתמשים',
+	LIST_MANAGEMENT: 'ניהול רשימות',
+	GENERAL_SETTINGS: 'הגדרות כלליות',
+	USER_SELECTOR_TITLE: 'מי משתמש בלוח היום?',
+	LOGIN_AS: (name: string) => `התחבר כ-${name}`,
+	NEW_USER: '+ משתמש חדש',
+	EDIT_USER: 'עריכת משתמש',
+	SAVE: 'שמור',
+	CANCEL: 'ביטול',
+	DELETE: 'מחיקה',
+	EDIT: 'עריכה',
+	BACK_TO_BOARD: '➡️ חזרה ללוח',
+
+	// Lists
+	NEW_LIST: '+ רשימה חדשה',
+	EDIT_LIST: 'עריכת רשימה',
+	LIST_NAME: 'שם הרשימה',
+	GREETING: 'ברכה',
+	GREETING_PLACEHOLDER: 'למשל: בוקר טוב',
+	DEFAULT_GREETING: 'בהצלחה',
+	LOGO: 'אייקון/תמונה',
+
+	// Add Modal
+	ADD_ACTIVITY: 'הוסף פעילות',
+	ACTIVITY_NAME: 'שם הפעילות',
+	CHOOSE_OR_TYPE: 'בחר מהרשימה או הקלד...',
+	CHOOSE_IMAGE_OPTIONAL: 'בחירת תמונה (אופציונלי):',
+
+	// Forms
+	NAME: 'שם',
+	GENDER: 'מין',
+	BOY: 'בן',
+	GIRL: 'בת',
+	AVATAR: 'תמונה',
+
+	// Feedback / Boosts
+	WELL_DONE: 'כל הכבוד!',
+	ALL_DONE_MESSAGE: 'סיימת את כל המשימות להיום!',
+	FINISHED_TASK: (gender: Gender, taskName: string) =>
+		`סיימת ${gender === 'boy' ? 'את' : 'את'} ${taskName}`,
+	NOW_NEXT: (nextTaskName: string) => `. עכשיו, ${nextTaskName}`
+};
+
+export const LanguageService = {
+	getFeedbackSequence(
+		gender: Gender,
+		taskName: string,
+		nextTaskName?: string
+	): { text: string; sequence: Array<{ type: 'file' | 'tts'; content: string }> } {
+		const sequence: Array<{ type: 'file' | 'tts'; content: string }> = [];
+		let fullTextParts: string[] = [];
+
+		// --- Part 1: "You finished [Task]" ---
+		// "סיימת את..."
+		const prefixFile = gender === 'boy' ? 'finished_opt_boy.mp3' : 'finished_opt_girl.mp3';
+		sequence.push({ type: 'file', content: prefixFile });
+		fullTextParts.push(TEXTS.FINISHED_TASK(gender, taskName));
+
+		// Task Name (File or TTS)
+		const taskId = this.findActivityIdByName(taskName);
+		if (taskId) {
+			sequence.push({ type: 'file', content: `${taskId}.mp3` });
+		} else {
+			sequence.push({ type: 'tts', content: taskName });
+		}
+
+		// --- Part 2: Boost (Compliment) ---
+		const randomIndex = Math.floor(Math.random() * BOOST_WORDS.length);
+		const boost = BOOST_WORDS[randomIndex];
+
+		const boostText = boost.gendered ? boost.gendered[gender] : boost.text || TEXTS.WELL_DONE;
+		fullTextParts.push(`! ${boostText}`);
+
+		const boostRequestFile =
+			typeof boost.audioFile === 'object' ? boost.audioFile[gender] : boost.audioFile;
+
+		if (boostRequestFile) {
+			sequence.push({ type: 'file', content: boostRequestFile });
+		}
+
+		// --- Part 3: Next Task or All Done ---
+		if (nextTaskName) {
+			// "Now..."
+			sequence.push({ type: 'file', content: 'now.mp3' });
+			fullTextParts.push(TEXTS.NOW_NEXT(nextTaskName));
+
+			// Next Task Name
+			const nextId = this.findActivityIdByName(nextTaskName);
+			if (nextId) {
+				sequence.push({ type: 'file', content: `${nextId}.mp3` });
+			} else {
+				sequence.push({ type: 'tts', content: nextTaskName });
+			}
+		} else {
+			// All done!
+			const allDoneFile = gender === 'boy' ? 'all_done_boy.mp3' : 'all_done_girl.mp3';
+			sequence.push({ type: 'file', content: allDoneFile });
+			fullTextParts.push(`. ${TEXTS.ALL_DONE_MESSAGE}`);
+		}
+
+		return {
+			text: fullTextParts.join(''),
+			sequence
+		};
+	},
+
+	findActivityIdByName(name: string): string | undefined {
+		const activity = ACTIVITIES.find((a) => a.name === name);
+		return activity?.id;
+	}
+};

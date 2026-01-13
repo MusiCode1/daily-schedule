@@ -1,0 +1,53 @@
+test-results
+node_modules
+
+# Output
+.output
+.vercel
+.netlify
+.wrangler
+/.svelte-kit
+/build
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+docs\private-docs
+docs\private-docs\**
+
+static-assets
+static-assets\**
+
+temp
+temp/**
+
+# Data / DB
+*.db
+*.sqlite
+
+# Binaries
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.mp3
+*.wav
+*.ogg
+*.mp4
+*.webm
+*.pdf
+*.zip
+*.rar
+*.7z

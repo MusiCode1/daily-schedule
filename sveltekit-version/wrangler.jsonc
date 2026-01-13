@@ -1,0 +1,12 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "daily-schedule",
+	"compatibility_date": "2025-12-22",
+	"pages_build_output_dir": ".svelte-kit/cloudflare",
+	"dev": {
+		"port": 8788,
+		"inspector_port": 9230
+	},
+
+	"compatibility_flags": ["nodejs_compat"]
+}

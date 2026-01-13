@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>סדר יום ויזואלי</title>
+    <!-- שימוש בפונט Heebo למראה מודרני וקריא -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        --bg-card: #ffffff;
+        --primary-accent: #6366f1;
+        --secondary-accent: #a855f7;
+        --text-main: #1f2937;
+        --text-secondary: #6b7280;
+        --success-color: #22c55e;
+        --danger-color: #ef4444;
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --radius-md: 12px;
+        --radius-lg: 16px;
+      }
+
+      * {
+        box-sizing: border-box;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      body {
+        font-family: "Heebo", sans-serif;
+        background: var(--bg-gradient);
+        color: var(--text-main);
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        width: 100vw;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* == כותרת == */
+      header {
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(5px);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+        flex-shrink: 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        margin: 0;
+        font-weight: 900;
+        background: linear-gradient(
+          to left,
+          var(--primary-accent),
+          var(--secondary-accent)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      /* == קונטיינר רשימה == */
+      .task-list-container {
+        flex-grow: 1;
+        /* PADDING FIX: Right padding increased to accommodate the external arrow in RTL */
+        padding: 1rem 4.5rem 1rem 1rem;
+        display: flex;
+        flex-direction: column;
+        /* gap removed from here, moved to inner wrapper */
+        overflow-y: auto; /* מאפשר גלילה אם התוכן חורג */
+      }
+
+      .tasks-center-wrapper {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+      }
+
+      .task-row-wrapper {
+        position: relative;
+        width: 100%; /* תופס את הרוחב של האבא (שהוא מוגבל) */
+        max-width: 600px; /* הגבלה על הרוחב המקסימלי */
+        flex: 1; /* תופס מקום שווה */
+        max-height: 180px; /* הגבלת גובה שלא יהיה ענק */
+        min-height: 100px;
+        display: flex;
+        align-items: center;
+      }
+
+      /* == כרטיס משימה == */
+      .task-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--card-shadow);
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        cursor: pointer;
+        border: 2px solid transparent;
+        position: relative;
+      }
+
+      /* כרטיס בגרירה */
+      .task-card.dragging {
+        opacity: 0.5;
+        transform: scale(0.95);
+        border: 2px dashed var(--primary-accent);
+      }
+
+      /* == תמונה == */
+      .task-image-wrapper {
+        height: 100%;
+        aspect-ratio: 1 / 1; /* SQUARE RATIO ENFORCED */
+        width: auto; /* Auto width based on height */
+        position: relative;
+        background-color: #f1f5f9; /* רקע ניטרלי */
+        flex-shrink: 0;
+        display: flex; /* ל-contain */
+        align-items: center;
+        justify-content: center;
+      }
+
+      .task-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* CHANGED TO COVER TO FILL SQUARE */
+        padding: 0; /* Removed padding for clean look */
+        display: block;
+      }
+
+      /* == תוכן == */
+      .task-content {
+        flex-grow: 1;
+        padding: 0 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+      }
+
+      .task-name {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.2;
+      }
+
+      /* == מצב פעיל (עכשיו) == */
+      .task-row-wrapper.active .task-card {
+        border-color: var(--primary-accent);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+        z-index: 5;
+        transform: scale(1.02);
+        /* flex-grow קצת יותר גדול? לא בהכרח בפריסה הזו, השארנו את זה קבוע יחסית */
+      }
+
+      /* חץ "עכשיו" - חיצוני */
+      .now-indicator {
+        position: absolute;
+        right: -3.5rem; /* מחוץ לקונטיינר של הכרטיס, בשוליים שיצרנו */
+        top: 50%;
+        transform: translateY(-50%);
+        display: none; /* מוסתר כברירת מחדל */
+        flex-direction: row;
+        align-items: center;
+        z-index: 20;
+        animation: bounceRight 1.5s infinite;
+      }
+
+      .now-text {
+        background: var(--danger-color);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .now-arrow {
+        width: 0;
+        height: 0;
+        border-top: 12px solid transparent;
+        border-bottom: 12px solid transparent;
+        border-right: 18px solid var(--danger-color); /* החץ מצביע שמאלה (אל הכרטיס) */
+        margin-right: -2px; /* חיבור ויזואלי */
+      }
+
+      .task-row-wrapper.active .now-indicator {
+        display: flex;
+      }
+
+      @keyframes bounceRight {
+        0%,
+        100% {
+          transform: translate(0, -50%);
+        }
+        50% {
+          transform: translate(-5px, -50%);
+        }
+      }
+
+      /* == מצב בוצע == */
+      .task-row-wrapper.completed .task-card {
+        background: #ecfdf5; /* Light green background */
+        border: 2px solid var(--success-color);
+        opacity: 1; /* Clearly visible */
+        transform: scale(
+          0.98
+        ); /* Slight shrink to indicate inactive but kept */
+      }
+
+      .task-row-wrapper.completed .task-name {
+        text-decoration: none;
+        color: #15803d; /* Dark green text */
+      }
+
+      .check-icon {
+        display: none;
+        color: var(--success-color);
+        font-size: 2rem;
+        margin-right: auto;
+      }
+
+      .task-row-wrapper.completed .check-icon {
+        display: block;
+      }
+
+      /* == כפתור מחיקה == */
+      .delete-btn {
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger-color);
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-bottom-right-radius: 12px;
+        font-size: 1.1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+        z-index: 10;
+      }
+      .delete-btn:hover {
+        background: var(--danger-color);
+        color: white;
+        opacity: 1;
+      }
+
+      /* == כפתור + צף == */
+      .floating-add-btn {
+        position: fixed;
+        bottom: 1.5rem;
+        left: 1.5rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--primary-accent),
+          var(--secondary-accent)
+        );
+        color: white;
+        border: none;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.5);
+        font-size: 2.5rem;
+        cursor: pointer;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* == מודאל == */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(5px);
+        z-index: 200;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+
+      .modal-overlay.open {
+        display: flex;
+      }
+
+      .modal-card {
+        background: white;
+        width: 100%;
+        max-width: 400px;
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 0.8rem;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+      }
+
+      .btn-primary {
+        width: 100%;
+        padding: 1rem;
+        background: var(--primary-accent);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        font-size: 1.1rem;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>📅 סדר היום שלי</h1>
+      <div style="font-size: 0.9rem; color: #6b7280">לחיצה על כרטיס = בוצע</div>
+    </header>
+
+    <div class="task-list-container" id="taskListContainer">
+      <div id="tasksWrapper" class="tasks-center-wrapper">
+        <!-- Tasks will be here -->
+      </div>
+    </div>
+
+    <button class="floating-add-btn" onclick="toggleModal(true)">＋</button>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="addModal">
+      <div class="modal-card">
+        <h2 style="margin-top: 0">הוסף פעילות</h2>
+        <form id="addTaskForm">
+          <input
+            type="text"
+            id="taskNameInput"
+            class="form-input"
+            placeholder="שם הפעילות..."
+            required
+          />
+          <div
+            style="
+              margin-bottom: 1rem;
+              border: 2px dashed #cbd5e1;
+              padding: 1rem;
+              text-align: center;
+              border-radius: 8px;
+              cursor: pointer;
+            "
+            onclick="document.getElementById('taskImageInput').click()"
+          >
+            <span id="uploadText" style="font-size: 1.1rem">📷 בחר תמונה</span>
+            <input
+              type="file"
+              id="taskImageInput"
+              accept="image/*"
+              style="display: none"
+              onchange="previewImage(this)"
+            />
+            <img
+              id="imagePreview"
+              style="
+                max-width: 100%;
+                max-height: 150px;
+                display: none;
+                margin: 0.5rem auto;
+                border-radius: 4px;
+                object-fit: contain;
+              "
+            />
+          </div>
+          <div style="display: flex; gap: 1rem">
+            <button
+              type="button"
+              onclick="toggleModal(false)"
+              style="
+                flex: 1;
+                background: #e5e7eb;
+                border: none;
+                padding: 1rem;
+                border-radius: 8px;
+                cursor: pointer;
+              "
+            >
+              ביטול
+            </button>
+            <button type="submit" class="btn-primary" style="flex: 2">
+              שמור
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      let tasks = [
+        {
+          id: "1",
+          name: "שירותים",
+          imageSrc: "assets/toilet.png",
+          isDone: false,
+        },
+        {
+          id: "2",
+          name: "ארוחת בוקר",
+          imageSrc: "assets/breakfast.png",
+          isDone: false,
+        },
+        {
+          id: "3",
+          name: "צחצוח שיניים",
+          imageSrc: "assets/toothbrush.png",
+          isDone: false,
+        },
+        {
+          id: "4",
+          name: "מקלחת",
+          imageSrc: "assets/shower.png",
+          isDone: false,
+        },
+        {
+          id: "5",
+          name: "להתלבש",
+          imageSrc: "assets/clothes.png",
+          isDone: false,
+        },
+        {
+          id: "6",
+          name: "הליכה לאוטו",
+          imageSrc: "assets/car.png",
+          isDone: false,
+        },
+      ];
+      const taskListEl = document.getElementById("tasksWrapper");
+      let draggedItem = null;
+
+      // == Drag & Drop Helpers ==
+      function handleDragStart(e) {
+        // Dragging the CARD inside the WRAPPER
+        draggedItem = this.closest(".task-row-wrapper");
+        this.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+      }
+
+      function handleDragOver(e) {
+        if (e.preventDefault) e.preventDefault();
+        return false;
+      }
+
+      function handleDragEnter(e) {
+        this.closest(".task-row-wrapper").style.transform = "scale(1.02)";
+      }
+
+      function handleDragLeave(e) {
+        this.closest(".task-row-wrapper").style.transform = "scale(1)";
+      }
+
+      function handleDrop(e) {
+        e.stopPropagation();
+        this.classList.remove("dragging");
+        const targetWrapper = this.closest(".task-row-wrapper");
+        targetWrapper.style.transform = "scale(1)";
+
+        if (draggedItem && draggedItem !== targetWrapper) {
+          const oldIndex = parseInt(draggedItem.dataset.index);
+          const newIndex = parseInt(targetWrapper.dataset.index);
+
+          const item = tasks.splice(oldIndex, 1)[0];
+          tasks.splice(newIndex, 0, item);
+          render();
+        }
+        return false;
+      }
+
+      function handleDragEnd(e) {
+        if (draggedItem) {
+          const card = draggedItem.querySelector(".task-card");
+          if (card) card.classList.remove("dragging");
+        }
+        document
+          .querySelectorAll(".task-row-wrapper")
+          .forEach((w) => (w.style.transform = "scale(1)"));
+      }
+
+      // == App Logic ==
+      function render() {
+        taskListEl.innerHTML = "";
+
+        // Find first incomplete task index
+        const activeIndex = tasks.findIndex((t) => !t.isDone);
+
+        tasks.forEach((task, index) => {
+          // Wrapper Row
+          const wrapper = document.createElement("div");
+          wrapper.className = "task-row-wrapper";
+          wrapper.dataset.index = index;
+
+          if (task.isDone) wrapper.classList.add("completed");
+          else if (index === activeIndex) wrapper.classList.add("active");
+
+          // Image Source
+          const imgUrl =
+            task.imageSrc ||
+            "https://placehold.co/400x400/e2e8f0/64748b?text=IMG";
+
+          wrapper.innerHTML = `
+                <!-- External Indicator -->
+                <div class="now-indicator">
+                    <div class="now-text">עכשיו</div>
+                    <div class="now-arrow"></div>
+                </div>
+
+                <!-- Card -->
+                <div class="task-card" draggable="true">
+                    <button class="delete-btn" onclick="deleteTask(event, '${task.id}')">✕</button>
+                    
+                    <div class="task-image-wrapper">
+                        <img src="${imgUrl}" class="task-image" alt="">
+                    </div>
+                    
+                    <div class="task-content">
+                        <h3 class="task-name">${task.name}</h3>
+                        <div class="check-icon">✓ בוצע</div>
+                    </div>
+                </div>
+            `;
+
+          // Events on the CARD
+          const card = wrapper.querySelector(".task-card");
+
+          card.addEventListener("dragstart", handleDragStart);
+          card.addEventListener("dragover", handleDragOver);
+          card.addEventListener("dragenter", handleDragEnter);
+          card.addEventListener("dragleave", handleDragLeave);
+          card.addEventListener("drop", handleDrop);
+          card.addEventListener("dragend", handleDragEnd);
+
+          card.addEventListener("click", (e) => {
+            if (e.target.closest(".delete-btn")) return;
+            toggleTask(task.id);
+          });
+
+          taskListEl.appendChild(wrapper);
+        });
+      }
+
+      function toggleTask(id) {
+        const t = tasks.find((x) => x.id === id);
+        if (t) {
+          t.isDone = !t.isDone;
+          // Play sound if marked as done
+          if (t.isDone) {
+            const audio = new Audio("assets/left-ding.mp3");
+            audio
+              .play()
+              .catch((err) => console.error("Audio play failed:", err));
+          }
+          render();
+        }
+      }
+
+      function deleteTask(e, id) {
+        e.stopPropagation();
+        if (confirm("למחוק?")) {
+          tasks = tasks.filter((x) => x.id !== id);
+          render();
+        }
+      }
+
+      // == Modal & Init ==
+      function toggleModal(show) {
+        return document
+          .getElementById("addModal")
+          .classList.toggle("open", show);
+      }
+
+      function resetForm() {
+        document.getElementById("addTaskForm").reset();
+        document.getElementById("imagePreview").style.display = "none";
+        document.getElementById("uploadText").style.display = "block";
+      }
+
+      function previewImage(input) {
+        if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const img = document.getElementById("imagePreview");
+            img.src = e.target.result;
+            img.style.display = "block";
+            document.getElementById("uploadText").style.display = "none";
+          };
+          reader.readAsDataURL(input.files[0]);
+        }
+      }
+
+      function readFileAsDataURL(file) {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+      }
+
+      document
+        .getElementById("addTaskForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const name = document.getElementById("taskNameInput").value;
+          const fileInput = document.getElementById("taskImageInput");
+          let imageSrc = null;
+          if (fileInput.files && fileInput.files[0]) {
+            imageSrc = await readFileAsDataURL(fileInput.files[0]);
+          }
+          tasks.push({
+            id: crypto.randomUUID(),
+            name,
+            imageSrc,
+            isDone: false,
+          });
+          toggleModal(false);
+          resetForm();
+          render();
+        });
+
+      render();
+    </script>
+  </body>
+</html>
