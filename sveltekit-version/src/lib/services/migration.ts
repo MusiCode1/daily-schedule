@@ -2,7 +2,7 @@ import type { AppState, List, Task } from '$lib/types';
 import { INITIAL_STATE, ACTIVITIES, DEFAULT_LIST_DEFINITIONS } from '$lib/data/defaults';
 import { db } from './db';
 
-// Helper to convert base64 (data URL) to Blob
+// פונקציית עזר להמרת base64 (data URL) ל-Blob
 async function dataURLToBlob(dataURL: string): Promise<Blob> {
 	const response = await fetch(dataURL);
 	return await response.blob();
@@ -42,7 +42,7 @@ export const migrationService = {
 	},
 
 	migrateState(parsed: any): AppState {
-		// Migration Logic
+		// לוגיקת המיגרציה
 		if (!parsed.version || parsed.version < 2) {
 			console.log('Migrating to version 2: Adding list logos...');
 			const users = Object.keys(parsed.lists || {});
@@ -61,7 +61,7 @@ export const migrationService = {
 		if (parsed.version < 3) {
 			console.log('Migrating to version 3: Fixing image paths...');
 
-			// Fix user avatars
+			// תיקון תמונות משתמשים
 			if (parsed.users) {
 				parsed.users.forEach((u: any) => {
 					if (u.avatar && u.avatar.includes('/avatars/')) {
@@ -70,7 +70,7 @@ export const migrationService = {
 				});
 			}
 
-			// Fix task images
+			// תיקון תמונות משימות
 			const users = Object.keys(parsed.lists || {});
 			users.forEach((userId) => {
 				const userLists: List[] = parsed.lists[userId];
@@ -127,7 +127,7 @@ export const migrationService = {
 				const lists = JSON.parse(legacyLists);
 				const newState: AppState = { ...INITIAL_STATE, version: 5 }; // Using hardcoded 5 or import CURRENT_VERSION? Let's assume 5 is current.
 
-				// Convert legacy lists to new format for user u1 (default)
+				// המרת רשימות ישנות לפורמט החדש עבור משתמש u1 (ברירת מחדל)
 				const newLists: List[] = lists.map((l: any) => ({
 					id: l.id,
 					name: l.name,

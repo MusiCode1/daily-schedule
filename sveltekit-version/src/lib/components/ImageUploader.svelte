@@ -34,7 +34,7 @@
           alert("שגיאה בשמירת התמונה");
       }).finally(() => {
           isLoading = false;
-          // Reset input so same file can be selected again if needed
+          // איפוס קלט כדי שניתן יהיה לבחור את אותו קובץ שוב במידת הצורך
           if (fileInput) fileInput.value = '';
       });
     }

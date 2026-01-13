@@ -45,14 +45,14 @@ export class ListStore {
 	deleteList(userId: string, listId: string) {
 		if (!globalState.state.lists[userId]) return;
 
-		// Don't allow deleting the last list
+		// לא לאפשר מחיקת הרשימה האחרונה
 		if (globalState.state.lists[userId].length <= 1) return;
 
 		globalState.state.lists[userId] = globalState.state.lists[userId].filter(
 			(l) => l.id !== listId
 		);
 
-		// If we deleted the active list, switch to the first one
+		// אם מחקנו את הרשימה הפעילה, עבור לרשימה הראשונה
 		if (globalState.state.activeListId[userId] === listId) {
 			globalState.state.activeListId[userId] = globalState.state.lists[userId][0].id;
 			globalState.save();
@@ -69,7 +69,7 @@ export class ListStore {
 		}
 	}
 
-	// -- Task Management --
+	// -- ניהול משימות --
 
 	updateTasks(userId: string, listId: string, newTasks: Task[]) {
 		const list = globalState.state.lists[userId]?.find((l) => l.id === listId);
@@ -79,7 +79,7 @@ export class ListStore {
 		}
 	}
 
-	// Helper to initialize defaults for a new user
+	// פונקציית עזר לאתחול ברירות מחדל למשתמש חדש
 	initializeDefaultLists(userId: string) {
 		globalState.state.lists[userId] = createDefaultLists();
 		this.setActiveList(userId, globalState.state.lists[userId][0].id);

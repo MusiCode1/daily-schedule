@@ -10,7 +10,7 @@ class GlobalState {
 		if (loaded) {
 			this.state = loaded;
 
-			// Initialize async migration for images
+			// אתחול מיגרציה אסינכרונית לתמונות
 			import('$lib/services/migration').then(({ migrationService }) => {
 				migrationService.migrateImagesToDB(this.state).then((migratedState) => {
 					this.state = migratedState;

@@ -39,8 +39,8 @@ export class UserStore {
 
 		globalState.state.users.push(newUser);
 
-		// Initialize default lists for the new user using listStore
-		// Dynamic import matches Svelte 5 module resolution usage
+		// אתחול רשימות ברירת מחדל למשתמש החדש באמצעות listStore
+		// ייבוא דינמי תואם את אופן הפעולה של Svelte 5
 		const { listStore } = await import('./listStore.svelte');
 		listStore.initializeDefaultLists(id);
 

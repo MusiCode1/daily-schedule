@@ -14,7 +14,7 @@ export class ListsNavigationController {
 		return this.currentUser ? listStore.getActiveList(this.currentUser.id) : undefined;
 	}
 
-	// Actions
+	// פעולות
 
 	createNewList() {
 		if (!this.currentUser) return;
@@ -30,7 +30,7 @@ export class ListsNavigationController {
 
 		if (!user || !list) return;
 
-		// Validation - Logic that belongs in Controller because it might involve UI (alerts)
+		// ולידציה - לוגיקה ששייכת ל-Controller כי היא עשויה לערב ממשק משתמש (התראות)
 		if (this.userLists.length <= 1) {
 			alert('אי אפשר למחוק את הרשימה האחרונה.');
 			return;

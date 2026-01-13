@@ -12,14 +12,14 @@ export class DragDropManager {
 		getActiveList: () => { id: string } | undefined,
 		getTasks: () => Task[]
 	) {
-		// We use derived or getters to access the latest state from the component
+		// שימוש ב-derived או getters לגישה ל-state העדכני מהקומפוננטה
 		this.getIsEditMode = getIsEditMode;
 		this.getCurrentUser = getCurrentUser;
 		this.getActiveList = getActiveList;
 		this.getTasks = getTasks;
 	}
 
-	// Callbacks to access latest state
+	// Callbacks לגישה ל-state עדכני
 	private getIsEditMode: () => boolean;
 	private getCurrentUser: () => { id: string } | undefined;
 	private getActiveList: () => { id: string } | undefined;
@@ -43,7 +43,7 @@ export class DragDropManager {
 
 		if (!currentUser || !activeList) return;
 
-		// Optimistic / Store update
+		// עדכון אופטימי / Store
 		const tasks = this.getTasks();
 		const newTasks = [...tasks];
 		const [item] = newTasks.splice(this.draggedItemIndex, 1);

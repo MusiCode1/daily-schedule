@@ -11,17 +11,17 @@
   import { ListsNavigationController } from '$lib/logic/listsNavigation.svelte';
   import { SessionController } from '$lib/logic/session.svelte';
 
-  // -- Controllers Initialization --
+  // -- אתחול Controllers --
   const session = new SessionController();
   const nav = new ListsNavigationController();
   const board = new TasksBoardController();
 
-  // Helper for drag/drop derived from controller
-  // We use the dnd manager directly from the board controller
+  // עזר לגרירה/שחרור הנגזר מה-controller
+  // שימוש ב-dnd manager ישירות מה-controller של הלוח
   const { dnd } = board;
 
-  // Active Index Calculation (UI Logic)
-  // Can move to controller but simple enough here for view state
+  // חישוב אינדקס פעיל (לוגיקת UI)
+  // ניתן להעביר ל-controller אבל פשוט מספיק כאן עבור ה-view state
   let activeIndex = $derived(board.tasks.findIndex((t) => !t.isDone));
 
 </script>
@@ -53,7 +53,7 @@
               onerror={(e) => (e.currentTarget as HTMLImageElement).style.display = 'none'} 
             />
           {/if}
-          <!-- fallback initials or icon if needed -->
+          <!-- גיבוי לראשי תיבות או אייקון במידת הצורך -->
           {#if !session.currentUser.avatar}
              <span>{session.currentUser.name[0]}</span>
           {/if}
@@ -302,11 +302,11 @@
       flex-direction: column;
       align-items: center;
       gap: 0.2rem;
-      z-index: 20; /* Ensure it stays on top */
+      z-index: 20; /* הבטחה שזה נשאר למעלה */
     }
 
     .avatar-circle {
-      width: 56px; /* Increased from 40px */
+      width: 56px; /* הוגדל מ-40px */
       height: 56px;
       background: #e2e8f0;
       border-radius: 50%;
@@ -319,12 +319,12 @@
       cursor: pointer;
       overflow: hidden;
       padding: 0;
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* Bouncy transition */
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* מעבר קופצני */
       transform-origin: top right;
     }
     
     .avatar-circle:hover, .avatar-circle:active {
-        transform: scale(2.2); /* Dramatic zoom */
+        transform: scale(2.2); /* זום דרמטי */
         box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         z-index: 30;
     }

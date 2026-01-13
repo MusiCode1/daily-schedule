@@ -6,7 +6,7 @@ import { BOOST_WORDS, type BoostWord } from '$lib/data/boosts';
 export const TEXTS = {
 	APP_TITLE: 'לוח סדר יום',
 
-	// Settings / User Selector
+	// הגדרות / בחירת משתמש
 	SETTINGS_TITLE: 'הגדרות מערכת',
 	USERS_TAB: 'משתמשים',
 	LISTS_TAB: 'רשימות',
@@ -24,7 +24,7 @@ export const TEXTS = {
 	EDIT: 'עריכה',
 	BACK_TO_BOARD: '➡️ חזרה ללוח',
 
-	// Lists
+	// רשימות
 	NEW_LIST: '+ רשימה חדשה',
 	EDIT_LIST: 'עריכת רשימה',
 	LIST_NAME: 'שם הרשימה',
@@ -33,20 +33,20 @@ export const TEXTS = {
 	DEFAULT_GREETING: 'בהצלחה',
 	LOGO: 'אייקון/תמונה',
 
-	// Add Modal
+	// מודאל הוספה
 	ADD_ACTIVITY: 'הוסף פעילות',
 	ACTIVITY_NAME: 'שם הפעילות',
 	CHOOSE_OR_TYPE: 'בחר מהרשימה או הקלד...',
 	CHOOSE_IMAGE_OPTIONAL: 'בחירת תמונה (אופציונלי):',
 
-	// Forms
+	// טפסים
 	NAME: 'שם',
 	GENDER: 'מין',
 	BOY: 'בן',
 	GIRL: 'בת',
 	AVATAR: 'תמונה',
 
-	// Feedback / Boosts
+	// משוב / חיזוקים
 	WELL_DONE: 'כל הכבוד!',
 	ALL_DONE_MESSAGE: 'סיימת את כל המשימות להיום!',
 	FINISHED_TASK: (gender: Gender, taskName: string) =>
@@ -63,13 +63,13 @@ export const LanguageService = {
 		const sequence: Array<{ type: 'file' | 'tts'; content: string }> = [];
 		let fullTextParts: string[] = [];
 
-		// --- Part 1: "You finished [Task]" ---
+		// --- חלק 1: "סיימת את [משימה]" ---
 		// "סיימת את..."
 		const prefixFile = gender === 'boy' ? 'finished_opt_boy.mp3' : 'finished_opt_girl.mp3';
 		sequence.push({ type: 'file', content: prefixFile });
 		fullTextParts.push(TEXTS.FINISHED_TASK(gender, taskName));
 
-		// Task Name (File or TTS)
+		// שם המשימה (קובץ או TTS)
 		const taskId = this.findActivityIdByName(taskName);
 		if (taskId) {
 			sequence.push({ type: 'file', content: `${taskId}.mp3` });
@@ -77,7 +77,7 @@ export const LanguageService = {
 			sequence.push({ type: 'tts', content: taskName });
 		}
 
-		// --- Part 2: Boost (Compliment) ---
+		// --- חלק 2: חיזוק (מחמאה) ---
 		const randomIndex = Math.floor(Math.random() * BOOST_WORDS.length);
 		const boost = BOOST_WORDS[randomIndex];
 
@@ -91,13 +91,13 @@ export const LanguageService = {
 			sequence.push({ type: 'file', content: boostRequestFile });
 		}
 
-		// --- Part 3: Next Task or All Done ---
+		// --- חלק 3: המשימה הבאה או סיום הכל ---
 		if (nextTaskName) {
-			// "Now..."
+			// "ועכשיו..."
 			sequence.push({ type: 'file', content: 'now.mp3' });
 			fullTextParts.push(TEXTS.NOW_NEXT(nextTaskName));
 
-			// Next Task Name
+			// שם המשימה הבאה
 			const nextId = this.findActivityIdByName(nextTaskName);
 			if (nextId) {
 				sequence.push({ type: 'file', content: `${nextId}.mp3` });
@@ -105,7 +105,7 @@ export const LanguageService = {
 				sequence.push({ type: 'tts', content: nextTaskName });
 			}
 		} else {
-			// All done!
+			// הכל הושלם!
 			const allDoneFile = gender === 'boy' ? 'all_done_boy.mp3' : 'all_done_girl.mp3';
 			sequence.push({ type: 'file', content: allDoneFile });
 			fullTextParts.push(`. ${TEXTS.ALL_DONE_MESSAGE}`);

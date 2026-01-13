@@ -5,7 +5,7 @@
   import { userStore } from '$lib/stores/userStore.svelte';
   import { listStore } from '$lib/stores/listStore.svelte';
   
-  // Tabs
+  // לשוניות
   const TABS = [
     { id: 'users', label: TEXTS.USERS_TAB, icon: '👥' },
     { id: 'lists', label: TEXTS.LISTS_TAB, icon: '📋' },
@@ -19,18 +19,18 @@
 
   let activeTab = $state('users');
   
-  // User Management
+  // ניהול משתמשים
   let isUserModalOpen = $state(false);
   let editingUser: UserProfile | null = $state(null);
   let userForm = $state({ name: '', gender: 'boy' as 'boy'|'girl', avatar: '' });
 
-  // List Management
+  // ניהול רשימות
   let managedUserId = $state('');
   let isListModalOpen = $state(false);
   let editingList: List | null = $state(null);
   let listForm = $state({ name: '', greeting: '', logo: '' });
   
-  // Initialize managedUserId when users load or component mounts
+  // אתחול managedUserId כשהמשתמשים נטענים או שהקומפוננטה עולה
   $effect(() => {
       if (!managedUserId && userStore.users.length > 0) {
           managedUserId = userStore.users[0].id;
@@ -41,7 +41,7 @@
     goto('/');
   }
 
-  // --- Users ---
+  // --- משתמשים ---
   function openUserModal(user: UserProfile | null = null) {
       editingUser = user;
       if (user) {
@@ -73,14 +73,14 @@
   function deleteUser(id: string) {
       if (confirm('למחוק את המשתמש? פעולה זו תמחק גם את כל הרשימות שלו!')) {
           userStore.deleteUser(id);
-          // If we deleted the managed user, reset selection
+          // אם המשתמש המנוהל נמחק, איפוס הבחירה
           if (managedUserId === id && userStore.users.length > 0) {
-              managedUserId = userStore.users[0].id; // will be updated by effect potentially but safe to do here
+              managedUserId = userStore.users[0].id; // יתעדכן על ידי effect כנראה, אבל בטוח לבצע כאן
           }
       }
   }
 
-  // --- Lists ---
+  // --- רשימות ---
   function openAddList() {
       editingList = null;
       listForm = { name: '', greeting: 'בהצלחה', logo: '' };
@@ -244,7 +244,7 @@
                     </div>
                     <div class="form-group">
                        <label for="user-avatar-input">{TEXTS.AVATAR}:</label>
-                       <!-- Clear input if manual avatar is set? For now just binding -->
+                       <!-- ניקוי קלט אם הוגדר אווטאר ידני? כרגע רק binding -->
                        <ImageUploader 
                            imageSrc={userForm.avatar} 
                            onchange={(id) => userForm.avatar = id || ''} 
@@ -415,8 +415,8 @@
       margin-bottom: 2rem;
       border-bottom: 1px solid #f1f5f9;
       padding-bottom: 1.5rem;
-      flex-wrap: wrap; /* Added to prevent overlap */
-      gap: 1rem;       /* Added to give spacing when wrapped */
+      flex-wrap: wrap; /* נוסף למניעת חפיפה */
+      gap: 1rem;       /* נוסף למרווח בעת גלישה */
   }
 
   .btn-primary-small {
@@ -437,12 +437,12 @@
       box-shadow: 0 6px 8px -1px rgba(99, 102, 241, 0.4);
   }
 
-  /* User Cards */
+  /* כרטיסי משתמש */
   .users-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 1.5rem;
-      width: 100%; /* Added to ensure full width usage */
+      width: 100%; /* נוסף להבטחת שימוש ברוחב מלא */
   }
 
   .user-card {
@@ -529,7 +529,7 @@
       background: #fef2f2;
   }
 
-  /* Modal */
+  /* מודאל */
   .modal-card {
       background: white;
       padding: 2.5rem;
@@ -538,7 +538,7 @@
       max-width: 450px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
       border: 1px solid #f1f5f9;
-      position: relative; /* Ensure z-index works if needed */
+      position: relative; /* הבטחת פעולת z-index במקרה הצורך */
       z-index: 1001;
   }
   
@@ -611,7 +611,7 @@
       box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
   }
 
-  /* Lists Grid */
+  /* רשת רשימות */
   .list-card {
       background: white;
       border: 1px solid #e2e8f0;

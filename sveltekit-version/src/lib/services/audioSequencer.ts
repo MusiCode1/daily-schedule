@@ -1,13 +1,13 @@
 // src/lib/services/audioSequencer.ts
 
 export type AudioSegment =
-	| { type: 'file'; content: string } // content is filename in /sounds/
-	| { type: 'tts'; content: string }; // content is text to speak
+	| { type: 'file'; content: string } // תוכן הוא שם קובץ ב-/sounds/
+	| { type: 'tts'; content: string }; // תוכן הוא טקסט להקראה
 
 export const audioSequencer = {
 	/**
-	 * Plays a sequence of audio segments (files or TTS) one by one.
-	 * Returns a promise that resolves when the entire sequence is finished.
+	 * מנגן רצף של מקטעי אודיו (קבצים או TTS) אחד אחרי השני.
+	 * מחזיר Promise שמסתיים כאשר הרצף כולו מסתיים.
 	 */
 	async playSequence(sequence: AudioSegment[]): Promise<void> {
 		for (const segment of sequence) {
@@ -19,7 +19,7 @@ export const audioSequencer = {
 				}
 			} catch (err) {
 				console.error(`Error playing segment (${segment.type}):`, err);
-				// Continue to next segment even if one fails
+				// המשך למקטע הבא גם אם אחד נכשל
 			}
 		}
 	},
@@ -28,16 +28,16 @@ export const audioSequencer = {
 		return new Promise((resolve, reject) => {
 			const audio = new Audio(`/sounds/${filename}`);
 
-			// Handle completion
+			// טיפול בסיום
 			audio.onended = () => resolve();
 
-			// Handle errors (e.g., file not found)
+			// טיפול בשגיאות (למשל, קובץ לא נמצא)
 			audio.onerror = (e) => {
 				console.warn(`Audio file not found or failed to load: ${filename}`, e);
-				resolve(); // Resolve anyway to continue sequence
+				resolve(); // resolve בכל מקרה כדי להמשיך ברצף
 			};
 
-			// Play
+			// נגן
 			audio.play().catch((err) => {
 				console.warn(`Playback failed for ${filename}:`, err);
 				resolve();
@@ -53,7 +53,7 @@ export const audioSequencer = {
 				return;
 			}
 
-			// Cancel previous
+			// ביטול קודם
 			window.speechSynthesis.cancel();
 
 			const utterance = new SpeechSynthesisUtterance(text);

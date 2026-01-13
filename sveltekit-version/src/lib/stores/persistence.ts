@@ -13,7 +13,7 @@ export const persistence = {
 		if (stored) {
 			try {
 				const parsed = JSON.parse(stored);
-				// Migrations are applied here
+				// יישום מיגרציות כאן
 				return this.migrateState(parsed);
 			} catch (e) {
 				console.error('Failed to load state', e);

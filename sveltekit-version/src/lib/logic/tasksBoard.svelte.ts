@@ -6,20 +6,20 @@ import type { Task } from '$lib/types';
 import { DragDropManager } from './dragDrop.svelte';
 
 export class TasksBoardController {
-	// -- UI State --
+	// -- מצב ממשק משתמש --
 	isEditMode = $state(false);
 	isModalOpen = $state(false);
 	taskToEdit: Task | null = $state(null);
 
-	// Celebration State
+	// מצב חגיגה
 	showCelebration = $state(false);
 	celebrationMessage = $state('');
 
-	// -- Dependencies --
+	// -- תלויות --
 	dnd: DragDropManager;
 
 	constructor() {
-		// Init DragDropManager with accessors
+		// אתחול DragDropManager עם גישה לנתונים
 		this.dnd = new DragDropManager(
 			() => this.isEditMode,
 			() => this.currentUser,
@@ -28,7 +28,7 @@ export class TasksBoardController {
 		);
 	}
 
-	// -- Derived Data --
+	// -- נתונים נגזרים --
 	get currentUser() {
 		return userStore.currentUser;
 	}
@@ -45,7 +45,7 @@ export class TasksBoardController {
 		return this.activeList?.greeting ? this.activeList.greeting + ',' : 'בהצלחה,';
 	}
 
-	// -- Actions --
+	// -- פעולות --
 
 	toggleEditMode() {
 		this.isEditMode = !this.isEditMode;
@@ -74,7 +74,7 @@ export class TasksBoardController {
 	triggerCelebration(taskName?: string, nextTaskName?: string) {
 		if (!this.currentUser) return;
 
-		// Use generic boost if no task context, or full sequence if context exists
+		// השתמש בחיזוק כללי אם אין הקשר משימה, או ברצף מלא אם יש הקשר
 		if (taskName) {
 			const { text, sequence } = boostService.getFeedbackSequence(
 				this.currentUser.gender,
@@ -85,21 +85,21 @@ export class TasksBoardController {
 			this.showCelebration = true;
 			audioSequencer.playSequence(sequence);
 		} else {
-			// Fallback (simple)
+			// גיבוי (פשוט)
 			const boostText = boostService.getRandomBoost(this.currentUser.gender);
 			this.celebrationMessage = boostText;
 			this.showCelebration = true;
-			// audioService.playDing() is handled inside boosts logic usually,
-			// but simplified here for the controller
+			// audioService.playDing() מטופל בדרך כלל בתוך לוגיקת החיזוקים,
+			// אך מופשט כאן עבור ה-Controller
 		}
 	}
 
 	closeCelebration() {
 		this.showCelebration = false;
-		// Optional: stop audio if modal closes?
+		// אופציונלי: עצירת אודיו בסגירת המודאל?
 	}
 
-	// -- Add/Edit Task Flow --
+	// -- תהליך הוספה/עריכה של משימה --
 
 	openAddModal(task: Task | null = null) {
 		this.taskToEdit = task;
@@ -116,7 +116,7 @@ export class TasksBoardController {
 
 		let newTasks;
 		if (this.taskToEdit) {
-			// Edit
+			// עריכה
 			newTasks = this.tasks.map((t) => {
 				if (t.id === this.taskToEdit!.id) {
 					return { ...t, name, imageSrc };
@@ -124,7 +124,7 @@ export class TasksBoardController {
 				return t;
 			});
 		} else {
-			// Add
+			// הוספה
 			const newTask: Task = {
 				id: crypto.randomUUID(),
 				name,

@@ -94,7 +94,7 @@
         
         <div class="custom-image-section">
             <span class="label">{TEXTS.CHOOSE_IMAGE_OPTIONAL}</span>
-            <!-- Clear activity selection if manual upload happens -->
+            <!-- ניקוי בחירת פעילות אם מתבצעת העלאה ידנית -->
             <ImageUploader 
                 imageSrc={imageSrc} 
                 onchange={(id) => { 

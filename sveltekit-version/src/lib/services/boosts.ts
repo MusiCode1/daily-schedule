@@ -20,7 +20,7 @@ export const boostService = {
 			text = 'כל הכבוד!'; // Fallback
 		}
 
-		// Play specific audio
+		// ניגון אודיו ספציפי
 		const audioFile =
 			typeof boost.audioFile === 'object' ? boost.audioFile[gender] : boost.audioFile;
 
