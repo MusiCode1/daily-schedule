@@ -4,6 +4,8 @@
 	import { dbImage } from '$lib/actions/dbImage';
 	import { TEXTS } from '$lib/services/language';
 
+	import favicon from '$lib/assets/logo.svg';
+
 	let { users }: { users: UserProfile[] } = $props();
 
 	function handleLogin(userId: string) {
@@ -12,7 +14,17 @@
 </script>
 
 <div class="user-selector-container">
-	<h1 class="title">{TEXTS.USER_SELECTOR_TITLE}</h1>
+	<header class="app-header">
+		<div class="brand-bubble">
+			<div class="title-stack">
+				<span>סדר יום</span>
+				<span class="highlight">ויזואלי</span>
+			</div>
+			<img src={favicon} alt="צוהר הלב" class="app-logo" />
+		</div>
+	</header>
+	
+	<h2 class="prompt">{TEXTS.USER_SELECTOR_TITLE}</h2>
 	
 	<div class="users-grid">
 		{#each users as user}
@@ -50,10 +62,54 @@
 		margin: 0 auto;
 	}
 
-	.title {
-		font-size: 2.5rem;
-		margin-bottom: 3rem;
-		color: #333;
+	.app-header {
+		margin-bottom: 4rem;
+	}
+
+	.brand-bubble {
+		display: flex;
+		align-items: center;
+		gap: 1.5rem;
+		padding: 1rem 2.5rem 1rem 1.5rem;
+		border-radius: 25px;
+		background: rgba(255, 255, 255, 0.8);
+		backdrop-filter: blur(10px);
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.5);
+	}
+
+	.app-logo {
+		width: 72px;
+		height: 72px;
+		filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+	}
+
+	.title-stack {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		line-height: 1;
+	}
+
+	.title-stack span {
+		font-size: 2rem;
+		font-weight: 800;
+		color: #1e293b;
+		letter-spacing: -0.02em;
+	}
+	
+	.title-stack span.highlight {
+		color: #334155;
+		font-weight: 900;
+		font-size: 2.2rem;
+	}
+
+
+	.prompt {
+		font-size: 2rem;
+		margin-bottom: 2rem;
+		color: #64748b;
+		font-weight: normal;
 	}
 
 	.users-grid {

@@ -4,7 +4,7 @@ import type { Gender } from '$lib/types';
 import { BOOST_WORDS, type BoostWord } from '$lib/data/boosts';
 
 export const TEXTS = {
-	APP_TITLE: 'לוח סדר יום',
+	APP_TITLE: 'סדר יום ויזואלי',
 
 	// הגדרות / בחירת משתמש
 	SETTINGS_TITLE: 'הגדרות מערכת',
@@ -59,10 +59,31 @@ export const LanguageService = {
 	getFeedbackSequence(
 		gender: Gender,
 		taskName: string,
+		userName: string,
 		nextTaskName?: string
 	): { text: string; sequence: Array<{ type: 'file' | 'tts'; content: string }>; praise: string } {
 		const sequence: Array<{ type: 'file' | 'tts'; content: string }> = [];
 		let fullTextParts: string[] = [];
+
+		// --- חלק 0: שם המשתמש ("יונתן!") ---
+		// מיפוי שמות לקבצים
+		const nameMap: Record<string, string> = {
+			תמר: 'names/tamar.mp3',
+			יונתן: 'names/yonatan.mp3',
+			אריאל: 'names/ariel.mp3',
+			אבישי: 'names/avishai.mp3'
+		};
+
+		const nameFile = nameMap[userName];
+
+		if (nameFile) {
+			sequence.push({ type: 'file', content: nameFile });
+		} else {
+			// fallback ל-TTS אם השם לא ברשימה
+			sequence.push({ type: 'tts', content: userName });
+		}
+
+		fullTextParts.push(`${userName}! `);
 
 		// --- חלק 1: "סיימת את [משימה]" ---
 		// "סיימת את..."
