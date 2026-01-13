@@ -11,6 +11,8 @@ export interface CelebrationData {
 	nextTask?: { name: string; image: string | null };
 	praise: string;
 	gender: 'boy' | 'girl';
+	userName: string;
+	userImage: string | null;
 }
 
 export class TasksBoardController {
@@ -89,6 +91,7 @@ export class TasksBoardController {
 			const { sequence, praise } = boostService.getFeedbackSequence(
 				this.currentUser.gender,
 				completedTask.name,
+				this.currentUser.name || '',
 				nextTask?.name
 			);
 
@@ -97,7 +100,9 @@ export class TasksBoardController {
 				completedTask: { name: completedTask.name, image: completedTask.imageSrc },
 				nextTask: nextTask ? { name: nextTask.name, image: nextTask.imageSrc } : undefined,
 				praise,
-				gender: this.currentUser.gender
+				gender: this.currentUser.gender,
+				userName: this.currentUser.name,
+				userImage: this.currentUser.avatar || null
 			};
 
 			this.showCelebration = true;
@@ -112,7 +117,9 @@ export class TasksBoardController {
 			this.celebrationData = {
 				type: 'general',
 				praise: boostText,
-				gender: this.currentUser.gender
+				gender: this.currentUser.gender,
+				userName: this.currentUser.name,
+				userImage: this.currentUser.avatar || null
 			};
 
 			this.showCelebration = true;

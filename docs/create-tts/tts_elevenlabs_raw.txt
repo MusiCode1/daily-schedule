@@ -11,6 +11,7 @@
 [strong israeli accent] [relieved] סִיַּמְתְּ אֶת הַמְּשִׂימָה! [cheering]
 [strong israeli accent] [warm] יוֹפִי!
 [strong israeli accent] [laughing] אֵיזֶה כֵּיף!
+
 [strong israeli accent] [whisper] שירותים
 [strong israeli accent] [cheerful] ארוחת בוקר
 [strong israeli accent] [cheerful] ארוחת צהריים
@@ -31,6 +32,7 @@
 [strong israeli accent] [encouraging] עבודה בקופסאות עבודה
 [strong israeli accent] [cheerful] חצר
 [strong israeli accent] [happy] חוג בעלי חיים
+
 [strong israeli accent] [energetic] שגרת בוקר
 [strong israeli accent] [relaxed] אחרי הצהריים
 [strong israeli accent] [happy] בוקר טוב!

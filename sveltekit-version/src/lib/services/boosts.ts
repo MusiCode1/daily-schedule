@@ -33,7 +33,7 @@ export const boostService = {
 		return text;
 	},
 
-	getFeedbackSequence(gender: Gender, taskName: string, nextTaskName?: string) {
-		return LanguageService.getFeedbackSequence(gender, taskName, nextTaskName);
+	getFeedbackSequence(gender: Gender, taskName: string, userName: string, nextTaskName?: string) {
+		return LanguageService.getFeedbackSequence(gender, taskName, userName, nextTaskName);
 	}
 };
