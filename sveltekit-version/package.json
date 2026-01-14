@@ -15,7 +15,7 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run && npm run test:e2e",
 		"test:e2e": "playwright test",
-		"deploy": "vite build && wrangler pages deploy .svelte-kit/cloudflare --project-name daily-schedule"
+		"deploy": "vite build && wrangler pages deploy"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.4.0",
@@ -28,6 +28,9 @@
 		"@tailwindcss/forms": "^0.5.10",
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.1.17",
+		"@types/gapi": "^0.0.47",
+		"@types/gapi.auth2": "^0.0.61",
+		"@types/gapi.client.drive": "^3.0.15",
 		"@types/node": "^22",
 		"@vitest/browser-playwright": "^4.0.15",
 		"eslint": "^9.39.1",
