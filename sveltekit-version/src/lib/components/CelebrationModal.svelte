@@ -2,6 +2,7 @@
 	import { fade, scale } from 'svelte/transition';
 	import { elasticOut } from 'svelte/easing';
 	import type { CelebrationData } from '$lib/logic/tasksBoard.svelte';
+	import { dbImage } from '$lib/actions/dbImage';
 
 	let {
 		isOpen = false,
@@ -31,7 +32,7 @@
 				<div class="user-header">
 					<h2 class="user-name">{data.userName}!</h2>
 					{#if data.userImage}
-						<img src={data.userImage} alt={data.userName} class="user-avatar" />
+						<img use:dbImage={data.userImage} alt={data.userName} class="user-avatar" />
 					{:else}
 						<div class="user-avatar-placeholder">👤</div>
 					{/if}
@@ -44,7 +45,7 @@
 
 				<div class="task-card main-card">
 					{#if data.completedTask.image}
-						<img src={data.completedTask.image} alt={data.completedTask.name} class="card-image" />
+						<img use:dbImage={data.completedTask.image} alt={data.completedTask.name} class="card-image" />
 					{:else}
 						<div class="no-image-placeholder">✅</div>
 					{/if}
@@ -60,7 +61,7 @@
 						<p class="now-text">עכשיו,</p>
 						<div class="task-card next-card">
 							{#if data.nextTask.image}
-								<img src={data.nextTask.image} alt={data.nextTask.name} class="card-image" />
+								<img use:dbImage={data.nextTask.image} alt={data.nextTask.name} class="card-image" />
 							{/if}
 							<span class="card-title">{data.nextTask.name}</span>
 						</div>

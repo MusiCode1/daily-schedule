@@ -41,4 +41,5 @@ export interface AppState {
 	settings: {
 		lastActiveTime: number;
 	};
+	lastModified: number;
 }

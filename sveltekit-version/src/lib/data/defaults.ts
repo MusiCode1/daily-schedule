@@ -115,5 +115,6 @@ export const INITIAL_STATE: AppState = {
 	currentUserId: null,
 	settings: {
 		lastActiveTime: Date.now()
-	}
+	},
+	lastModified: Date.now()
 };

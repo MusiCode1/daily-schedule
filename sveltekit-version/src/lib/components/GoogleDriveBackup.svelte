@@ -137,6 +137,37 @@
   </div>
 {/if}
 
+{#if backupController.conflictState.isConflict}
+    <!-- svelte-ignore a11y_click_events_have_key_events -->
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div class="modal-overlay" style="z-index: 2100;">
+        <div class="modal-card warning">
+            <h3 style="color: #c2410c;">⚠️ {TEXTS.CONFLICT_TITLE}</h3>
+            <p>{TEXTS.CONFLICT_REMOTE_NEWER}</p>
+            
+            <div class="conflict-comparison">
+                <div class="conflict-option remote">
+                    <strong>{TEXTS.REMOTE_VERSION}</strong>
+                    <span>{backupController.conflictState.remoteTime?.toLocaleString('he-IL')}</span>
+                </div>
+                <div class="conflict-option local">
+                    <strong>{TEXTS.LOCAL_VERSION}</strong>
+                    <span>{backupController.conflictState.localTime?.toLocaleString('he-IL') || 'לא ידוע'}</span>
+                </div>
+            </div>
+
+            <div class="modal-actions" style="justify-content: space-between; margin-top: 1rem;">
+                <button class="btn-conflict-remote" onclick={() => backupController.resolveConflict('remote')}>
+                    {TEXTS.KEEP_REMOTE}
+                </button>
+                 <button class="btn-conflict-local" onclick={() => backupController.resolveConflict('local')}>
+                    {TEXTS.KEEP_LOCAL}
+                </button>
+            </div>
+        </div>
+    </div>
+{/if}
+
 <style>
   .google-drive-card {
       background: white;
@@ -228,4 +259,14 @@
   }
   .backup-item:hover { background: #f1f5f9; border-color: #cbd5e1; }
   .close-btn { margin-top: 1rem; background: none; border: 1px solid #e2e8f0; padding: 0.5rem; border-radius: 8px; cursor: pointer; }
+  
+  .conflict-comparison { display: flex; flex-direction: column; gap: 0.5rem; background: #fff7ed; padding: 1rem; border-radius: 8px; border: 1px solid #fed7aa; }
+  .conflict-option { display: flex; justify-content: space-between; font-size: 0.9rem; }
+  .conflict-option strong { color: #555; }
+  
+  .btn-conflict-remote { background: #ea580c; color: white; border: none; padding: 0.75rem 1rem; border-radius: 8px; font-weight: bold; cursor: pointer; }
+  .btn-conflict-remote:hover { background: #c2410c; }
+  
+  .btn-conflict-local { background: white; border: 1px solid #d1d5db; color: #4b5563; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; }
+  .btn-conflict-local:hover { background: #f3f4f6; }
 </style>

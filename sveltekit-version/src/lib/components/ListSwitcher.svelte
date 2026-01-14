@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { dbImage } from '$lib/actions/dbImage';
   
   let { 
     activeListId = $bindable("morning_routine"), 
@@ -28,7 +29,7 @@
         aria-label="Switch to {list.name}"
       >
         <div class="image-container">
-          <img src={list.logo} alt={list.name} />
+          <img use:dbImage={list.logo} alt={list.name} />
         </div>
         <span class="list-name">{list.name}</span>
       </button>

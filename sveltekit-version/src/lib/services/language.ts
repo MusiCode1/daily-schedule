@@ -69,6 +69,14 @@ export const TEXTS = {
 	CONNECTED_AS: 'מחובר כ:',
 	RESTORE_CONFIRM:
 		'האם אתה בטוח? פעולה זו תמחק את המידע הנוכחי במכשיר זה ותחליף אותו במידע מהגיבוי.',
+	// קונפליקט וסנכרון
+	CONFLICT_TITLE: 'זוהה גיבוי חדש יותר',
+	CONFLICT_REMOTE_NEWER:
+		'נראה שהשתמשת באפליקציה במכשיר אחר. הגיבוי בענן עדכני יותר מהמידע במכשיר הזה.',
+	REMOTE_VERSION: 'גיבוי בענן (מומלץ)',
+	LOCAL_VERSION: 'מידע מקומי (דריסת הענן)',
+	KEEP_REMOTE: 'עדכן מהענן',
+	KEEP_LOCAL: 'השאר מקומי',
 	CLIENT_ID_LABEL: 'מזהה לקוח (Client ID) - מתקדם',
 	CLIENT_ID_PLACEHOLDER: 'הזן Client ID מותאם אישית (אופציונלי)'
 };

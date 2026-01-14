@@ -2,6 +2,7 @@
   import { flip } from 'svelte/animate';
   import { fade } from 'svelte/transition';
   import TaskRow from '$lib/components/TaskRow.svelte';
+  import { dbImage } from '$lib/actions/dbImage';
   import AddModal from '$lib/components/AddModal.svelte';
   import CelebrationModal from '$lib/components/CelebrationModal.svelte';
   import ListSwitcher from '$lib/components/ListSwitcher.svelte';
@@ -59,7 +60,7 @@
        <button class="avatar-circle" onclick={() => session.logout()} aria-label="החלף משתמש">
           {#if session.currentUser.avatar}
             <img 
-              src={session.currentUser.avatar} 
+              use:dbImage={session.currentUser.avatar} 
               alt={session.currentUser.name} 
               onerror={(e) => (e.currentTarget as HTMLImageElement).style.display = 'none'} 
             />

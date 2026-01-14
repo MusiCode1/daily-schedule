@@ -25,13 +25,28 @@ export class BackupController {
 	// אך כדי לעשות זאת אוטומטית, נצטרך להתממשק למקום שבו שומרים.
 	// כרגע נספק פונקציה `notifyChange()` שנקרא לה מ-persistence.ts
 
+	// Conflict State
+	conflictState: {
+		isConflict: boolean;
+		remoteTime: Date | null;
+		localTime: Date | null;
+		remoteFileId: string | null;
+	} = $state({
+		isConflict: false,
+		remoteTime: null,
+		localTime: null,
+		remoteFileId: null
+	});
+
 	constructor() {
 		// האזנה לשינויים בסטטוס של השירות
 		googleDriveService.subscribe((status) => {
 			if (status === 'authenticated') {
 				this.isConnected = true;
 				this.loadUserInfo();
-				this.checkLastBackup();
+				this.checkLastBackup().then(() => {
+					this.checkForRemoteUpdates();
+				});
 			} else if (status === 'unauthenticated' || status === 'error') {
 				this.isConnected = false;
 				this.userInfo = null;
@@ -41,6 +56,8 @@ export class BackupController {
 		// טעינת הגדרות מקומיות (למשל Client ID מותאם)
 		this.loadLocalSettings();
 	}
+
+	// ... (loadLocalSettings, saveLocalSettings, initialize, signIn, signOut, loadUserInfo stay same)
 
 	private loadLocalSettings() {
 		if (typeof localStorage !== 'undefined') {
@@ -93,8 +110,84 @@ export class BackupController {
 		}
 	}
 
+	async checkForRemoteUpdates() {
+		try {
+			const files = await googleDriveService.listBackups();
+			if (files.length === 0) return; // אין גיבוי, הכל טוב
+
+			const latestBackup = files[0];
+			if (!latestBackup.modifiedTime) return;
+			const remoteTime = new Date(latestBackup.modifiedTime);
+
+			// קריאת מצב מקומי
+			const rawState = localStorage.getItem('daily-schedule-data');
+			let localTime = new Date(0); // ברירת מחדל: ישן מאוד
+
+			if (rawState) {
+				try {
+					const state = JSON.parse(rawState);
+					if (state.lastModified) {
+						localTime = new Date(state.lastModified);
+					} else {
+						// אם אין חותמת זמן, ננסה להעריך או שנניח שזה קונפליקט אם יש גיבוי
+						// אבל כדי לא להציק למשתמשים קיימים שרק עדכנו, נניח שהמקומי הוא העדכני?
+						// לא, עדיף להציע שחזור אם הגיבוי קיים.
+						// נשתמש בזמן הגיבוי האחרון הידוע של המכשיר הזה?
+						// אם lastBackupTime קיים, זה הזמן שידוע לנו.
+						// אם localTime יהיה 0, הגיבוי ינצח.
+					}
+				} catch (e) {
+					console.error('Failed to parse local state for comparison', e);
+				}
+			} else {
+				// אין מצב מקומי (התקנה חדשה) - שחזור אוטומטי
+				console.log('No local state found, auto-restoring from backup...');
+				await this.restoreFromFile(latestBackup.id);
+				return;
+			}
+
+			// בדיקת קונפליקט: אם הגיבוי בענן חדש יותר מהמקומי (בהפרש סביר של 5 שניות)
+			if (remoteTime.getTime() > localTime.getTime() + 5000) {
+				console.log('Remote is newer', { remoteTime, localTime });
+
+				this.conflictState = {
+					isConflict: true,
+					remoteTime,
+					localTime,
+					remoteFileId: latestBackup.id
+				};
+			}
+		} catch (e) {
+			console.error('Failed to check for remote updates', e);
+		}
+	}
+
+	async resolveConflict(choice: 'local' | 'remote') {
+		if (choice === 'remote' && this.conflictState.remoteFileId) {
+			await this.restoreFromFile(this.conflictState.remoteFileId);
+		} else {
+			// בחירה במקומי: פשוט מנקים את הקונפליקט, והגיבוי הבא ידרוס את הענן (כי יהיה חדש יותר)
+			// או שאנחנו יוזמים גיבוי מיד?
+			// כדאי ליזום גיבוי כדי לעדכן את הענן בגרסה "המנצחת"
+			await this.performBackup(false);
+		}
+
+		this.conflictState = {
+			isConflict: false,
+			remoteTime: null,
+			localTime: null,
+			remoteFileId: null
+		};
+	}
+
 	async performBackup(isAuto = false) {
 		if (!this.isConnected) return;
+
+		// מניעת גיבוי אם יש קונפליקט פתוח (לא רוצים לדרוס את הענן בטעות לפני שהמשתמש החליט)
+		if (this.conflictState.isConflict) {
+			console.log('Skipping backup due to unresolved conflict');
+			return;
+		}
 
 		this.status = 'backing_up';
 		this.errorMessage = '';

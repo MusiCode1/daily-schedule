@@ -125,12 +125,15 @@ export const migrationService = {
 		if (legacyLists) {
 			try {
 				const lists = JSON.parse(legacyLists);
-				const newState: AppState = { ...INITIAL_STATE, version: 5 }; // Using hardcoded 5 or import CURRENT_VERSION? Let's assume 5 is current.
+				const newState: AppState = { ...INITIAL_STATE, version: 5, lastModified: Date.now() };
 
 				// המרת רשימות ישנות לפורמט החדש עבור משתמש u1 (ברירת מחדל)
 				const newLists: List[] = lists.map((l: any) => ({
 					id: l.id,
 					name: l.name,
+					settings: {
+						lastActiveTime: Date.now()
+					},
 					tasks: (l.items || []).map((item: any) => {
 						const activity = ACTIVITIES.find((a) => a.id === item.activityId);
 						return {
