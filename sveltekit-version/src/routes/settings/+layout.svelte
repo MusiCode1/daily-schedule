@@ -4,6 +4,8 @@
   import { TEXTS } from '$lib/services/language';
   import { fade } from 'svelte/transition';
 
+  let { children } = $props();
+
   const TABS = [
     { id: 'users', label: TEXTS.USERS_TAB, icon: '👥', path: '/settings/users' },
     { id: 'lists', label: TEXTS.LISTS_TAB, icon: '📋', path: '/settings/lists' },
@@ -40,7 +42,7 @@
   <main class="content-area">
       {#key $page.url.pathname}
         <div in:fade={{ duration: 200 }}>
-            <slot />
+            {@render children()}
         </div>
       {/key}
   </main>
