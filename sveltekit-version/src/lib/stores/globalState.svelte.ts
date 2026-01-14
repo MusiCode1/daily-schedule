@@ -22,6 +22,10 @@ class GlobalState {
 
 	save() {
 		persistence.save(this.state);
+		// טריגר לגיבוי אוטומטי (דינמי כדי למנוע מעגליות אם קיימת, אם כי כאן זה לא אמור להפריע)
+		import('../logic/backupController.svelte').then(({ backupController }) => {
+			backupController.notifyDataChanged();
+		});
 	}
 }
 

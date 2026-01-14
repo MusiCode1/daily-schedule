@@ -189,13 +189,7 @@
 		max-width: 200px; /* Limit card width */
 	}
 
-	.main-card {
-		/* transform: rotate(-2deg); Removed for clean look */
-	}
-	
-	.next-card {
-		/* transform: rotate(1deg); Removed for clean look */
-	}
+	/* Removed empty .main-card and .next-card rules */
 
 	.card-image {
 		width: 100%;

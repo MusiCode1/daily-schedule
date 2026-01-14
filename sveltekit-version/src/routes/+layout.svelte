@@ -2,7 +2,15 @@
 	import './layout.css';
 	import favicon from '$lib/assets/logo.svg';
 
+	import { onMount } from 'svelte';
+	import { backupController } from '$lib/logic/backupController.svelte';
+
 	let { children } = $props();
+
+	onMount(() => {
+		// אתחול שירות הגיבוי (בדיקת חיבור קיים)
+		backupController.initialize();
+	});
 </script>
 
 <svelte:head>

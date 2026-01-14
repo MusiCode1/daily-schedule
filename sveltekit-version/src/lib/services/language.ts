@@ -52,7 +52,25 @@ export const TEXTS = {
 	FINISHED_PREFIX: (gender: Gender) => (gender === 'boy' ? 'סיימת את' : 'סיימת את'),
 	NOW_PREFIX: 'עכשיו,',
 	FINISHED_TASK: (gender: Gender, taskName: string) => `סיימת את ${taskName}`,
-	NOW_NEXT: (nextTaskName: string) => `. עכשיו, ${nextTaskName}`
+	NOW_NEXT: (nextTaskName: string) => `. עכשיו, ${nextTaskName}`,
+
+	// גוגל דרייב / גיבוי
+	GOOGLE_DRIVE_TITLE: 'גיבוי וסנכרון (Google Drive)',
+	CONNECT_DRIVE: 'התחבר לגוגל דרייב',
+	DISCONNECT_DRIVE: 'התנתק',
+	BACKUP_NOW: 'בצע גיבוי עכשיו',
+	RESTORE_FROM_BACKUP: 'שחזר מגיבוי קיים',
+	AUTO_BACKUP: 'גיבוי אוטומטי',
+	LAST_BACKUP: 'גיבוי אחרון:',
+	NO_BACKUPS_FOUND: 'לא נמצאו קבצי גיבוי',
+	BACKUP_SUCCESS: 'הגיבוי בוצע בהצלחה!',
+	RESTORE_SUCCESS: 'הנתונים שוחזרו בהצלחה! (נא לרענן)',
+	ERROR_GENERIC: 'אירעה שגיאה בחיבור או בפעולה',
+	CONNECTED_AS: 'מחובר כ:',
+	RESTORE_CONFIRM:
+		'האם אתה בטוח? פעולה זו תמחק את המידע הנוכחי במכשיר זה ותחליף אותו במידע מהגיבוי.',
+	CLIENT_ID_LABEL: 'מזהה לקוח (Client ID) - מתקדם',
+	CLIENT_ID_PLACEHOLDER: 'הזן Client ID מותאם אישית (אופציונלי)'
 };
 
 export const LanguageService = {

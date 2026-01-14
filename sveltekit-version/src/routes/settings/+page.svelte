@@ -14,6 +14,7 @@
 
   import type { UserProfile, List } from '$lib/types'; // added List
   import ImageUploader from '$lib/components/ImageUploader.svelte';
+  import GoogleDriveBackup from '$lib/components/GoogleDriveBackup.svelte';
   import { dbImage } from '$lib/actions/dbImage';
   import { TEXTS } from '$lib/services/language';
 
@@ -220,7 +221,11 @@
     {:else if activeTab === 'general'}
       <div in:fade class="tab-content">
         <h2>{TEXTS.GENERAL_SETTINGS}</h2>
-        <p>בקרוב יתווספו כאן הגדרות נוספות למערכת (כגון שליטה על סאונד, גיבוי נתונים, ועוד).</p>
+        <!--p>בקרוב יתווספו כאן הגדרות נוספות למערכת (כגון שליטה על סאונד, גיבוי נתונים, ועוד).</p-->
+        
+        <div class="settings-group">
+            <GoogleDriveBackup />
+        </div>
       </div>
     {/if}
 
