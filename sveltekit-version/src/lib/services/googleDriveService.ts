@@ -1,18 +1,18 @@
-import { GOOGLE_CLIENT_ID, GOOGLE_SCOPES, BACKUP_FILE_NAME } from '../config';
+/// <reference types="gapi" />
+/// <reference types="gapi.client.drive" />
+/// <reference types="gapi.auth2" />
 
-// הגדרת טיפוסים לממשק של גוגל
+import { GOOGLE_CLIENT_ID, GOOGLE_SCOPES, BACKUP_FILE_NAME, BACKUP_FOLDER_NAME } from '../config';
+
+// שימוש בטיפוסים הרשמיים
+type GFile = gapi.client.drive.File;
+
 declare global {
 	interface Window {
+		// gapi & google are added by the scripts
+		gapi: typeof gapi;
 		google: any;
-		gapi: any;
 	}
-}
-
-export interface DriveFile {
-	id: string;
-	name: string;
-	createdTime?: string;
-	modifiedTime?: string;
 }
 
 export type DriveStatus =
@@ -99,11 +99,14 @@ class GoogleDriveService {
 		const expiresIn = tokenResponse.expires_in || 3599;
 		const expiryTime = Date.now() + expiresIn * 1000;
 
-		localStorage.setItem('gdrive_token', this.accessToken!);
-		localStorage.setItem('gdrive_expiry', expiryTime.toString());
+		if (this.accessToken) {
+			localStorage.setItem('gdrive_token', this.accessToken);
+			localStorage.setItem('gdrive_expiry', expiryTime.toString());
+		}
 
 		// חשוב: הגדרת הטוקן עבור gapi.client כדי שקריאות ל-API יכללו את ההרשאה
-		if (window.gapi && window.gapi.client) {
+		// חשוב: הגדרת הטוקן עבור gapi.client כדי שקריאות ל-API יכללו את ההרשאה
+		if (window.gapi && window.gapi.client && this.accessToken) {
 			window.gapi.client.setToken({ access_token: this.accessToken });
 		}
 
@@ -217,7 +220,7 @@ class GoogleDriveService {
 			spaces: 'drive'
 		});
 
-		if (response.result.files && response.result.files.length > 0) {
+		if (response.result.files && response.result.files.length > 0 && response.result.files[0].id) {
 			return response.result.files[0].id;
 		}
 
@@ -232,11 +235,12 @@ class GoogleDriveService {
 			fields: 'id'
 		});
 
+		if (!createRes.result.id) throw new Error('Failed to create folder');
 		return createRes.result.id;
 	}
 
 	// בדיקה אם קיים קובץ גיבוי בתיקייה הייעודית
-	async listBackups(folderId?: string): Promise<DriveFile[]> {
+	async listBackups(folderId?: string): Promise<gapi.client.drive.File[]> {
 		if (!this.accessToken) throw new Error('Not authenticated');
 
 		let q = `name = '${BACKUP_FILE_NAME}' and trashed = false`;
@@ -265,7 +269,8 @@ class GoogleDriveService {
 		const folderId = await this.findOrCreateFolder(folderName);
 
 		const files = await this.listBackups(folderId);
-		const fileContent = new Blob([data], { type: 'application/json' });
+		// אנו מעבירים את המחרוזת ישירות, אין צורך ב-Blob בפונקציות החדשות
+
 		const metadata: any = {
 			name: BACKUP_FILE_NAME,
 			mimeType: 'application/json'
@@ -274,50 +279,48 @@ class GoogleDriveService {
 		if (files.length > 0) {
 			// עדכון קובץ קיים (לוקחים את הראשון)
 			const fileId = files[0].id;
-			await this.updateFile(fileId, fileContent);
+			if (fileId) {
+				await this.updateFile(fileId, data);
+			}
 		} else {
 			// יצירת קובץ חדש בתיקייה
 			metadata.parents = [folderId];
-			await this.createFile(metadata, fileContent);
+			await this.createFile(metadata, data);
 		}
 	}
 
-	private async createFile(metadata: any, content: Blob) {
-		const accessToken = this.accessToken;
-		const form = new FormData();
-		form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-		form.append('file', content);
+	// פעולה 1: יצירת הקובץ (Metadata בלבד) ע"י שימוש ב-SDK הרשמי
+	private async createFile(metadata: any, data: string): Promise<void> {
+		// שלב 1: יצירת הקובץ עם המידע המתאר (Metadata)
+		const createRes = await window.gapi.client.drive.files.create({
+			resource: metadata,
+			fields: 'id'
+		});
 
-		const response = await fetch(
-			'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
-			{
-				method: 'POST',
-				headers: new Headers({ Authorization: 'Bearer ' + accessToken }),
-				body: form
-			}
-		);
+		const fileId = createRes.result.id;
+		if (!fileId) throw new Error('Failed to create file ID');
 
-		if (!response.ok) throw new Error('Backup failed');
+		// שלב 2: העלאת התוכן
+		await this.updateFile(fileId, data);
 	}
 
-	private async updateFile(fileId: string, content: Blob) {
-		const accessToken = this.accessToken;
+	// פעולה 2: עדכון תוכן הקובץ
+	private async updateFile(fileId: string, data: string): Promise<void> {
+		// שימוש ב-gapi.client.request כדי לבצע uploadType=media (שהוא הדרך היעילה להעלאת תוכן)
+		// הספרייה הרשמית gapi.client.drive.files.update מתמקדת לרוב ב-Metadata,
+		// ולכן שימוש ב-request הישיר הוא הדרך ה"רשמית" להעלאת מדיה בדפדפן.
 
-		// שיטה פשוטה לעדכון תוכן (uploadType=media ב-PUT או PATCH)
-		// ה-API של גוגל לעדכון דורש Endpoint שונה עבור upload
-		const response = await fetch(
-			`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,
-			{
-				method: 'PATCH',
-				headers: new Headers({
-					Authorization: 'Bearer ' + accessToken,
-					'Content-Type': 'application/json'
-				}),
-				body: content
-			}
-		);
-
-		if (!response.ok) throw new Error('Update failed');
+		await window.gapi.client.request({
+			path: `/upload/drive/v3/files/${fileId}`,
+			method: 'PATCH',
+			params: {
+				uploadType: 'media'
+			},
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: data
+		});
 	}
 
 	// שחזור (הורדת תוכן)

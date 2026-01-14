@@ -96,7 +96,8 @@ export class BackupController {
 	}
 
 	async loadUserInfo() {
-		this.userInfo = await googleDriveService.getUserInfo();
+		const info = await googleDriveService.getUserInfo();
+		this.userInfo = info || null;
 	}
 
 	async checkLastBackup() {
@@ -142,7 +143,9 @@ export class BackupController {
 			} else {
 				// אין מצב מקומי (התקנה חדשה) - שחזור אוטומטי
 				console.log('No local state found, auto-restoring from backup...');
-				await this.restoreFromFile(latestBackup.id);
+				if (latestBackup.id) {
+					await this.restoreFromFile(latestBackup.id);
+				}
 				return;
 			}
 
@@ -154,7 +157,7 @@ export class BackupController {
 					isConflict: true,
 					remoteTime,
 					localTime,
-					remoteFileId: latestBackup.id
+					remoteFileId: latestBackup.id || null
 				};
 			}
 		} catch (e) {
