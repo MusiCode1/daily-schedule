@@ -1,6 +1,7 @@
 import { persistence, CURRENT_VERSION } from './persistence';
 import { INITIAL_STATE } from '../data/defaults';
 import type { AppState } from '../types';
+import { migrationService } from '$lib/services/migration';
 
 class GlobalState {
 	state = $state<AppState>({ ...INITIAL_STATE, version: CURRENT_VERSION });
@@ -11,11 +12,9 @@ class GlobalState {
 			this.state = loaded;
 
 			// אתחול מיגרציה אסינכרונית לתמונות
-			import('$lib/services/migration').then(({ migrationService }) => {
-				migrationService.migrateImagesToDB(this.state).then((migratedState) => {
-					this.state = migratedState;
-					this.save();
-				});
+			migrationService.migrateImagesToDB(this.state).then((migratedState) => {
+				this.state = migratedState;
+				this.save();
 			});
 		}
 	}
