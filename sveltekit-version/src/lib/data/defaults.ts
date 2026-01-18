@@ -30,7 +30,7 @@ export const DEFAULT_LIST_DEFINITIONS = [
 		name: 'שגרת בוקר',
 		logo: '/images/times/list_morning_sun.png',
 		items: [
-			{ activityId: 'toilet', order: 1 },
+			{ activityId: 'toilet', order: 1, communicationBoardUrl: 'https://app.cboard.io/board/6954fe8429a4a1001dc7c33a' },
 			{ activityId: 'brushing_teeth', order: 2 },
 			{ activityId: 'getting_dressed', order: 3 },
 			{ activityId: 'breakfast', order: 4 },

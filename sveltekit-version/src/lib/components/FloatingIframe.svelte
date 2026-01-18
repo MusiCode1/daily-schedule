@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { floatingBoardState } from '$lib/services/floatingBoardState';
+
 	// Props
 	let {
 		isVisible = $bindable(false),
@@ -12,6 +14,8 @@
 	let iframe = $state<HTMLIFrameElement | null>(null);
 	let overlay = $state<HTMLDivElement | null>(null);
 
+	// טעינת המצב השמור או ברירת מחדל
+	let position = $state({ top: 100, left: 100 });
 	let windowSize = $state({ width: 800, height: 600 });
 
 	let isDragging = $state(false);
@@ -22,6 +26,15 @@
 	let startY = 0;
 	let startWidth = 0;
 	let startHeight = 0;
+
+	// טעינת המצב מ-localStorage בכל פעם שהחלון נפתח
+	$effect(() => {
+		if (isVisible) {
+			const savedState = floatingBoardState.load();
+			position = { top: savedState.top, left: savedState.left };
+			windowSize = { width: savedState.width, height: savedState.height };
+		}
+	});
 
 	// סגירת החלון
 	function close() {
@@ -100,6 +113,18 @@
 
 	function stopDrag() {
 		isDragging = false;
+
+		// שמירת המיקום החדש
+		if (floatingWindow) {
+			const rect = floatingWindow.getBoundingClientRect();
+			position = { top: rect.top, left: rect.left };
+			floatingBoardState.save({
+				top: rect.top,
+				left: rect.left,
+				width: rect.width,
+				height: rect.height
+			});
+		}
 	}
 
 	// שינוי גודל - עכבר
@@ -162,6 +187,19 @@
 
 	function stopResize() {
 		isResizing = false;
+
+		// שמירת הגודל והמיקום החדשים
+		if (floatingWindow) {
+			const rect = floatingWindow.getBoundingClientRect();
+			position = { top: rect.top, left: rect.left };
+			windowSize = { width: rect.width, height: rect.height };
+			floatingBoardState.save({
+				top: rect.top,
+				left: rect.left,
+				width: rect.width,
+				height: rect.height
+			});
+		}
 	}
 
 	// מניעת גרירה מכפתור סגירה
@@ -183,7 +221,7 @@
 	<div
 		class="floating-window"
 		bind:this={floatingWindow}
-		style="top: 100px; left: 100px; width: 800px; height: 600px;"
+		style="top: {position.top}px; left: {position.left}px; width: {windowSize.width}px; height: {windowSize.height}px;"
 	>
 		<div
 			class="window-header"
@@ -205,7 +243,6 @@
 			<div class="window-title">{title}</div>
 			<div class="drag-handle">
 				<span class="drag-icon">⋮⋮</span>
-				<div class="size-info">{windowSize.width} × {windowSize.height}</div>
 			</div>
 		</div>
 		<div class="window-content">
@@ -283,14 +320,6 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		pointer-events: none;
-	}
-
-	.size-info {
-		background: rgba(255, 255, 255, 0.2);
-		padding: 3px 6px;
-		border-radius: 3px;
-		font-size: 11px;
 		pointer-events: none;
 	}
 
