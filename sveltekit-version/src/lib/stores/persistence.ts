@@ -3,7 +3,7 @@ import type { AppState } from '../types';
 import { migrationService } from '../services/migration';
 
 export const STORAGE_KEY = 'daily-schedule-data';
-export const CURRENT_VERSION = 5;
+export const CURRENT_VERSION = 6;
 
 export const persistence = {
 	load(): AppState | null {

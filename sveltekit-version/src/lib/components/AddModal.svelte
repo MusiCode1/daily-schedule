@@ -27,8 +27,6 @@
       if (found) selectedActivityId = found.id;
     } else if (isOpen && !taskToEdit) {
       // ניקוי רק אם נפתח במצב חדש
-      // לא מאפסים כאן, האיפוס קורה ב-resetForm או ב-close?
-      // עדיף לאפס הכל כשנפתח
     }
   });
   let selectedActivityId: string | null = $state(null);
@@ -97,9 +95,9 @@
             <!-- ניקוי בחירת פעילות אם מתבצעת העלאה ידנית -->
             <ImageUploader 
                 imageSrc={imageSrc} 
-                onchange={(id) => { 
-                    imageSrc = id; 
-                    if (id) selectedActivityId = null; 
+                onchange={(src) => { 
+                    imageSrc = src; 
+                    if (src) selectedActivityId = null; 
                 }} 
             />
         </div>

@@ -2,7 +2,7 @@
   import { flip } from 'svelte/animate';
   import { fade } from 'svelte/transition';
   import TaskRow from '$lib/components/TaskRow.svelte';
-  import { dbImage } from '$lib/actions/dbImage';
+  import ImageDisplay from '$lib/components/ImageDisplay.svelte';
   import AddModal from '$lib/components/AddModal.svelte';
   import CelebrationModal from '$lib/components/CelebrationModal.svelte';
   import ListSwitcher from '$lib/components/ListSwitcher.svelte';
@@ -12,6 +12,7 @@
   import { SessionController } from '$lib/logic/session.svelte';
   import { onMount } from 'svelte';
   import SplashScreen from '$lib/components/SplashScreen.svelte';
+  import { TEXTS } from '$lib/services/language';
 
   // -- אתחול Controllers --
   const session = new SessionController();
@@ -59,14 +60,13 @@
     <div class="user-profile">
        <button class="avatar-circle" onclick={() => session.logout()} aria-label="החלף משתמש">
           {#if session.currentUser.avatar}
-            <img 
-              use:dbImage={session.currentUser.avatar} 
-              alt={session.currentUser.name} 
-              onerror={(e) => (e.currentTarget as HTMLImageElement).style.display = 'none'} 
-            />
-          {/if}
-          <!-- גיבוי לראשי תיבות או אייקון במידת הצורך -->
-          {#if !session.currentUser.avatar}
+            <div class="avatar-image">
+              <ImageDisplay 
+                imageSrc={session.currentUser.avatar}
+                alt={session.currentUser.name}
+              />
+            </div>
+          {:else}
              <span>{session.currentUser.name[0]}</span>
           {/if}
        </button>
@@ -98,6 +98,11 @@
         <div class="edit-toolbar" transition:fade>
           <button onclick={() => nav.createNewList()}>➕ רשימה חדשה</button>
           <button onclick={() => nav.deleteCurrentList()} class="danger">🗑️ מחק רשימה</button>
+          <button onclick={() => {
+            if (confirm('האם אתה בטוח שברצונך לאפס את כל המשימות?')) {
+              board.resetAllTasks();
+            }
+          }} class="warning">🔄 {TEXTS.RESET_ALL_TASKS}</button>
         </div>
       {/if}
 
@@ -114,6 +119,7 @@
         >
           <TaskRow
             {task}
+            taskNumber={index + 1}
             isActive={index === activeIndex}
             isEditMode={board.isEditMode}
             ontoggle={() => board.toggleTask(task.id)}
@@ -301,6 +307,16 @@
       background: #fee2e2;
     }
 
+    .edit-toolbar button.warning {
+      color: #856404;
+      background: #fff3cd;
+      border-color: #ffc107;
+    }
+    .edit-toolbar button.warning:hover {
+      background: #ffc107;
+      color: white;
+    }
+
     .user-profile {
       position: absolute;
       top: 0.8rem;
@@ -336,10 +352,17 @@
         z-index: 30;
     }
     
-    .avatar-circle img {
+    .avatar-circle .avatar-image {
+        position: absolute;
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        inset: 0;
+    }
+
+    .avatar-circle :global(.image-display) {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
     }
     
     .empty-state {

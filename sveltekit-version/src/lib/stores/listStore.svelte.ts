@@ -4,11 +4,19 @@ import { createDefaultLists } from '../data/defaults';
 import { TEXTS } from '../services/language';
 
 export class ListStore {
-	getUserLists(userId: string): List[] {
+	getUserLists(userId: string, includeHidden: boolean = false): List[] {
 		if (!globalState.state.lists[userId]) {
 			globalState.state.lists[userId] = [];
 		}
-		return globalState.state.lists[userId];
+		const lists = globalState.state.lists[userId];
+		if (includeHidden) {
+			return lists;
+		}
+		return lists.filter((l) => !l.isHidden);
+	}
+
+	getAllLists(userId: string): List[] {
+		return this.getUserLists(userId, true);
 	}
 
 	getActiveList(userId: string): List | undefined {
@@ -84,6 +92,59 @@ export class ListStore {
 		globalState.state.lists[userId] = createDefaultLists();
 		this.setActiveList(userId, globalState.state.lists[userId][0].id);
 		globalState.save();
+	}
+
+	// שכפול רשימה
+	duplicateList(userId: string, listId: string): string | null {
+		const originalList = globalState.state.lists[userId]?.find((l) => l.id === listId);
+		if (!originalList) return null;
+
+		const newId = crypto.randomUUID();
+		
+		// העתקה עמוקה של המשימות עם IDs חדשים
+		const duplicatedTasks: Task[] = originalList.tasks.map((task) => ({
+			...task,
+			id: crypto.randomUUID(),
+			isDone: false // אפס את הסטטוס של המשימות בעותק
+		}));
+
+		const duplicatedList: List = {
+			id: newId,
+			name: `${originalList.name} (עותק)`,
+			tasks: duplicatedTasks,
+			greeting: originalList.greeting,
+			logo: originalList.logo,
+			isDefault: false
+		};
+
+		if (!globalState.state.lists[userId]) {
+			globalState.state.lists[userId] = [];
+		}
+
+		globalState.state.lists[userId].push(duplicatedList);
+		globalState.save();
+		
+		return newId;
+	}
+
+	// איפוס כל המשימות ברשימה
+	resetAllTasks(userId: string, listId: string) {
+		const list = globalState.state.lists[userId]?.find((l) => l.id === listId);
+		if (list) {
+			list.tasks.forEach((task) => {
+				task.isDone = false;
+			});
+			globalState.save();
+		}
+	}
+
+	// החלפת מצב הצגה/הסתרה של רשימה
+	toggleListVisibility(userId: string, listId: string) {
+		const list = globalState.state.lists[userId]?.find((l) => l.id === listId);
+		if (list) {
+			list.isHidden = !list.isHidden;
+			globalState.save();
+		}
 	}
 }
 

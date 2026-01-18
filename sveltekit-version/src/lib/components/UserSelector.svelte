@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { userStore } from '../stores/userStore.svelte';
 	import type { UserProfile } from '../types';
-	import { dbImage } from '$lib/actions/dbImage';
+	import ImageDisplay from './ImageDisplay.svelte';
 	import { TEXTS } from '$lib/services/language';
 
 	import favicon from '$lib/assets/logo.svg';
@@ -35,12 +35,15 @@
 				aria-label={TEXTS.LOGIN_AS(user.name)}
 			>
 				<div class="avatar-wrapper">
-						<img 
-							use:dbImage={user.avatar} 
-							alt={user.name} 
-							onerror={(e) => (e.currentTarget as HTMLImageElement).style.display = 'none'} 
-						/>
 					<div class="initials" aria-hidden="true">{user.name[0]}</div>
+					{#if user.avatar}
+						<div class="avatar-image">
+							<ImageDisplay 
+								imageSrc={user.avatar}
+								alt={user.name}
+							/>
+						</div>
+					{/if}
 				</div>
 				<span class="user-name">{user.name}</span>
 			</button>
@@ -158,11 +161,17 @@
 		position: relative;
 	}
 
-	.avatar-wrapper img {
+	.avatar-image {
+		position: absolute;
 		width: 100%;
 		height: 100%;
-		object-fit: cover;
 		z-index: 2;
+	}
+
+	.avatar-image :global(.image-display) {
+		width: 100%;
+		height: 100%;
+		border-radius: 0; /* הסרת border-radius מהתמונה עצמה */
 	}
 
 	.initials {

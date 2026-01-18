@@ -1,5 +1,384 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-01-18 21:00
+
+### מערכת חיתוך תמונות מלאה (Image Crop System)
+
+יישום מערכת מקיפה לחיתוך, זום והזזת תמונות בכל הפרויקט. המערכת עברה מספר שלבים של פיתוח ותיקון עד להשגת עקביות מלאה.
+
+---
+
+#### שלב 1: יצירת תשתית החיתוך
+
+**קומפוננטות חדשות שנוצרו:**
+
+1. **`ImageCropEditor.svelte`** - עורך חיתוך אינטראקטיבי
+   - גרירה (Drag) - הזזת מיקום התמונה עם עכבר או מגע
+   - זום (Zoom) - הגדלה/הקטנה באמצעות גלגלת עכבר או כפתורים (+/-)
+   - איפוס - חזרה למצב ברירת מחדל (מרכז, זום 100%)
+   - אישור/ביטול - שמירה או ביטול השינויים
+   - תמיכה מלאה ב-Touch Events למכשירים ניידים
+
+2. **`ImageDisplay.svelte`** - קומפוננטה אחידה להצגת תמונות
+   - תמיכה בתמונות עם ובלי נתוני חיתוך
+   - טעינה מ-IndexedDB או מ-static files
+   - מצב טעינה אוטומטי עם אינדיקטור
+   - תמיכה לאחור (Backward compatibility) - מקבל `string` או `ImageData`
+
+3. **`imageStore.svelte.ts`** - Store מרכזי לניהול מטאדאטה של תמונות
+   - אחסון נתוני חיתוך בנפרד מהתמונות עצמן
+   - מבנה: `{ [imageId: string]: ImageMetadata }`
+   - שיטות: `getImageMetadata`, `setImageMetadata`, `updateImageMetadata`, `deleteImageMetadata`
+
+**שדרוג קומפוננטות קיימות:**
+
+- **`ImageUploader.svelte`** - שודרג לתמוך בעריכת חיתוך:
+  - פתיחת עורך חיתוך אוטומטית אחרי בחירת תמונה
+  - כפתור "✂️ ערוך חיתוך" לתמונות קיימות
+  - שמירת נתוני crop ב-`imageStore`
+
+**מבני נתונים חדשים:**
+
+```typescript
+// src/lib/types.ts
+interface ImageCropData {
+  x: number;      // מיקום X באחוזים (0-100)
+  y: number;      // מיקום Y באחוזים (0-100)
+  scale: number;  // זום יחסי (1.0 = minScale, 2.0 = פי 2)
+}
+
+interface ImageMetadata {
+  crop?: ImageCropData;
+}
+
+interface ImageData {
+  src: string;
+}
+
+// הוספה ל-AppState
+interface AppState {
+  // ... שאר השדות
+  images: { [id: string]: ImageMetadata };
+}
+```
+
+**ארכיטקטורה - הפרדת נתונים:**
+
+במקום לשמור `ImageData` ישירות בתוך `Task`, `UserProfile` ו-`List`, עברנו לארכיטקטורה מנורמלת:
+- `Task.imageSrc`, `UserProfile.avatar`, `List.logo` - מחזיקים רק `string` (ID של התמונה)
+- `AppState.images` - מחזיק את כל המטאדאטה (כולל נתוני crop) במקום מרכזי
+- יתרונות: הפחתת כפילויות, ניהול קל יותר, גמישות בהוספת שדות עתידיים
+
+---
+
+#### שלב 2: אינטגרציה בכל הפרויקט
+
+**החלפת כל תצוגות התמונות ב-`ImageDisplay`:**
+
+קומפוננטות שעודכנו:
+- ✅ `TaskRow.svelte` - תמונות משימות
+- ✅ `UserSelector.svelte` - אווטרים של משתמשים
+- ✅ `ListSwitcher.svelte` - לוגו של רשימות
+- ✅ `CelebrationModal.svelte` - תמונות במודאל חגיגה
+- ✅ `AddModal.svelte` - תצוגה מקדימה של תמונות
+- ✅ `settings/users/+page.svelte` - ניהול אווטרים
+- ✅ `settings/lists/+page.svelte` - ניהול לוגו רשימות
+- ✅ `+page.svelte` - דף ראשי (אווטר המשתמש המחובר)
+
+**שירותים שעודכנו:**
+
+- **`migration.ts`** - הוספת migration (גרסה 6):
+  - העברת נתוני `crop` מתוך `Task.imageSrc`, `UserProfile.avatar`, `List.logo`
+  - יצירת `AppState.images` והעברת המטאדאטה אליו
+  - המרת הפרופרטיז המקוריים ל-`string` פשוט (ID בלבד)
+
+- **`backupController.svelte.ts`** - עדכון לוגיקת Backup/Restore:
+  - Hydration: המרת `idb:xxx` ל-data URLs לפני ייצוא
+  - Dehydration: המרת data URLs חזרה ל-`idb:xxx` אחרי ייבוא
+  - טיפול נכון ב-`AppState.images` והפניות אליו
+
+---
+
+#### שלב 3: תיקון בעיית העקביות (הבעיה המרכזית)
+
+**הבעיה שהתגלתה:**
+
+תמונות עם חיתוך נראו **שונות לחלוטין** בכל מקום:
+- עורך החיתוך (400px) - הציג את התמונה המלאה ✓
+- ImageUploader במודאל (150px) - הציג חלק אחר (עורף) ✗
+- רשימת המשימות (120px) - הציג חלק שלישי ✗
+
+**3 סיבות שורש:**
+
+1. **Scale מוחלט במקום יחסי**
+   - הבעיה: שמרנו `scale: 0.333` (ערך מוחלט שעובד רק עם קונטיינר 400px)
+   - כשהתמונה הוצגה בקונטיינר 120px, ה-scale היה שגוי לחלוטין
+   - הפתרון: שמירת `scale` **יחסי** ל-`minScale` (1.0 = minScale, 1.4 = פי 1.4 מ-minScale)
+
+2. **`ImageDisplay` ניהלה גדלים בעצמה**
+   - הבעיה: prop `size="small|medium|large|full"` הגדיר גודל קבוע (60px, 120px, 200px, 100%)
+   - זה יצר אי-עקביות כי הקומפוננטה "החליטה" על הגודל במקום ה-parent
+   - הפתרון: הפיכת `ImageDisplay` לגנרית לחלוטין - תמיד 100% × 100% של ה-parent
+
+3. **`minScale` מחושב ב-`$derived` (באג Svelte)**
+   - הבעיה: `$derived` לא מתעדכן כש-`naturalWidth/Height` של התמונה משתנים
+   - זה גרם ל-`minScale` להישאר 1 במקום להתעדכן לערך הנכון
+   - הפתרון: חישוב `minScale` **פעם אחת** ב-`handleLoad()` אחרי שהתמונה נטענת
+
+**התיקונים שבוצעו:**
+
+**`ImageCropEditor.svelte`:**
+```typescript
+// לפני - scale מוחלט
+crop = { x: 50, y: 50, scale: minScale }; // ← minScale משתנה לפי קונטיינר!
+
+// אחרי - scale יחסי
+crop = { x: 50, y: 50, scale: 1.0 }; // ← 1.0 = minScale, 2.0 = פי 2
+
+// שימוש בתצוגה:
+style:transform="translate(-50%, -50%) scale({minScale * crop.scale})"
+```
+
+**`ImageDisplay.svelte`:**
+```typescript
+// לפני - $derived לא עובד!
+let minScale = $derived.by(() => {
+  if (!imageRef || !containerRef) return 1;
+  const containerSize = containerRef.offsetWidth;
+  const scaleByWidth = containerSize / imageRef.naturalWidth;
+  const scaleByHeight = containerSize / imageRef.naturalHeight;
+  return Math.max(scaleByWidth, scaleByHeight);
+});
+
+// אחרי - חישוב פעם אחת ב-handleLoad
+let minScale = $state(1);
+
+function handleLoad() {
+  if (imageRef && containerRef) {  // ← הסרת תנאי cropData!
+    const containerSize = containerRef.offsetWidth;
+    const scaleByWidth = containerSize / imageRef.naturalWidth;
+    const scaleByHeight = containerSize / imageRef.naturalHeight;
+    minScale = Math.max(scaleByWidth, scaleByHeight);
+  }
+  imageLoaded = true;
+  onload?.();
+}
+```
+
+```css
+/* לפני - גדלים קבועים */
+.size-small { width: 60px; height: 60px; }
+.size-medium { width: 120px; height: 120px; }
+.size-large { width: 200px; height: 200px; }
+.size-full { width: 100%; aspect-ratio: 1; }
+
+/* אחרי - גנרי לחלוטין */
+.image-display {
+  width: 100%;
+  height: 100%;
+}
+```
+
+**הסרת `size` prop מכל מקומות השימוש:**
+
+```svelte
+<!-- לפני -->
+<ImageDisplay imageSrc={task.imageSrc} size="medium" />
+
+<!-- אחרי - הגודל נקבע על ידי ה-parent -->
+<div style="width: 120px; height: 120px;">
+  <ImageDisplay imageSrc={task.imageSrc} />
+</div>
+```
+
+**`ImageUploader.svelte` - Dog-fooding:**
+
+הקומפוננטה עברה רפקטור להשתמש ב-`ImageDisplay` לתצוגה מקדימה (במקום לוגיקה משלה):
+```svelte
+<!-- לפני - לוגיקה כפולה -->
+<div class="preview-image-cropped">
+  <img use:dbImage={currentImageSrc} ... />
+</div>
+
+<!-- אחרי - שימוש ב-ImageDisplay -->
+<div class="preview-wrapper">
+  <ImageDisplay 
+    imageSrc={currentImageSrc}
+    alt={alt}
+    className="preview-image-display"
+  />
+</div>
+```
+
+---
+
+#### שלב 4: תיקוני עיצוב ועקביות (השלמה)
+
+**2 באגים קריטיים שנותרו:**
+
+1. **`minScale` לא מחושב כשאין `cropData`**
+   - הבעיה: התנאי `if (imageRef && containerRef && cropData)` ב-`handleLoad()`
+   - גרם לתמונות **ללא** חיתוך להיות בגודל שגוי
+   - הפתרון: הסרת `&& cropData` - חישוב `minScale` **תמיד**
+
+2. **`ImageUploader` ללא גודל מוגדר**
+   - הבעיה: אחרי שהפכנו את `ImageDisplay` לגנרית, ה-wrapper לא הגדיר גודל
+   - גרם לתמונה להתמוטט ל-0px
+   - הפתרון: הוספת `width: 150px; height: 150px;` ל-CSS
+
+**שוליים עגולות לכל התמונות:**
+
+- `TaskRow.svelte`: הוספת `border-radius: 12px` + `overflow: hidden` ל-`.task-image-wrapper`
+- `ImageUploader.svelte`: הוספת `border-radius: 12px` + `overflow: hidden` לתצוגה מקדימה
+- קומפוננטות אחרות: כבר היו עם שוליים עגולות או עיגול מלא (אווטרים)
+- **החלטה**: לא לשנות את `ImageDisplay` עצמה (שמירה על גנריות)
+
+**גובה שורות זהה:**
+
+- הבעיה: `TaskRow` עם `max-height: 180px; min-height: 100px;` גרם לגבהים שונים
+- הפתרון: `height: 120px;` קבוע
+- תוצאה: כל השורות באותו גובה בדיוק
+
+**פרופורציות במודאל חגיגה:**
+
+- הבעיה: `CelebrationModal` עם `width: 100%; height: 120px;` **בלי** `aspect-ratio: 1`
+- גרם לתמונות להיות רחבות במקום מרובעות
+- הפתרון: הוספת `aspect-ratio: 1;` + שינוי `width` ל-`auto`
+
+---
+
+#### בדיקות מקיפות בדפדפן
+
+לאחר כל תיקון, בוצעו בדיקות יסודיות:
+- ✅ רענון דפדפן והמתנה לטעינה מלאה
+- ✅ כניסה למצב עריכה
+- ✅ פתיחת מודאל עריכת משימה
+- ✅ פתיחת עורך החיתוך
+- ✅ שינוי זום ל-140% (4 לחיצות על +)
+- ✅ שמירה ובדיקת עקביות ב-3 מקומות:
+  - עורך החיתוך (400px)
+  - ImageUploader במודאל (150px)
+  - רשימת המשימות (120px)
+- ✅ בדיקת מודאל החגיגה (סימון משימה כבוצעת)
+- ✅ צילומי מסך לאימות ויזואלי
+
+---
+
+#### סיכום התוצאות
+
+**לפני:**
+- ❌ תמונות עם חיתוך נראות שונות בכל מקום
+- ❌ תמונות ללא חיתוך בגודל שגוי
+- ❌ ImageUploader מתמוטט ל-0px
+- ❌ שורות בגבהים שונים
+- ❌ תמונות ללא שוליים עגולות
+- ❌ תמונות במודאל חגיגה רחבות ולא מרובעות
+
+**אחרי:**
+- ✅ **עקביות מלאה** - כל התמונות נראות זהות בכל המקומות
+- ✅ חיתוך עובד בצורה זהה בכל גודל קונטיינר
+- ✅ ImageUploader עם גודל קבוע (150px × 150px)
+- ✅ כל השורות בגובה זהה (120px)
+- ✅ כל התמונות עם פינות מעוגלות (`border-radius: 12px`)
+- ✅ תמונות במודאל חגיגה מרובעות (`aspect-ratio: 1`)
+
+---
+
+#### קבצים שנוצרו/שונו
+
+**קבצים חדשים:**
+```
+sveltekit-version/
+├── src/lib/components/
+│   ├── ImageCropEditor.svelte       (עורך חיתוך אינטראקטיבי)
+│   ├── ImageDisplay.svelte          (תצוגת תמונות אחידה)
+│   └── FloatingIframe.svelte        (עזר לבדיקות)
+├── src/lib/stores/
+│   └── imageStore.svelte.ts         (ניהול מטאדאטה של תמונות)
+├── src/routes/
+│   └── test-board/+page.svelte      (דף בדיקות)
+└── docs/
+    └── image-crop-feature.md        (תיעוד הפיצ'ר)
+```
+
+**קבצים ששונו:**
+```
+sveltekit-version/
+├── src/lib/
+│   ├── types.ts                     (ImageCropData, ImageMetadata, AppState.images)
+│   ├── data/defaults.ts             (INITIAL_STATE.images)
+│   ├── config.ts                    (קונפיגורציה)
+│   ├── components/
+│   │   ├── ImageUploader.svelte     (אינטגרציה עם עורך + dog-fooding)
+│   │   ├── TaskRow.svelte           (שוליים עגולות + גובה קבוע)
+│   │   ├── CelebrationModal.svelte  (פרופורציות + שוליים)
+│   │   ├── AddModal.svelte          (שימוש ב-imageStore)
+│   │   ├── ListSwitcher.svelte      (שימוש ב-ImageDisplay)
+│   │   └── UserSelector.svelte      (שימוש ב-ImageDisplay)
+│   ├── logic/
+│   │   ├── tasksBoard.svelte.ts     (עדכון טיפוסים)
+│   │   └── backupController.svelte.ts (hydration/dehydration)
+│   ├── services/
+│   │   ├── migration.ts             (migration v6 - העברת crop data)
+│   │   └── language.ts              (טקסטים)
+│   └── stores/
+│       ├── persistence.ts           (שמירת images)
+│       └── listStore.svelte.ts      (עדכון טיפוסים)
+└── src/routes/
+    ├── +page.svelte                 (שימוש ב-ImageDisplay)
+    └── settings/
+        ├── users/+page.svelte       (שימוש ב-ImageDisplay + imageStore)
+        └── lists/+page.svelte       (שימוש ב-ImageDisplay + imageStore)
+```
+
+---
+
+#### החלטות עיצוב ואדריכליות
+
+1. **שמירה על גנריות `ImageDisplay`**: 
+   - לא הוספנו `border-radius` ישירות לקומפוננטה
+   - העיצוב מוגדר ב-parent containers
+   - מאפשר גמישות ושימוש חוזר
+
+2. **גובה קבוע במקום גמיש**: 
+   - שינוי מ-`max-height` + `min-height` ל-`height` קבוע
+   - מבטיח עקביות ויזואלית מלאה
+
+3. **Scale יחסי במקום מוחלט**:
+   - `crop.scale` יחסי ל-`minScale`
+   - מאפשר עקביות בכל גודל קונטיינר
+
+4. **הפרדת מטאדאטה מנתונים**:
+   - `AppState.images` מרכזי
+   - הפניות פשוטות (string IDs) ב-entities
+   - מונע כפילויות ומקל על ניהול
+
+---
+
+#### מעקפים ופתרונות טכניים
+
+1. **חישוב `minScale` ב-`handleLoad` במקום `$derived`**:
+   - ה-`$derived` של Svelte לא מתעדכן כש-`naturalWidth/Height` משתנים
+   - פתרון: חישוב חד-פעמי אחרי טעינת התמונה
+
+2. **Dog-fooding ב-`ImageUploader`**:
+   - שימוש ב-`ImageDisplay` במקום לוגיקה כפולה
+   - מבטיח עקביות ומפחית code duplication
+
+3. **תמיכה לאחור מלאה**:
+   - `ImageDisplay` מקבל גם `string` וגם `ImageData`
+   - Migration אוטומטי של נתונים ישנים
+   - אין צורך בשינויים ידניים
+
+---
+
+#### תיעוד נוסף
+
+- **`sveltekit-version/docs/image-crop-feature.md`** - תיעוד מפורט של הפיצ'ר
+- **`temp/image-crop-summary.md`** - סיכום תהליך התיקון
+
+---
+
 ## 2026-01-14 18:50
 
 ### אימות מול גוגל ושיפורי בנייה

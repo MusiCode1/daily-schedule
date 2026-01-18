@@ -2,36 +2,40 @@
   import { userStore } from '$lib/stores/userStore.svelte';
   import type { UserProfile } from '$lib/types';
   import ImageUploader from '$lib/components/ImageUploader.svelte';
-  import { dbImage } from '$lib/actions/dbImage';
+  import ImageDisplay from '$lib/components/ImageDisplay.svelte';
   import { TEXTS } from '$lib/services/language';
 
   // ניהול משתמשים
   let isUserModalOpen = $state(false);
   let editingUser: UserProfile | null = $state(null);
-  let userForm = $state({ name: '', gender: 'boy' as 'boy'|'girl', avatar: '' });
+  let userForm = $state<{ name: string; gender: 'boy'|'girl'; avatar: string }>({ name: '', gender: 'boy', avatar: '' });
+  let userImageSrc: string | null = $state(null);
 
   function openUserModal(user: UserProfile | null = null) {
       editingUser = user;
       if (user) {
           userForm = { ...user, avatar: user.avatar || '' };
+          userImageSrc = user.avatar || null;
       } else {
           userForm = { name: '', gender: 'boy', avatar: '' };
+          userImageSrc = null;
       }
       isUserModalOpen = true;
   }
 
   function saveUser() {
+      const avatarSrc = userImageSrc || '';
       if (editingUser) {
           userStore.updateUser(editingUser.id, {
               name: userForm.name,
               gender: userForm.gender,
-              avatar: userForm.avatar
+              avatar: avatarSrc
           });
       } else {
           userStore.addUser({
               name: userForm.name,
               gender: userForm.gender,
-              avatar: userForm.avatar
+              avatar: avatarSrc
           });
       }
       isUserModalOpen = false;
@@ -54,7 +58,10 @@
         <div class="user-card">
             <div class="avatar-wrapper">
                 {#if user.avatar}
-                    <img use:dbImage={user.avatar} alt={user.name} onerror={(e) => (e.currentTarget as HTMLImageElement).style.display='none'} />
+                    <ImageDisplay 
+                        imageSrc={user.avatar}
+                        alt={user.name}
+                    />
                 {:else}
                     <span class="initial">{user.name[0]}</span>
                 {/if}
@@ -96,8 +103,8 @@
                 <div class="form-group">
                    <label for="user-avatar-input">{TEXTS.AVATAR}:</label>
                    <ImageUploader 
-                       imageSrc={userForm.avatar} 
-                       onchange={(id) => userForm.avatar = id || ''} 
+                       imageSrc={userImageSrc} 
+                       onchange={(src) => userImageSrc = src} 
                    />
                 </div>
                 <div class="modal-actions">
@@ -186,7 +193,11 @@
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
   
-  .avatar-wrapper img { width: 100%; height: 100%; object-fit: cover; }
+  .avatar-wrapper :global(.image-display) { 
+    width: 100%; 
+    height: 100%; 
+    border-radius: 0;
+  }
   .initial { font-size: 2.5rem; color: #94a3b8; font-weight: 800; }
 
   .user-details h3 {

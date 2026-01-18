@@ -230,7 +230,7 @@ export class BackupController {
 		// א. תמונות משתמשים
 		if (state.users) {
 			for (const user of state.users) {
-				if (user.avatar && user.avatar.startsWith('idb:')) {
+				if (user.avatar && typeof user.avatar === 'string' && user.avatar.startsWith('idb:')) {
 					user.avatar = await this.hydrateImage(user.avatar);
 				}
 			}
@@ -241,18 +241,32 @@ export class BackupController {
 			for (const userId of Object.keys(state.lists)) {
 				for (const list of state.lists[userId]) {
 					// תמונת רשימה (אם יש)
-					if (list.logo && list.logo.startsWith('idb:')) {
+					if (list.logo && typeof list.logo === 'string' && list.logo.startsWith('idb:')) {
 						list.logo = await this.hydrateImage(list.logo);
 					}
 
 					// תמונות משימות
 					for (const task of list.tasks) {
-						if (task.imageSrc && task.imageSrc.startsWith('idb:')) {
+						if (task.imageSrc && typeof task.imageSrc === 'string' && task.imageSrc.startsWith('idb:')) {
 							task.imageSrc = await this.hydrateImage(task.imageSrc);
 						}
 					}
 				}
 			}
+		}
+
+		// ג. המרת תמונות במאגר images (נשארות כמו שהן - רק המפתחות מתעדכנים)
+		if (state.images) {
+			const newImages: any = {};
+			for (const imageId of Object.keys(state.images)) {
+				if (imageId.startsWith('idb:')) {
+					const newId = await this.hydrateImage(imageId);
+					newImages[newId] = state.images[imageId];
+				} else {
+					newImages[imageId] = state.images[imageId];
+				}
+			}
+			state.images = newImages;
 		}
 
 		return JSON.stringify(state);

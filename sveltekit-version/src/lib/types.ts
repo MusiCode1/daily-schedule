@@ -1,7 +1,25 @@
+// מידע על חיתוך תמונה (crop)
+export interface ImageCropData {
+	x: number; // מיקום X באחוזים (0-100)
+	y: number; // מיקום Y באחוזים (0-100)
+	scale: number; // זום (1 = מקורי, 2 = פי 2, וכו')
+}
+
+// מטאדטה של תמונה (נשמר בנפרד מהאובייקטים)
+export interface ImageMetadata {
+	crop?: ImageCropData; // נתוני חיתוך
+}
+
+// נתוני תמונה עם crop (לשימוש זמני בממשק)
+export interface ImageData {
+	src: string; // URL או idb:xxx
+	crop?: ImageCropData; // אופציונלי - אם אין, מציג את כל התמונה
+}
+
 export interface Task {
 	id: string;
 	name: string;
-	imageSrc: string | null;
+	imageSrc: string | null; // רק מזהה תמונה (idb:xxx או URL)
 	isDone: boolean;
 }
 
@@ -10,8 +28,9 @@ export interface List {
 	name: string;
 	tasks: Task[];
 	isDefault?: boolean;
-	logo?: string;
+	logo?: string; // רק מזהה תמונה
 	greeting?: string;
+	isHidden?: boolean;
 }
 
 export type Gender = 'boy' | 'girl';
@@ -20,18 +39,18 @@ export interface UserProfile {
 	id: string;
 	name: string;
 	gender: Gender;
-	avatar: string; // URL or local path
+	avatar: string; // רק מזהה תמונה
 	themeColor: string; // Hex color for borders/backgrounds
 }
 
 export interface AppState {
 	version: number;
 	users: UserProfile[];
-	// user_id -> list_id -> Task[] (Legacy support, maybe we just store Lists)
-	// Let's stick to the plan: users have lists.
-	// Actually, let's simplify. Each user has a set of lists.
-
+	
 	lists: { [userId: string]: List[] };
+
+	// מאגר מטאדטה של תמונות (מפתח = מזהה תמונה)
+	images: { [imageId: string]: ImageMetadata };
 
 	// Track which list is active for each user
 	activeListId: { [userId: string]: string };

@@ -1,11 +1,12 @@
 <script lang="ts">
   import type { Task } from '$lib/types';
-  import { dbImage } from '$lib/actions/dbImage';
+  import ImageDisplay from './ImageDisplay.svelte';
 
   let { 
     task, 
     isActive = false, 
     isEditMode = false,
+    taskNumber,
     ontoggle,
     ondelete,
     onedit,
@@ -13,7 +14,8 @@
   } = $props<{ 
     task: Task; 
     isActive?: boolean; 
-    isEditMode?: boolean; 
+    isEditMode?: boolean;
+    taskNumber?: number;
     ontoggle?: (id: string) => void;
     ondelete?: (id: string) => void;
     onedit?: (task: Task) => void;
@@ -38,8 +40,6 @@
     e.stopPropagation();
     ontoggle?.(task.id);
   }
-  
-  let imageLoaded = $state(false);
 </script>
 
 <div class="task-row-wrapper" class:completed={task.isDone} class:active={isActive}>
@@ -65,31 +65,21 @@
       <div class="drag-handle-indicator">⋮⋮</div>
     {/if}
 
+    {#if taskNumber !== undefined}
+      <div class="task-number">{taskNumber}</div>
+    {/if}
+
     <div class="task-image-wrapper">
-      {#if !imageLoaded}
-        <div class="image-placeholder">⏳</div>
-      {/if}
-      {#if !imageLoaded}
-        <div class="image-placeholder">⏳</div>
-      {/if}
-      
       {#if task.imageSrc}
-          <img
-            use:dbImage={task.imageSrc}
-            class="task-image"
-            class:hidden={!imageLoaded}
-            alt=""
-            onload={() => imageLoaded = true}
-            onerror={() => imageLoaded = true} 
-          />
+        <ImageDisplay 
+          imageSrc={task.imageSrc} 
+          alt={task.name}
+          className="task-image"
+        />
       {:else}
-          <img
-            src={'https://placehold.co/400x400/e2e8f0/64748b?text=IMG'}
-            class="task-image"
-            class:hidden={!imageLoaded}
-            alt=""
-            onload={() => imageLoaded = true}
-          />
+        <div class="placeholder-image">
+          <span>📷</span>
+        </div>
       {/if}
     </div>
 
@@ -106,8 +96,7 @@
     width: 100%;
     max-width: 600px;
     flex: 1;
-    max-height: 180px;
-    min-height: 100px;
+    height: 120px; /* גובה קבוע לכל השורות */
     display: flex;
     align-items: center;
     transition: transform 0.2s;
@@ -141,35 +130,31 @@
     aspect-ratio: 1 / 1;
     width: auto;
     position: relative;
-    /* background-color: #f1f5f9; */
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden; /* לחיתוך שוליים עגולות */
+    border-radius: 12px; /* שוליים עגולות */
   }
 
-  .image-placeholder {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    display: flex;
-    align-items: center; justify-content: center;
-    font-size: 2rem;
-    color: #cbd5e1;
-    background: #f1f5f9;
-  }
-
-  .task-image.hidden {
-    opacity: 0;
-  }
-
-  .task-image {
+  .task-image-wrapper :global(.task-image) {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    padding: 0;
-    display: block;
-    transition: opacity 0.3s ease;
+  }
+
+  .placeholder-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    font-size: 3rem;
+  }
+
+  .placeholder-image span {
+    opacity: 0.3;
   }
 
   .task-content {
@@ -179,6 +164,29 @@
     flex-direction: column;
     justify-content: center;
     height: 100%;
+  }
+
+  .task-number {
+    min-width: 50px;
+    padding: 0 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #cbd5e1;
+    flex-shrink: 0;
+    transition: all 0.3s;
+    line-height: 1;
+  }
+
+  .task-row-wrapper.active .task-number {
+    color: var(--primary-accent, #6366f1);
+    text-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  }
+
+  .task-row-wrapper.completed .task-number {
+    color: var(--success-color, #22c55e);
   }
 
   .task-name {

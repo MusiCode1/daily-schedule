@@ -183,4 +183,9 @@ export class TasksBoardController {
 		const newTasks = this.tasks.filter((t) => t.id !== taskId);
 		listStore.updateTasks(this.currentUser.id, this.activeList.id, newTasks);
 	}
+
+	resetAllTasks() {
+		if (!this.currentUser || !this.activeList) return;
+		listStore.resetAllTasks(this.currentUser.id, this.activeList.id);
+	}
 }

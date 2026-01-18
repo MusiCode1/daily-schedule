@@ -56,7 +56,7 @@ export const DEFAULT_LIST_DEFINITIONS = [
 
 // Helper to create initial lists for a user
 export function createDefaultLists(): List[] {
-	return DEFAULT_LIST_DEFINITIONS.map((def) => ({
+	const lists = DEFAULT_LIST_DEFINITIONS.map((def) => ({
 		id: def.id,
 		name: def.name,
 		logo: def.logo,
@@ -75,6 +75,8 @@ export function createDefaultLists(): List[] {
 			})
 			.filter((t) => t !== null) as any[]
 	}));
+
+	return lists;
 }
 
 export const INITIAL_STATE: AppState = {
@@ -107,6 +109,7 @@ export const INITIAL_STATE: AppState = {
 		u2: createDefaultLists(),
 		u3: createDefaultLists()
 	},
+	images: {}, // מאגר מטאדטה של תמונות
 	activeListId: {
 		u1: 'morning_routine',
 		u2: 'morning_routine',

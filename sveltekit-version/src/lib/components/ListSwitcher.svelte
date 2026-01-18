@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { dbImage } from '$lib/actions/dbImage';
+  import ImageDisplay from './ImageDisplay.svelte';
+  import { DEFAULT_LIST_IMAGE } from '$lib/config';
   
   let { 
     activeListId = $bindable("morning_routine"), 
@@ -29,7 +30,10 @@
         aria-label="Switch to {list.name}"
       >
         <div class="image-container">
-          <img use:dbImage={list.logo} alt={list.name} />
+          <ImageDisplay 
+            imageSrc={list.logo || DEFAULT_LIST_IMAGE}
+            alt={list.name}
+          />
         </div>
         <span class="list-name">{list.name}</span>
       </button>
@@ -96,12 +100,10 @@
     position: relative;
   }
 
-  /* ... existing img styles ... */
-
-  img {
+  .image-container :global(.image-display) {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    border-radius: 0;
   }
 
   .list-name {

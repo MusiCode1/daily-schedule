@@ -19,7 +19,7 @@ export const migrationService = {
 
 			for (const list of lists) {
 				for (const task of list.tasks) {
-					if (task.imageSrc && task.imageSrc.startsWith('data:image')) {
+					if (task.imageSrc && typeof task.imageSrc === 'string' && task.imageSrc.startsWith('data:image')) {
 						try {
 							console.log(`Migrating image for task ${task.name}...`);
 							const blob = await dataURLToBlob(task.imageSrc);
@@ -117,6 +117,59 @@ export const migrationService = {
 			parsed.version = 5;
 		}
 
+		if (parsed.version < 6) {
+			console.log('Migrating to version 6: Separating image metadata...');
+			
+			// אתחול images אם לא קיים
+			if (!parsed.images) {
+				parsed.images = {};
+			}
+
+			// מעבר על כל המשתמשים והעברת crop לתוך images
+			const users = Object.keys(parsed.lists || {});
+			users.forEach((userId) => {
+				const userLists: List[] = parsed.lists[userId];
+				
+				userLists.forEach((list) => {
+					// טיפול ב-logo של רשימה
+					if (list.logo && typeof list.logo === 'object' && 'src' in list.logo) {
+						const logoData = list.logo as any;
+						if (logoData.crop) {
+							parsed.images[logoData.src] = { crop: logoData.crop };
+						}
+						list.logo = logoData.src;
+					}
+
+					// טיפול במשימות
+					list.tasks.forEach((task: any) => {
+						if (task.imageSrc && typeof task.imageSrc === 'object' && 'src' in task.imageSrc) {
+							const imgData = task.imageSrc;
+							if (imgData.crop) {
+								parsed.images[imgData.src] = { crop: imgData.crop };
+							}
+							task.imageSrc = imgData.src;
+						}
+					});
+				});
+			});
+
+			// טיפול ב-avatars של משתמשים
+			if (parsed.users) {
+				parsed.users.forEach((user: any) => {
+					if (user.avatar && typeof user.avatar === 'object' && 'src' in user.avatar) {
+						const avatarData = user.avatar;
+						if (avatarData.crop) {
+							parsed.images[avatarData.src] = { crop: avatarData.crop };
+						}
+						user.avatar = avatarData.src;
+					}
+				});
+			}
+
+			parsed.version = 6;
+			console.log(`Migrated ${Object.keys(parsed.images).length} image metadata entries`);
+		}
+
 		return { ...INITIAL_STATE, ...parsed };
 	},
 
@@ -125,7 +178,7 @@ export const migrationService = {
 		if (legacyLists) {
 			try {
 				const lists = JSON.parse(legacyLists);
-				const newState: AppState = { ...INITIAL_STATE, version: 5, lastModified: Date.now() };
+				const newState: AppState = { ...INITIAL_STATE, version: 6, lastModified: Date.now() };
 
 				// המרת רשימות ישנות לפורמט החדש עבור משתמש u1 (ברירת מחדל)
 				const newLists: List[] = lists.map((l: any) => ({

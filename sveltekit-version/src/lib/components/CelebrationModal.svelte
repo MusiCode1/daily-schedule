@@ -2,7 +2,7 @@
 	import { fade, scale } from 'svelte/transition';
 	import { elasticOut } from 'svelte/easing';
 	import type { CelebrationData } from '$lib/logic/tasksBoard.svelte';
-	import { dbImage } from '$lib/actions/dbImage';
+	import ImageDisplay from './ImageDisplay.svelte';
 
 	let {
 		isOpen = false,
@@ -32,7 +32,12 @@
 				<div class="user-header">
 					<h2 class="user-name">{data.userName}!</h2>
 					{#if data.userImage}
-						<img use:dbImage={data.userImage} alt={data.userName} class="user-avatar" />
+						<div class="user-avatar">
+							<ImageDisplay 
+								imageSrc={data.userImage}
+								alt={data.userName}
+							/>
+						</div>
 					{:else}
 						<div class="user-avatar-placeholder">👤</div>
 					{/if}
@@ -45,7 +50,12 @@
 
 				<div class="task-card main-card">
 					{#if data.completedTask.image}
-						<img use:dbImage={data.completedTask.image} alt={data.completedTask.name} class="card-image" />
+						<div class="card-image">
+							<ImageDisplay 
+								imageSrc={data.completedTask.image}
+								alt={data.completedTask.name}
+							/>
+						</div>
 					{:else}
 						<div class="no-image-placeholder">✅</div>
 					{/if}
@@ -61,7 +71,12 @@
 						<p class="now-text">עכשיו,</p>
 						<div class="task-card next-card">
 							{#if data.nextTask.image}
-								<img use:dbImage={data.nextTask.image} alt={data.nextTask.name} class="card-image" />
+								<div class="card-image">
+									<ImageDisplay 
+										imageSrc={data.nextTask.image}
+										alt={data.nextTask.name}
+									/>
+								</div>
 							{/if}
 							<span class="card-title">{data.nextTask.name}</span>
 						</div>
@@ -104,8 +119,14 @@
 		height: 80px;
 		border-radius: 50%;
 		border: 4px solid white;
-		object-fit: cover;
+		overflow: hidden;
 		box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+	}
+
+	.user-avatar :global(.image-display) {
+		width: 100%;
+		height: 100%;
+		border-radius: 0;
 	}
 
 	.user-avatar-placeholder {
@@ -193,10 +214,17 @@
 	/* Removed empty .main-card and .next-card rules */
 
 	.card-image {
-		width: 100%;
+		width: auto;
 		height: 120px;
-		object-fit: cover;
+		aspect-ratio: 1; /* תמונה מרובעת */
 		border-radius: 1rem;
+		overflow: hidden;
+	}
+
+	.card-image :global(.image-display) {
+		width: 100%;
+		height: 100%;
+		border-radius: 0;
 	}
 
 	.card-title {
