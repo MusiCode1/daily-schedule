@@ -1,7 +1,7 @@
 // src/lib/services/language.ts
 import { ACTIVITIES } from '$lib/data/defaults';
 import type { Gender } from '$lib/types';
-import { BOOST_WORDS, type BoostWord } from '$lib/data/boosts';
+import { BOOST_WORDS } from '$lib/data/boosts';
 
 export const TEXTS = {
 	APP_TITLE: 'סדר יום ויזואלי',
@@ -22,6 +22,12 @@ export const TEXTS = {
 	CANCEL: 'ביטול',
 	DELETE: 'מחיקה',
 	EDIT: 'עריכה',
+	DUPLICATE: 'שכפל',
+	RESET_ALL_TASKS: 'אפס את כל המשימות',
+	RESET_TASKS_CONFIRM: 'לאפס את כל המשימות ברשימה זו? (כל המשימות יסומנו כלא בוצעו)',
+	HIDE_LIST: 'הסתר רשימה',
+	SHOW_LIST: 'הצג רשימה',
+	HIDDEN_LIST: '(מוסתרת)',
 	BACK_TO_BOARD: '➡️ חזרה ללוח',
 
 	// רשימות
@@ -38,6 +44,15 @@ export const TEXTS = {
 	ACTIVITY_NAME: 'שם הפעילות',
 	CHOOSE_OR_TYPE: 'בחר מהרשימה או הקלד...',
 	CHOOSE_IMAGE_OPTIONAL: 'בחירת תמונה (אופציונלי):',
+	COMMUNICATION_BOARD_URL: 'קישור ללוח תקשורת (אופציונלי)',
+	COMMUNICATION_BOARD_PLACEHOLDER: 'https://app.cboard.io/board/...',
+	COMMUNICATION_BOARD: 'לוח תקשורת',
+	OPEN_COMMUNICATION_BOARD: 'פתח לוח תקשורת',
+	MARK_AS_CHANGE: 'סמן כמשימת שינוי',
+	CHANGE_CANCELLED: 'משימה בוטלה',
+	CHANGE_ADDED: 'פעילות חדשה',
+	CHANGE_LABEL: 'שינוי!',
+	NEW_ACTIVITY_LABEL: 'פעילות חדשה',
 
 	// טפסים
 	NAME: 'שם',

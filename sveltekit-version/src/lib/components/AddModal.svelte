@@ -17,11 +17,18 @@
 
   let taskName = $state('');
   let imageSrc: string | null = $state(null);
+  let communicationBoardUrl = $state('');
+  let isChangeTask = $state(false);
+  let changeType: 'cancelled' | 'added' = $state('cancelled');
+  let isActivitiesExpanded = $state(true); // מצב פתוח/סגור של רשת הפעילויות
 
   $effect(() => {
     if (isOpen && taskToEdit) {
       taskName = taskToEdit.name;
       imageSrc = taskToEdit.imageSrc;
+      communicationBoardUrl = (taskToEdit as any).communicationBoardUrl || '';
+      isChangeTask = !!(taskToEdit as any).changeType;
+      changeType = (taskToEdit as any).changeType || 'cancelled';
       // נסה למצוא אם זו פעילות מוכרת
       const found = ACTIVITIES.find(a => a.name === taskName);
       if (found) selectedActivityId = found.id;
@@ -37,13 +44,22 @@
 
   function handleSave() {
     if (!taskName) return;
-    onsave?.({ name: taskName, imageSrc });
+    const saveData: any = { 
+      name: taskName, 
+      imageSrc,
+      communicationBoardUrl: communicationBoardUrl || undefined,
+      changeType: isChangeTask ? changeType : undefined
+    };
+    onsave?.(saveData);
     resetForm();
   }
 
   function resetForm() {
     taskName = '';
     imageSrc = null;
+    communicationBoardUrl = '';
+    isChangeTask = false;
+    changeType = 'cancelled';
     selectedActivityId = null;
   }
 
@@ -59,10 +75,20 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div class="modal-overlay open" onclick={(e) => e.target === e.currentTarget && handleClose()} role="dialog" aria-modal="true" tabindex="-1">
     <div class="modal-card">
-      <h2 style="margin-top: 0; margin-bottom: 1rem;">{TEXTS.ADD_ACTIVITY}</h2>
+      <div class="modal-header">
+        <h2>{TEXTS.ADD_ACTIVITY}</h2>
+        <button 
+          type="button"
+          class="toggle-activities-btn"
+          onclick={() => isActivitiesExpanded = !isActivitiesExpanded}
+          title={isActivitiesExpanded ? 'כווץ רשת פעילויות' : 'הרחב רשת פעילויות'}
+        >
+          {isActivitiesExpanded ? '▼' : '◀'}
+        </button>
+      </div>
       
       <!-- בחירת רשת פעילויות -->
-      <div class="activities-grid">
+      <div class="activities-grid" class:collapsed={!isActivitiesExpanded}>
         {#each ACTIVITIES as activity}
           <button 
             type="button"
@@ -100,6 +126,39 @@
                     if (src) selectedActivityId = null; 
                 }} 
             />
+        </div>
+
+        <!-- קישור ללוח תקשורת -->
+        <div class="form-group">
+          <label for="boardUrl">{TEXTS.COMMUNICATION_BOARD_URL}</label>
+          <input
+            id="boardUrl"
+            type="url"
+            bind:value={communicationBoardUrl}
+            class="form-input"
+            placeholder={TEXTS.COMMUNICATION_BOARD_PLACEHOLDER}
+          />
+        </div>
+
+        <!-- סימון כמשימת שינוי -->
+        <div class="change-section">
+          <label class="toggle-label">
+            <input type="checkbox" bind:checked={isChangeTask} />
+            <span>{TEXTS.MARK_AS_CHANGE}</span>
+          </label>
+          
+          {#if isChangeTask}
+            <div class="change-type-select">
+              <label class="change-option">
+                <input type="radio" bind:group={changeType} value="cancelled" />
+                <span class="change-cancelled">🚫 {TEXTS.CHANGE_CANCELLED}</span>
+              </label>
+              <label class="change-option">
+                <input type="radio" bind:group={changeType} value="added" />
+                <span class="change-added">✨ {TEXTS.CHANGE_ADDED}</span>
+              </label>
+            </div>
+          {/if}
         </div>
 
         <div class="actions">
@@ -147,19 +206,77 @@
     display: flex;
     flex-direction: column;
     border-radius: 20px;
-    padding: 1.5rem;
+    padding: 0; /* הסרת padding כללי */
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden; /* מניעת גלילה של הכרטיס עצמו */
+  }
+
+  .modal-header {
+    padding: 1.5rem 1.5rem 1rem; /* padding רק לכותרת */
+    flex-shrink: 0; /* הכותרת לא תתכווץ */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .modal-card form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0; /* חשוב ל-flexbox overflow */
+    overflow-y: auto; /* גלילה אנכית לתוכן הטופס */
+    padding: 0 1.5rem; /* padding בצדדים בלבד */
+  }
+
+  .modal-card form .actions {
+    margin-top: auto; /* דוחף לתחתית */
+    padding: 1rem 0 1.5rem; /* padding עליון ותחתון */
+    position: sticky; /* קבוע בתחתית */
+    bottom: 0;
+    background: white; /* רקע לבן כדי לכסות תוכן */
+    z-index: 10;
+    border-top: 1px solid #f1f5f9;
+    flex-shrink: 0; /* לא יתכווץ */
+  }
+
+  .modal-header h2 {
+    margin: 0;
+  }
+
+  .toggle-activities-btn {
+    background: #f1f5f9;
+    border: none;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+    color: #64748b;
+  }
+
+  .toggle-activities-btn:hover {
+    background: #e2e8f0;
+    color: #475569;
   }
 
   .activities-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
     gap: 0.75rem;
-    overflow-y: auto;
     margin-bottom: 1.5rem;
-    padding-right: 0.5rem; /* מקום לפס גלילה */
-    flex: 1; /* תפוס מקום פנוי */
-    min-height: 200px;
+    transition: max-height 0.3s ease-in-out;
+    overflow-y: auto; /* גלילה כשמורחב */
+    max-height: 400px; /* גובה מקסימלי כשמורחב */
+    padding-left: 0.5rem; /* מקום לפס גלילה */
+  }
+
+  .activities-grid.collapsed {
+    max-height: 140px; /* גובה של שורה אחת בערך */
+    overflow: hidden; /* ללא גלילה כשמכווץ */
   }
 
   /* עיצוב פס גלילה */
@@ -173,6 +290,9 @@
   .activities-grid::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 3px;
+  }
+  .activities-grid::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
   }
 
   .activity-card {
@@ -268,7 +388,10 @@
   .actions {
     display: flex;
     gap: 1rem;
-    margin-top: auto;
+    margin-top: 1rem;
+    flex-shrink: 0; /* הכפתורים תמיד יהיו גלויים */
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9; /* קו הפרדה ויזואלי */
   }
 
   .btn-primary {
@@ -310,5 +433,64 @@
   .btn-cancel:hover {
     background: #e2e8f0;
     color: #475569;
+  }
+
+  .change-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  .toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: #1e293b;
+  }
+
+  .toggle-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .change-type-select {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-right: 1.5rem;
+  }
+
+  .change-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+
+  .change-option:hover {
+    background: #f8fafc;
+  }
+
+  .change-option input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  .change-cancelled {
+    color: #dc2626;
+    font-weight: 600;
+  }
+
+  .change-added {
+    color: #ca8a04;
+    font-weight: 600;
   }
 </style>

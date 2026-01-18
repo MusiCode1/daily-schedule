@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Task } from '$lib/types';
   import ImageDisplay from './ImageDisplay.svelte';
+  import { TEXTS } from '$lib/services/language';
 
   let { 
     task, 
@@ -10,6 +11,7 @@
     ontoggle,
     ondelete,
     onedit,
+    onopenboard,
     ...rest
   } = $props<{ 
     task: Task; 
@@ -19,6 +21,7 @@
     ontoggle?: (id: string) => void;
     ondelete?: (id: string) => void;
     onedit?: (task: Task) => void;
+    onopenboard?: (url: string) => void;
     [key: string]: any;
   }>();
 
@@ -40,9 +43,16 @@
     e.stopPropagation();
     ontoggle?.(task.id);
   }
+
+  function handleOpenBoard(e: Event) {
+    e.stopPropagation();
+    if (task.communicationBoardUrl) {
+      onopenboard?.(task.communicationBoardUrl);
+    }
+  }
 </script>
 
-<div class="task-row-wrapper" class:completed={task.isDone} class:active={isActive}>
+<div class="task-row-wrapper" class:completed={task.isDone} class:active={isActive} class:cancelled={task.changeType === 'cancelled'}>
   {#if isActive && !isEditMode}
     <div class="now-indicator">
       <div class="now-text">עכשיו</div>
@@ -84,7 +94,30 @@
     </div>
 
     <div class="task-content">
+      {#if task.changeType}
+        <div class="change-badge {task.changeType}">
+          {#if task.changeType === 'cancelled'}
+            <span class="change-icon">🚫</span>
+            <span class="change-text">{TEXTS.CHANGE_LABEL}</span>
+          {:else}
+            <span class="change-icon">✨</span>
+            <span class="change-text">{TEXTS.NEW_ACTIVITY_LABEL}</span>
+          {/if}
+        </div>
+      {/if}
+      
       <h3 class="task-name">{task.name}</h3>
+      
+      {#if task.communicationBoardUrl && (isActive || task.isDone) && !isEditMode}
+        <button 
+          class="comm-board-btn" 
+          onclick={handleOpenBoard}
+          title={TEXTS.OPEN_COMMUNICATION_BOARD}
+        >
+          💬
+        </button>
+      {/if}
+      
       <div class="check-icon">✓ בוצע</div>
     </div>
   </div>
@@ -259,6 +292,23 @@
     color: #15803d;
   }
 
+  /* מצב בוטל (משימת שינוי) */
+  .task-row-wrapper.cancelled .task-card {
+    background: #fef2f2;
+    border: 2px solid #fca5a5;
+    opacity: 1;
+    transform: scale(0.98);
+  }
+
+  .task-row-wrapper.cancelled .task-name {
+    text-decoration: none;
+    color: #991b1b;
+  }
+
+  .task-row-wrapper.cancelled .task-number {
+    color: #dc2626;
+  }
+
   .check-icon {
     display: none;
     color: var(--success-color, #22c55e);
@@ -352,5 +402,62 @@
   }
   .task-card.editable:active {
     cursor: grabbing;
+  }
+
+  .change-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    margin-bottom: 0.3rem;
+    width: fit-content;
+  }
+
+  .change-badge.cancelled {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+
+  .change-badge.added {
+    background: #fefce8;
+    color: #ca8a04;
+    border: 1px solid #fef08a;
+  }
+
+  .change-icon {
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .change-text {
+    line-height: 1;
+  }
+
+  .comm-board-btn {
+    background: #eef2ff;
+    border: 2px solid var(--primary-accent, #6366f1);
+    color: var(--primary-accent, #6366f1);
+    border-radius: 8px;
+    padding: 0.3rem 0.6rem;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .comm-board-btn:hover {
+    background: var(--primary-accent, #6366f1);
+    transform: scale(1.1);
+  }
+
+  .comm-board-btn:hover {
+    filter: brightness(110%);
   }
 </style>

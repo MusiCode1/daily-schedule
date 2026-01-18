@@ -25,6 +25,10 @@ export class TasksBoardController {
 	showCelebration = $state(false);
 	celebrationData: CelebrationData | null = $state(null);
 
+	// מצב לוח תקשורת
+	iframeBoardUrl = $state('');
+	iframeBoardVisible = $state(false);
+
 	// -- תלויות --
 	dnd: DragDropManager;
 
@@ -55,6 +59,11 @@ export class TasksBoardController {
 		return this.activeList?.greeting ? this.activeList.greeting + ',' : 'בהצלחה,';
 	}
 
+	// אינדקס המשימה הפעילה (דילוג על משימות מבוטלות)
+	get activeTaskIndex() {
+		return this.tasks.findIndex((t) => !t.isDone && t.changeType !== 'cancelled');
+	}
+
 	// -- פעולות --
 
 	toggleEditMode() {
@@ -66,6 +75,13 @@ export class TasksBoardController {
 
 		const currentTaskIndex = this.tasks.findIndex((t) => t.id === taskId);
 		const currentTask = this.tasks[currentTaskIndex];
+		
+		// אם המשימה מסומנת כ"בוטלה" - רק להשמיע הודעה, לא לסמן כהושלמה
+		if (currentTask.changeType === 'cancelled') {
+			await this.playChangeAnnouncement(currentTask.name);
+			return; // לא מעדכנים את המשימה
+		}
+		
 		const nextTask = this.tasks[currentTaskIndex + 1];
 
 		const newTasks = this.tasks.map((t) => {
@@ -81,6 +97,20 @@ export class TasksBoardController {
 		});
 
 		listStore.updateTasks(this.currentUser.id, this.activeList.id, newTasks);
+	}
+
+	async playChangeAnnouncement(taskName: string) {
+		if (!this.currentUser) return;
+		
+		// השמעת הודעת שינוי: "שינוי! היום אין [משימה]!"
+		// כרגע משתמשים ב-TTS כי אין קבצי אודיו ייעודיים
+		const sequence: Array<{ type: 'file' | 'tts'; content: string }> = [
+			{ type: 'tts', content: 'שינוי!' },
+			{ type: 'tts', content: 'היום אין' },
+			{ type: 'tts', content: taskName }
+		];
+		
+		await audioSequencer.playSequence(sequence);
 	}
 
 	async triggerCelebration(completedTask?: Task, nextTask?: Task) {
@@ -139,6 +169,18 @@ export class TasksBoardController {
 		// אופציונלי: עצירת אודיו בסגירת המודאל?
 	}
 
+	// -- לוח תקשורת --
+	
+	openCommunicationBoard(url: string) {
+		this.iframeBoardUrl = url;
+		this.iframeBoardVisible = true;
+	}
+
+	closeCommunicationBoard() {
+		this.iframeBoardVisible = false;
+		this.iframeBoardUrl = '';
+	}
+
 	// -- תהליך הוספה/עריכה של משימה --
 
 	openAddModal(task: Task | null = null) {
@@ -151,7 +193,17 @@ export class TasksBoardController {
 		this.taskToEdit = null;
 	}
 
-	saveTask({ name, imageSrc }: { name: string; imageSrc: string | null }) {
+	saveTask({ 
+		name, 
+		imageSrc, 
+		communicationBoardUrl, 
+		changeType 
+	}: { 
+		name: string; 
+		imageSrc: string | null;
+		communicationBoardUrl?: string;
+		changeType?: 'cancelled' | 'added';
+	}) {
 		if (!this.currentUser || !this.activeList) return;
 
 		let newTasks;
@@ -159,7 +211,13 @@ export class TasksBoardController {
 			// עריכה
 			newTasks = this.tasks.map((t) => {
 				if (t.id === this.taskToEdit!.id) {
-					return { ...t, name, imageSrc };
+					return { 
+						...t, 
+						name, 
+						imageSrc,
+						communicationBoardUrl,
+						changeType
+					};
 				}
 				return t;
 			});
@@ -169,7 +227,9 @@ export class TasksBoardController {
 				id: crypto.randomUUID(),
 				name,
 				imageSrc,
-				isDone: false
+				isDone: false,
+				communicationBoardUrl,
+				changeType
 			};
 			newTasks = [...this.tasks, newTask];
 		}

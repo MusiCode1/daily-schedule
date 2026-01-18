@@ -80,7 +80,7 @@ export function createDefaultLists(): List[] {
 }
 
 export const INITIAL_STATE: AppState = {
-	version: 1,
+	version: 7,
 	users: [
 		{
 			id: 'u1',

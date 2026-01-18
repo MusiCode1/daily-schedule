@@ -170,6 +170,29 @@ export const migrationService = {
 			console.log(`Migrated ${Object.keys(parsed.images).length} image metadata entries`);
 		}
 
+		if (parsed.version < 7) {
+			console.log('Migrating to version 7: Adding communication board URLs and change types...');
+			
+			// הוספת שדות חדשים למשימות קיימות (אופציונליים - אין צורך באתחול)
+			const users = Object.keys(parsed.lists || {});
+			users.forEach((userId) => {
+				const userLists: List[] = parsed.lists[userId];
+				userLists.forEach((list) => {
+					list.tasks.forEach((task: any) => {
+						// השדות האלו אופציונליים, אז פשוט מוודאים שהם undefined אם לא קיימים
+						if (!task.communicationBoardUrl) {
+							task.communicationBoardUrl = undefined;
+						}
+						if (!task.changeType) {
+							task.changeType = undefined;
+						}
+					});
+				});
+			});
+
+			parsed.version = 7;
+		}
+
 		return { ...INITIAL_STATE, ...parsed };
 	},
 
@@ -178,7 +201,7 @@ export const migrationService = {
 		if (legacyLists) {
 			try {
 				const lists = JSON.parse(legacyLists);
-				const newState: AppState = { ...INITIAL_STATE, version: 6, lastModified: Date.now() };
+				const newState: AppState = { ...INITIAL_STATE, version: 7, lastModified: Date.now() };
 
 				// המרת רשימות ישנות לפורמט החדש עבור משתמש u1 (ברירת מחדל)
 				const newLists: List[] = lists.map((l: any) => ({
@@ -193,7 +216,9 @@ export const migrationService = {
 							id: crypto.randomUUID(),
 							name: activity ? activity.name : 'Unknown',
 							imageSrc: activity ? `/images/activities/${activity.image}` : null,
-							isDone: false
+							isDone: false,
+							communicationBoardUrl: undefined,
+							changeType: undefined
 						};
 					})
 				}));

@@ -16,11 +16,16 @@ export interface ImageData {
 	crop?: ImageCropData; // אופציונלי - אם אין, מציג את כל התמונה
 }
 
+// סוגי שינוי למשימות
+export type TaskChangeType = 'cancelled' | 'added';
+
 export interface Task {
 	id: string;
 	name: string;
 	imageSrc: string | null; // רק מזהה תמונה (idb:xxx או URL)
 	isDone: boolean;
+	communicationBoardUrl?: string; // קישור ללוח תקשורת (אופציונלי)
+	changeType?: TaskChangeType; // סוג השינוי - משימה בוטלה או נוספה (אופציונלי)
 }
 
 export interface List {

@@ -12,6 +12,7 @@
   import { SessionController } from '$lib/logic/session.svelte';
   import { onMount } from 'svelte';
   import SplashScreen from '$lib/components/SplashScreen.svelte';
+  import FloatingIframe from '$lib/components/FloatingIframe.svelte';
   import { TEXTS } from '$lib/services/language';
 
   // -- אתחול Controllers --
@@ -22,10 +23,6 @@
   // עזר לגרירה/שחרור הנגזר מה-controller
   // שימוש ב-dnd manager ישירות מה-controller של הלוח
   const { dnd } = board;
-
-  // חישוב אינדקס פעיל (לוגיקת UI)
-  // ניתן להעביר ל-controller אבל פשוט מספיק כאן עבור ה-view state
-  let activeIndex = $derived(board.tasks.findIndex((t) => !t.isDone));
 
   let isLoaded = $state(false);
 
@@ -120,11 +117,12 @@
           <TaskRow
             {task}
             taskNumber={index + 1}
-            isActive={index === activeIndex}
+            isActive={index === board.activeTaskIndex}
             isEditMode={board.isEditMode}
             ontoggle={() => board.toggleTask(task.id)}
             ondelete={() => board.deleteTask(task.id)}
             onedit={() => board.openAddModal(task)}
+            onopenboard={(url) => board.openCommunicationBoard(url)}
             ondragstart={(e: DragEvent) => dnd.handleDragStart(e, index)}
           />
         </div>
@@ -156,6 +154,13 @@
     isOpen={board.showCelebration}
     data={board.celebrationData}
     onclose={() => board.closeCelebration()}
+  />
+
+  <!-- לוח תקשורת -->
+  <FloatingIframe 
+    bind:isVisible={board.iframeBoardVisible}
+    bind:url={board.iframeBoardUrl}
+    title={TEXTS.COMMUNICATION_BOARD}
   />
 {/if}
 

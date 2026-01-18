@@ -1,5 +1,98 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-01-19 00:00
+
+### הוספת פיצ'רים חדשים: לוח תקשורת ומשימות שינוי
+
+הוספה של שני פיצ'רים חשובים למערכת סדר היום, כולל שיפורי עיצוב ורפקטורינג ארכיטקטוני.
+
+---
+
+#### מה בוצע?
+
+**1. לוח תקשורת ב-iframe (Communication Board)**
+
+הוספת אפשרות לפתוח לוח תקשורת חיצוני (כמו Cboard) ישירות מתוך משימה:
+
+- **שדה חדש במשימה**: `communicationBoardUrl?: string` (קישור ללוח תקשורת)
+- **לחצן 💬 ב-TaskRow**: מופיע רק למשימות עם קישור ובסטטוס "עכשיו" או "הושלמו"
+- **אינטגרציה עם FloatingIframe**: פתיחה של הלוח בחלון צף הניתן לגרירה ושינוי גודל
+- **ניהול state ב-Controller**: `iframeBoardUrl`, `iframeBoardVisible`, `openCommunicationBoard()`
+
+**קבצים שונו**:
+- `src/lib/types.ts` - הוספת `communicationBoardUrl` ל-Task
+- `src/lib/components/AddModal.svelte` - שדה קלט לקישור
+- `src/lib/components/TaskRow.svelte` - לחצן פתיחה
+- `src/lib/logic/tasksBoard.svelte.ts` - ניהול state של iframe
+- `src/lib/services/language.ts` - טקסטים חדשים
+
+**2. משימות שינוי (Change Tasks)**
+
+מנגנון לסימון משימות כ"בוטלה" או "נוספה":
+
+- **שדה חדש**: `changeType?: 'cancelled' | 'added'`
+- **משימה בוטלה (🚫)**:
+  - עיצוב: גוון אדום עדין (background: `#fef2f2`, border: `#fca5a5`)
+  - לחיצה: רק הקראה "שינוי! היום אין [משימה]!" (ללא סימון כהושלמה)
+  - לא מקבלת מחוון "עכשיו"
+- **משימה נוספה (✨)**:
+  - תגית "פעילות חדשה" בצהוב
+  - פועלת כמשימה רגילה
+- **toggle + dropdown** ב-AddModal לבחירת סוג השינוי
+
+**קבצים שונו**:
+- `src/lib/types.ts` - הוספת `TaskChangeType`
+- `src/lib/components/AddModal.svelte` - UI לסימון שינוי
+- `src/lib/components/TaskRow.svelte` - תצוגת תגי שינוי ועיצוב אדום
+- `src/lib/logic/tasksBoard.svelte.ts` - לוגיקת `playChangeAnnouncement()`
+- `src/routes/+page.svelte` - דילוג על משימות מבוטלות ב-`activeTaskIndex`
+
+**3. שיפורי עיצוב AddModal**
+
+תיקון בעיות גלילה והצגה:
+
+- **פס גלילה יחיד**: הטופס כולו גולל יחד
+- **כפתורים קבועים**: `position: sticky` + `flex-shrink: 0` בתחתית
+- **רשת פעילויות מתכווצת**: לחצן ▼/◀ לכיווץ/הרחבה
+- **padding סלקטיבי**: מופרד לכותרת, תוכן וכפתורים
+
+**4. רפקטורינג ארכיטקטוני**
+
+העברת לוגיקה מ-View ל-Controller:
+
+- **`activeTaskIndex`** → getter ב-TasksBoardController (דילוג על משימות מבוטלות)
+- **iframe state** → TasksBoardController
+- **`openCommunicationBoard()`** → TasksBoardController
+- שמירה על הפרדת רשויות: View רק מציג, Controller מנהל
+
+**5. מיגרציה**
+
+- **גרסה 7**: הוספת שדות `communicationBoardUrl` ו-`changeType` למשימות קיימות
+- `src/lib/services/migration.ts` - מיגרציה אוטומטית
+- `src/lib/data/defaults.ts` - עדכון version ל-7
+
+---
+
+#### החלטות ארכיטקטורה
+
+- **משימות מבוטלות לא נספרות כפעילות**: החלטנו שמשימה מסומנת כ"בוטלה" לא תהיה המשימה הפעילה (`activeTaskIndex`) ולא תקבל מחוון "עכשיו", כי היא לא אמורה להתבצע - רק להשמיע הודעה.
+
+- **TTS במקום קבצי אודיו למשימות שינוי**: כרגע משתמשים ב-TTS להשמעת "שינוי! היום אין [משימה]" כי אין קבצי אודיו מוקלטים. ניתן להוסיף `change.mp3` ו-`no_today.mp3` בעתיד.
+
+- **FloatingIframe למשימות פעילות בלבד**: לחצן לוח התקשורת מופיע רק למשימות בסטטוס "עכשיו" או "הושלמו" כדי למנוע הסחת דעת ממשימות עתידיות.
+
+- **רשת פעילויות מתכווצת**: במקום להסתיר לגמרי, בחרנו באפשרות לכווץ לשורה אחת עם אפשרות להרחבה - כך המשתמש שולט בכמות המידע הגלויה.
+
+---
+
+#### מעקפים ופתרונות
+
+- **padding סלקטיבי ב-modal-card**: הסרנו את ה-padding הכללי מה-modal-card והוספנו אותו סלקטיבית לכל אלמנט (כותרת, טופס, כפתורים) כדי לאפשר scroll נכון עם כפתורים קבועים בתחתית.
+
+- **`min-height: 0` על form**: הוספנו `min-height: 0` ל-form כדי לאפשר ל-flexbox overflow לעבוד נכון. ללא זה, הטופס מסרב להתכווץ מתחת לגודל התוכן שלו.
+
+---
+
 ## 2026-01-18 21:00
 
 ### מערכת חיתוך תמונות מלאה (Image Crop System)
