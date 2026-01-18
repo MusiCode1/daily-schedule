@@ -1,6 +1,7 @@
 ---
 description: הנחיות לארכיטקטורה
 trigger: always_on
+alwaysApply: true
 ---
 
 # חוקי ארכיטקטורה וארגון קוד

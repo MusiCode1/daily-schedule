@@ -1,5 +1,6 @@
 ---
 trigger: always_on
+alwaysApply: true
 ---
 
 # Project Rules for Wordy's Game
