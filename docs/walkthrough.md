@@ -1,5 +1,209 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-01-19 14:45
+
+### 3 פיצ'רים עיקריים: כותרות לרשימות, ניהול אנשים, ומודאל עריכה משותף
+
+יישום 3 פיצ'רים מרכזיים במערכת: (1) כותרת ותיאור לרשימות עם לוגו מוגדל - להכנה לאירועים מיוחדים, (2) מערכת מקיפה לניהול אנשים (צוות ובני משפחה) עם מאגר גלובלי והצגה ויזואלית, (3) מודאל עריכת רשימה כקומפוננטה משותפת עם פאנל פעולות מעוצב במסך הראשי.
+
+---
+
+#### מה בוצע?
+
+**1. כותרת ותיאור לרשימה (List Header)**
+
+הוספת אפשרות להגדיר כותרת ותיאור אופציונליים לכל רשימה, המיועדים בעיקר להכנה לאירועים מיוחדים (לא לשגרה יומיומית).
+
+**תכונות:**
+- שדות אופציונליים `title` ו-`description` לכל רשימה
+- הצגה ויזואלית מעל רשימת המשימות עם לוגו מוגדל (200px)
+- רק אם מוגדר כותרת או תיאור - המערכת מציגה את הסקשן
+
+**דוגמאות שימוש:**
+- "ביום ראשון נוסעים לטיול!" + תמונת אוטו/מטוס
+- "ביום רביעי סבא וסבתא באים" + תמונות סבא וסבתא
+
+**קבצים חדשים:**
+- `src/lib/components/ListHeader.svelte` - קומפוננטה להצגת כותרת גדולה עם לוגו ותיאור
+
+**קבצים שהשתנו:**
+- `src/lib/types.ts` - הוספת `title?: string` ו-`description?: string` לממשק `List`
+- `src/routes/+page.svelte` - אינטגרציה של `ListHeader` מעל רשימת המשימות
+- `src/routes/settings/lists/+page.svelte` - הוספת שדות כותרת ותיאור בטופס עריכת רשימה
+- `src/lib/data/texts.ts` - טקסטים חדשים: `LIST_TITLE`, `LIST_DESCRIPTION`, placeholders
+- `src/lib/services/migration.ts` - מיגרציה לגרסה 8 (הוספת שדות לרשימות קיימות)
+- `src/lib/data/defaults.ts` - עדכון `INITIAL_STATE.version` ל-8
+
+---
+
+**2. מערכת ניהול אנשים (People Management)**
+
+מערכת מקיפה לניהול אנשים (צוות ובני משפחה) עם מאגר גלובלי, בחירה ברמת רשימה, והצגה ויזואלית במסך הראשי.
+
+**ארכיטקטורה:**
+- **מאגר מרכזי**: רשימת `people: Person[]` ב-`AppState` - normalization (איש מוגדר פעם אחת)
+- **הפניות**: כל רשימה מכילה `peopleIds: string[]` - רק מזהים
+- **הסתרה מהירה**: שדה `isPeopleSectionVisible` ברמת הרשימה (נשמר!)
+
+**ממשק Person:**
+```typescript
+interface Person {
+  id: string;
+  name: string;
+  avatar: string; // מזהה תמונה (idb:xxx או URL)
+}
+```
+
+**קבצים חדשים:**
+- `src/lib/stores/peopleStore.svelte.ts` - Store מלא לניהול מאגר האנשים (CRUD + ניקוי הפניות)
+- `src/lib/components/PersonForm.svelte` - טופס **משותף** להוספה/עריכת איש (נעשה שימוש חוזר בשני מקומות!)
+- `src/lib/components/PeoplePicker.svelte` - בחירת אנשים מהמאגר + אפשרות להוסיף חדש inline
+- `src/lib/components/PeopleDisplay.svelte` - הצגה ויזואלית "מי יהיה איתנו היום?" עם אווטארים ולחצן הסתרה
+- `src/routes/settings/people/+page.svelte` - דף ייעודי לניהול מאגר האנשים
+
+**קבצים שהשתנו:**
+- `src/lib/types.ts` - ממשק `Person` חדש + שדות ב-`List`: `peopleIds`, `isPeopleSectionVisible` + שדה ב-`AppState`: `people`
+- `src/routes/+page.svelte` - אינטגרציה של `PeopleDisplay` (תחת `ListHeader` אם יש)
+- `src/routes/settings/+layout.svelte` - לשונית חדשה "אנשים" בניווט ההגדרות
+- `src/routes/settings/lists/+page.svelte` - שילוב `PeoplePicker` בטופס עריכת רשימה
+- `src/lib/logic/tasksBoard.svelte.ts` - מתודת `togglePeopleSection()` להסתרה/הצגה
+- `src/lib/data/texts.ts` - טקסטים: "אנשים", "ניהול אנשים", "מי יהיה איתנו היום?", וכו'
+- `src/lib/services/migration.ts` - מיגרציה לגרסה 9 (אתחול `people: []` ושדות ברשימות)
+- `src/lib/data/defaults.ts` - עדכון `INITIAL_STATE.version` ל-9, אתחול `people: []`
+
+**תכונות מיוחדות:**
+- **קומפוננטה משותפת**: `PersonForm` משמשת גם בדף ניהול האנשים (`/settings/people`) וגם ב-`PeoplePicker` (inline) להוספה מהירה
+- **מחיקה בטוחה**: בעת מחיקת איש מהמאגר, `peopleStore` מנקה אוטומטית את המזהה שלו מכל הרשימות
+- **הצגה ויזואלית**: אווטארים עגולים 80px עם שמות מתחת, כפתור הסתרה/הצגה שנשמר ברמת הרשימה
+
+---
+
+**3. מודאל עריכה כקומפוננטה + פאנל פעולות מעוצב**
+
+רפקטורינג של מודאל עריכת/יצירת רשימה לקומפוננטה משותפת, והוספת פאנל פעולות מעוצב במסך הראשי עם 5 לחצנים צבעוניים.
+
+**קובץ חדש:**
+- `src/lib/components/ListEditModal.svelte` - קומפוננטה משותפת עם כל שדות הטופס (name, greeting, title, description, logo, people)
+
+**שימוש חוזר:**
+- מסך ראשי (`+page.svelte`) - פתיחת מודאל לעריכה/יצירה ישירות מהלוח
+- הגדרות רשימות (`settings/lists/+page.svelte`) - החלפת המודאל הישן בקומפוננטה
+
+**פאנל הפעולות במסך הראשי:**
+
+הפיכת רשימת הכפתורים הישנה לפאנל מעוצב עם 5 כפתורי פעולה:
+
+1. **➕ רשימה חדשה** (כחול) - פותח את `ListEditModal` במצב יצירה
+2. **✏️ ערוך רשימה** (סגול) - פותח את `ListEditModal` במצב עריכה
+3. **🚫/👁️ הסתר/הצג רשימה** (כתום) - toggle visibility (רק אם לא `isDefault`)
+4. **🗑️ מחק רשימה** (אדום) - מחיקת הרשימה הפעילה
+5. **🔄 אפס משימות** (צהוב) - איפוס כל המשימות לסטטוס "לא בוצע"
+
+**עיצוב הפאנל:**
+- Widget מסודר עם כותרת "📋 ניהול רשימה"
+- כל כפתור הוא כרטיס (`action-card`) עם בורדר צבעוני ואפקט hover
+- Grid responsive: `repeat(auto-fit, minmax(90px, 1fr))`
+
+**קבצים שהשתנו:**
+- `src/routes/+page.svelte` - פאנל מעוצב, state למודאל (`isListEditModalOpen`, `editingListForModal`), לוגיקת `handleSaveList`
+- `src/routes/settings/lists/+page.svelte` - החלפת המודאל הישן בשימוש ב-`ListEditModal`
+
+---
+
+**4. שיפורי UX**
+
+**Header sticky (דביק):**
+- `src/routes/layout.css` - שינוי גלובלי: `html, body { height: 100vh; overflow: hidden; }`
+- `src/routes/+page.svelte` - ה-`<header>` מקבל `position: sticky; top: 0; z-index: 100;`
+- תוצאה: כפתורי הניווט וההגדרות תמיד נראים בחלק העליון, גם בזמן גלילה
+
+**תיקון scrollbar במודאל:**
+- בעיה: ה-scrollbar היה שובר את הפינות המעוגלות (`border-radius: 24px`)
+- פתרון: עטיפת התוכן ב-`div.modal-content` נפרד שמקבל את `overflow-y: auto`, בעוד `.modal-card` החיצוני מקבל `overflow: hidden`
+- קובץ: `src/lib/components/ListEditModal.svelte`
+
+**הקטנת כפתורים בפאנל:**
+- עיצוב מחדש של כפתורי הפעולות עם **אייקון דומיננטי**:
+  - אייקון: `font-size: 1.8rem` (גדול ובולט)
+  - טקסט: `font-size: 0.7rem`, `font-weight: 500` (קטן ומשני)
+  - כפתור: `padding: 0.6rem 0.5rem` (קומפקטי)
+  - grid: `minmax(90px, 1fr)` (במקום 140px)
+- תוצאה: זיהוי מהיר יותר של פעולות, פחות עומס ויזואלי
+- קובץ: `src/routes/+page.svelte` - CSS של `.action-card`, `.action-icon`, `.action-label`
+
+**ריכוז טקסטים:**
+- רפקטורינג: העברת כל הטקסטים מ-`language.ts` לקובץ נפרד
+- קבצים:
+  - `src/lib/data/texts.ts` - קובץ **חדש** עם כל הטקסטים (100+ מחרוזות)
+  - `src/lib/services/language.ts` - רק ייבוא וייצוא מחדש של `TEXTS` + פונקציות עזר
+
+---
+
+#### קבצים חדשים שנוצרו (10 קבצים)
+
+**קומפוננטות:**
+1. `src/lib/components/ListHeader.svelte` - כותרת רשימה עם לוגו
+2. `src/lib/components/ListEditModal.svelte` - מודאל עריכה משותף
+3. `src/lib/components/PersonForm.svelte` - טופס איש (משותף)
+4. `src/lib/components/PeoplePicker.svelte` - בחירת אנשים + הוספה inline
+5. `src/lib/components/PeopleDisplay.svelte` - הצגה ויזואלית במסך הראשי
+
+**Stores:**
+6. `src/lib/stores/peopleStore.svelte.ts` - ניהול מאגר אנשים
+
+**Routes:**
+7. `src/routes/settings/people/+page.svelte` - דף ניהול אנשים
+
+**Data:**
+8. `src/lib/data/texts.ts` - ריכוז כל הטקסטים
+
+---
+
+#### החלטות ארכיטקטורה
+
+**כותרת לרשימה:**
+- **אופציונליות מלאה**: אם לא מוגדר `title` או `description` - לא מוצג כלום
+- **לוגו גדול**: 200×200px (לעומת 64px בממשק הרגיל) - מתאים לאירועים מיוחדים
+- **מיקום**: ממש בראש הדף, מעל רשימת המשימות (אחרי `ListSwitcher`)
+
+**מערכת אנשים:**
+- **Normalization**: איש מוגדר פעם אחת במאגר הגלובלי `AppState.people`, רשימות מפנות רק למזהים
+- **קומפוננטה משותפת**: `PersonForm` נבנתה כקומפוננטה גנרית שמשמשת גם בדף ההגדרות וגם inline ב-`PeoplePicker`
+- **מחיקה בטוחה**: `peopleStore.deletePerson()` מנקה אוטומטית את המזהה מכל הרשימות (מונע orphaned references)
+- **הסתרה נשמרת**: `isPeopleSectionVisible` נשמר ברמת הרשימה (לא גלובלי!) - כל רשימה זוכרת את ההעדפה שלה
+
+**מודאל משותף:**
+- **שימוש חוזר מלא**: קומפוננטה אחת משמשת את המסך הראשי ואת הגדרות הרשימות
+- **Props מוגדרות היטב**: `isOpen`, `editingList`, `userId`, `onclose`, `onsave` - ממשק נקי
+- **State מנוהל בחוץ**: הקומפוננטה stateless ביחס לנתוני האפליקציה - מקבלת הכל כ-props
+
+**פאנל פעולות:**
+- **עיצוב כארטיסים**: כל פעולה היא כרטיס נפרד עם בורדר צבעוני - קל לזיהוי
+- **אייקון דומיננטי**: המשתמשים (תלמידי חינוך מיוחד) מזהים אייקונים מהר יותר מטקסט
+- **Grid responsive**: התאמה אוטומטית למספר עמודות לפי רוחב המסך
+
+**Header sticky:**
+- **overflow hierarchy**: `html/body` עם `overflow: hidden`, `.task-list-container` עם `overflow-y: auto`
+- **z-index**: header ב-`z-index: 100` כדי להישאר מעל כל האלמנטים
+
+**Scrollbar במודאל:**
+- **עטיפה כפולה**: קונטיינר חיצוני (`overflow: hidden`) + קונטיינר פנימי (`overflow-y: auto`)
+- למה לא להסתיר? נגישות - המשתמש רואה שיש תוכן נוסף
+
+---
+
+#### מיגרציות
+
+**גרסה 8** (`migration.ts`):
+- הוספת שדות `title?: string` ו-`description?: string` לכל רשימה קיימת
+- ערך ברירת מחדל: `undefined` (אופציונלי)
+
+**גרסה 9** (`migration.ts`):
+- אתחול `people: []` ב-`AppState`
+- הוספת שדות לכל רשימה קיימת:
+  - `peopleIds?: string[]` - ערך ברירת מחדל: `undefined`
+  - `isPeopleSectionVisible: boolean` - ערך ברירת מחדל: `true`
+
 ## 2026-01-19 01:15
 
 ### שמירת מצב לוח התקשורת הצף

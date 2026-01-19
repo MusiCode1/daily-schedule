@@ -2,8 +2,8 @@
   import { userStore } from '$lib/stores/userStore.svelte';
   import { listStore } from '$lib/stores/listStore.svelte';
   import type { List } from '$lib/types';
-  import ImageUploader from '$lib/components/ImageUploader.svelte';
   import ImageDisplay from '$lib/components/ImageDisplay.svelte';
+  import ListEditModal from '$lib/components/ListEditModal.svelte';
   import { TEXTS } from '$lib/services/language';
   import { DEFAULT_LIST_IMAGE } from '$lib/config';
 
@@ -11,8 +11,6 @@
   let managedUserId = $state('');
   let isListModalOpen = $state(false);
   let editingList: List | null = $state(null);
-  let listForm = $state<{ name: string; greeting: string; logo: string }>({ name: '', greeting: '', logo: '' });
-  let listImageSrc: string | null = $state(null);
   
   // אתחול managedUserId כשהמשתמשים נטענים או שהקומפוננטה עולה
   $effect(() => {
@@ -23,35 +21,35 @@
 
   function openAddList() {
       editingList = null;
-      listForm = { name: '', greeting: 'בהצלחה', logo: '' };
-      listImageSrc = null;
       isListModalOpen = true;
   }
   
   function openListModal(list: List) {
       editingList = list;
-      listForm = { name: list.name, greeting: list.greeting || '', logo: list.logo || '' };
-      listImageSrc = list.logo || null;
       isListModalOpen = true;
   }
   
-  function saveList() {
+  function saveList(formData: { name: string; greeting: string; logo: string; title: string; description: string; peopleIds: string[] }) {
       if (!managedUserId) return;
-      
-      const logoSrc = listImageSrc || '';
       
       if (editingList) {
            listStore.updateList(managedUserId, editingList.id, {
-               name: listForm.name,
-               greeting: listForm.greeting,
-               logo: logoSrc
+               name: formData.name,
+               greeting: formData.greeting,
+               logo: formData.logo,
+               title: formData.title,
+               description: formData.description,
+               peopleIds: formData.peopleIds.length > 0 ? formData.peopleIds : undefined
            });
       } else {
-           const newListId = listStore.addList(managedUserId, listForm.name);
+           const newListId = listStore.addList(managedUserId, formData.name);
            if (newListId) {
                listStore.updateList(managedUserId, newListId, {
-                   greeting: listForm.greeting,
-                   logo: logoSrc
+                   greeting: formData.greeting,
+                   logo: formData.logo,
+                   title: formData.title,
+                   description: formData.description,
+                   peopleIds: formData.peopleIds.length > 0 ? formData.peopleIds : undefined
                });
            }
       }
@@ -139,38 +137,13 @@
     {/each}
 </div>
 
-{#if isListModalOpen}
-    <!-- svelte-ignore a11y_click_events_have_key_events -->
-    <!-- svelte-ignore a11y_no_static_element_interactions -->
-    <div class="modal-overlay" onclick={(e) => e.target === e.currentTarget && (isListModalOpen = false)}>
-         <div class="modal-card" role="dialog" aria-modal="true">
-            <h3>{editingList ? TEXTS.EDIT_LIST : TEXTS.NEW_LIST}</h3>
-            <form onsubmit={(e) => { e.preventDefault(); saveList(); }}>
-                <div class="form-group">
-                    <label for="list-name-input">{TEXTS.LIST_NAME}:</label>
-                    <input id="list-name-input" type="text" bind:value={listForm.name} required />
-                </div>
-                <div class="form-group">
-                    <label for="list-greeting-input">{TEXTS.GREETING}:</label>
-                    <input id="list-greeting-input" type="text" bind:value={listForm.greeting} placeholder={TEXTS.GREETING_PLACEHOLDER} />
-                </div>
-                
-                <div class="form-group">
-                    <label for="list-logo-input">{TEXTS.LOGO}:</label>
-                    <ImageUploader
-                        imageSrc={listImageSrc}
-                        onchange={(src) => listImageSrc = src}
-                    />
-                </div>
-                
-                <div class="modal-actions">
-                     <button type="button" onclick={() => isListModalOpen = false}>{TEXTS.CANCEL}</button>
-                     <button type="submit" class="btn-primary">{TEXTS.SAVE}</button>
-                </div>
-            </form>
-         </div>
-    </div>
-{/if}
+<ListEditModal
+  isOpen={isListModalOpen}
+  editingList={editingList}
+  userId={managedUserId}
+  onclose={() => isListModalOpen = false}
+  onsave={saveList}
+/>
 
 <style>
   h2 {
@@ -375,88 +348,4 @@
       margin-right: 0.25rem;
   }
 
-  /* מודאל */
-  .modal-card {
-      background: white;
-      padding: 2.5rem;
-      border-radius: 24px;
-      width: 100%;
-      max-width: 450px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-      border: 1px solid #f1f5f9;
-      position: relative;
-      z-index: 1001;
-  }
-  
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(4px);
-  }
-  
-  .modal-card h3 {
-      text-align: center;
-      font-size: 1.5rem;
-      margin-bottom: 2rem;
-      color: #1e293b;
-  }
-
-  .form-group {
-      margin-bottom: 1.5rem;
-  }
-
-  .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: #475569;
-      font-size: 0.95rem;
-  }
-  
-  .form-group input {
-      width: 100%;
-      padding: 0.75rem 1rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 12px;
-      font-size: 1rem;
-      background: #f8fafc;
-      transition: all 0.2s;
-  }
-  
-  .form-group input:focus {
-      outline: none;
-      background: white;
-      border-color: #6366f1;
-      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  }
-
-  .modal-actions {
-      display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;
-  }
-  
-  .modal-actions button {
-      padding: 0.75rem 1.5rem;
-      border-radius: 12px;
-      font-size: 1rem;
-  }
-  .modal-actions button[type="button"] { background: #f1f5f9; color: #64748b; }
-  .modal-actions button[type="button"]:hover { background: #e2e8f0; color: #475569; }
-  .modal-actions button[type="submit"] {
-      background: #6366f1; color: white;
-      box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
-  }
-  .modal-actions button[type="submit"]:hover {
-      background: #4f46e5;
-      transform: translateY(-1px);
-      box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
-  }
-  
 </style>

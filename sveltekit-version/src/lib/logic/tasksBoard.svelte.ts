@@ -248,4 +248,12 @@ export class TasksBoardController {
 		if (!this.currentUser || !this.activeList) return;
 		listStore.resetAllTasks(this.currentUser.id, this.activeList.id);
 	}
+
+	togglePeopleSection() {
+		if (!this.currentUser || !this.activeList) return;
+		const currentValue = this.activeList.isPeopleSectionVisible ?? true;
+		listStore.updateList(this.currentUser.id, this.activeList.id, {
+			isPeopleSectionVisible: !currentValue
+		});
+	}
 }

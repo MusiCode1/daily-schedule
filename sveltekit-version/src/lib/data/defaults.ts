@@ -80,7 +80,7 @@ export function createDefaultLists(): List[] {
 }
 
 export const INITIAL_STATE: AppState = {
-	version: 7,
+	version: 9,
 	users: [
 		{
 			id: 'u1',
@@ -110,6 +110,7 @@ export const INITIAL_STATE: AppState = {
 		u3: createDefaultLists()
 	},
 	images: {}, // מאגר מטאדטה של תמונות
+	people: [], // מאגר גלובלי של אנשים (צוות/משפחה)
 	activeListId: {
 		u1: 'morning_routine',
 		u2: 'morning_routine',

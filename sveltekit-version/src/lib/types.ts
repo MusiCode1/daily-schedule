@@ -36,6 +36,17 @@ export interface List {
 	logo?: string; // רק מזהה תמונה
 	greeting?: string;
 	isHidden?: boolean;
+	title?: string; // כותרת אופציונלית (להכנה לאירועים)
+	description?: string; // תיאור קצר אופציונלי
+	peopleIds?: string[]; // מזהי אנשים (צוות/משפחה) לרשימה זו
+	isPeopleSectionVisible?: boolean; // האם סקשן האנשים גלוי (ברירת מחדל: true)
+}
+
+// איש (צוות/משפחה)
+export interface Person {
+	id: string;
+	name: string;
+	avatar: string; // מזהה תמונה (idb:xxx או URL)
 }
 
 export type Gender = 'boy' | 'girl';
@@ -56,6 +67,9 @@ export interface AppState {
 
 	// מאגר מטאדטה של תמונות (מפתח = מזהה תמונה)
 	images: { [imageId: string]: ImageMetadata };
+
+	// מאגר גלובלי של אנשים (צוות/משפחה)
+	people: Person[];
 
 	// Track which list is active for each user
 	activeListId: { [userId: string]: string };

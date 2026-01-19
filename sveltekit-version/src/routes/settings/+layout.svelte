@@ -9,6 +9,7 @@
   const TABS = [
     { id: 'users', label: TEXTS.USERS_TAB, icon: '👥', path: '/settings/users' },
     { id: 'lists', label: TEXTS.LISTS_TAB, icon: '📋', path: '/settings/lists' },
+    { id: 'people', label: 'אנשים', icon: '👨‍👩‍👧‍👦', path: '/settings/people' },
     { id: 'general', label: TEXTS.GENERAL_TAB, icon: '⚙️', path: '/settings/general' }
   ];
 

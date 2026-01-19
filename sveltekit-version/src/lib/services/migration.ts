@@ -193,6 +193,51 @@ export const migrationService = {
 			parsed.version = 7;
 		}
 
+		if (parsed.version < 8) {
+			console.log('Migrating to version 8: Adding list title and description...');
+			
+			// הוספת שדות כותרת ותיאור לרשימות (אופציונליים)
+			const users = Object.keys(parsed.lists || {});
+			users.forEach((userId) => {
+				const userLists: List[] = parsed.lists[userId];
+				userLists.forEach((list: any) => {
+					if (!list.title) {
+						list.title = undefined;
+					}
+					if (!list.description) {
+						list.description = undefined;
+					}
+				});
+			});
+
+			parsed.version = 8;
+		}
+
+		if (parsed.version < 9) {
+			console.log('Migrating to version 9: Adding people (team/family members)...');
+			
+			// אתחול מאגר האנשים אם לא קיים
+			if (!parsed.people) {
+				parsed.people = [];
+			}
+
+			// הוספת שדות לרשימות (אופציונליים)
+			const users = Object.keys(parsed.lists || {});
+			users.forEach((userId) => {
+				const userLists: List[] = parsed.lists[userId];
+				userLists.forEach((list: any) => {
+					if (!list.peopleIds) {
+						list.peopleIds = undefined;
+					}
+					if (!list.isPeopleSectionVisible) {
+						list.isPeopleSectionVisible = true; // ברירת מחדל - גלוי
+					}
+				});
+			});
+
+			parsed.version = 9;
+		}
+
 		return { ...INITIAL_STATE, ...parsed };
 	},
 
@@ -201,7 +246,7 @@ export const migrationService = {
 		if (legacyLists) {
 			try {
 				const lists = JSON.parse(legacyLists);
-				const newState: AppState = { ...INITIAL_STATE, version: 7, lastModified: Date.now() };
+				const newState: AppState = { ...INITIAL_STATE, version: 9, lastModified: Date.now() };
 
 				// המרת רשימות ישנות לפורמט החדש עבור משתמש u1 (ברירת מחדל)
 				const newLists: List[] = lists.map((l: any) => ({
