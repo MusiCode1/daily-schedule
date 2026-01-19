@@ -73,6 +73,15 @@ export class TasksBoardController {
 	async toggleTask(taskId: string) {
 		if (this.isEditMode || !this.currentUser || !this.activeList) return;
 
+		// אם הרשימה נעולה - רק השמעת שם המשימה (מצב תרגול/הכנה)
+		if (this.activeList.isLocked) {
+			const task = this.tasks.find((t) => t.id === taskId);
+			if (task) {
+				await this.playTaskName(task.name);
+			}
+			return; // לא מעדכנים את המשימה
+		}
+
 		const currentTaskIndex = this.tasks.findIndex((t) => t.id === taskId);
 		const currentTask = this.tasks[currentTaskIndex];
 		
@@ -97,6 +106,14 @@ export class TasksBoardController {
 		});
 
 		listStore.updateTasks(this.currentUser.id, this.activeList.id, newTasks);
+	}
+
+	async playTaskName(taskName: string) {
+		// השמעת שם המשימה בלבד (למצב רשימה נעולה)
+		const sequence: Array<{ type: 'file' | 'tts'; content: string }> = [
+			{ type: 'tts', content: taskName }
+		];
+		await audioSequencer.playSequence(sequence);
 	}
 
 	async playChangeAnnouncement(taskName: string) {

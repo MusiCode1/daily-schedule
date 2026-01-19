@@ -4,6 +4,7 @@
   import type { List } from '$lib/types';
   import ImageDisplay from '$lib/components/ImageDisplay.svelte';
   import ListEditModal from '$lib/components/ListEditModal.svelte';
+  import UserPickerModal from '$lib/components/UserPickerModal.svelte';
   import { TEXTS } from '$lib/services/language';
   import { DEFAULT_LIST_IMAGE } from '$lib/config';
 
@@ -11,6 +12,10 @@
   let managedUserId = $state('');
   let isListModalOpen = $state(false);
   let editingList: List | null = $state(null);
+  
+  // העברה/שכפול בין משתמשים
+  let isUserPickerOpen = $state(false);
+  let listToTransfer: string | null = $state(null);
   
   // אתחול managedUserId כשהמשתמשים נטענים או שהקומפוננטה עולה
   $effect(() => {
@@ -79,6 +84,28 @@
   function toggleListVisibility(listId: string) {
       listStore.toggleListVisibility(managedUserId, listId);
   }
+  
+  function openUserPicker(listId: string) {
+      listToTransfer = listId;
+      isUserPickerOpen = true;
+  }
+  
+  function handleUserSelected(targetUserId: string, shouldMove: boolean) {
+      if (!listToTransfer) return;
+      
+      const newListId = listStore.copyListToUser(
+          managedUserId,
+          targetUserId,
+          listToTransfer,
+          shouldMove
+      );
+      
+      if (newListId) {
+          console.log(`List ${shouldMove ? 'moved' : 'copied'} successfully to user ${targetUserId}`);
+      }
+      
+      listToTransfer = null;
+  }
 </script>
 
 <div class="header-row">
@@ -126,6 +153,9 @@
                 <button class="action-btn duplicate" title={TEXTS.DUPLICATE} onclick={() => duplicateList(list.id)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                 </button>
+                <button class="action-btn transfer" title={TEXTS.COPY_TO_USER} onclick={() => openUserPicker(list.id)}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="m21 3-7 7"/><path d="m3 3 7 7"/><path d="M16 21h5v-5"/><path d="M8 21H3v-5"/><path d="m21 21-7-7"/><path d="m3 21 7-7"/></svg>
+                </button>
                 <button class="action-btn edit" title={TEXTS.EDIT} onclick={() => openListModal(list)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
                 </button>
@@ -143,6 +173,13 @@
   userId={managedUserId}
   onclose={() => isListModalOpen = false}
   onsave={saveList}
+/>
+
+<UserPickerModal
+  isOpen={isUserPickerOpen}
+  currentUserId={managedUserId}
+  onclose={() => isUserPickerOpen = false}
+  onselect={handleUserSelected}
 />
 
 <style>
@@ -334,6 +371,12 @@
       color: #f59e0b;
       border-color: #f59e0b;
       background: #fffbeb;
+  }
+  
+  .action-btn.transfer:hover {
+      color: #06b6d4;
+      border-color: #06b6d4;
+      background: #ecfeff;
   }
   
   .hidden-list {

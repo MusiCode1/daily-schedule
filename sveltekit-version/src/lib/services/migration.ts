@@ -238,6 +238,23 @@ export const migrationService = {
 			parsed.version = 9;
 		}
 
+		if (parsed.version < 10) {
+			console.log('Migrating to version 10: Adding isLocked to lists...');
+			
+			// הוספת שדה isLocked לכל הרשימות
+			const users = Object.keys(parsed.lists || {});
+			users.forEach((userId) => {
+				const userLists: List[] = parsed.lists[userId];
+				userLists.forEach((list: any) => {
+					if (list.isLocked === undefined) {
+						list.isLocked = false; // ברירת מחדל: לא נעול
+					}
+				});
+			});
+
+			parsed.version = 10;
+		}
+
 		return { ...INITIAL_STATE, ...parsed };
 	},
 

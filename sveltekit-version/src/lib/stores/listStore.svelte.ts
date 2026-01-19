@@ -146,6 +146,65 @@ export class ListStore {
 			globalState.save();
 		}
 	}
+
+	// החלפת מצב נעילה של רשימה (תרגול/הכנה)
+	toggleListLock(userId: string, listId: string) {
+		const list = globalState.state.lists[userId]?.find((l) => l.id === listId);
+		if (list && !list.isDefault) {
+			// לא לנעול רשימות ברירת מחדל
+			list.isLocked = !list.isLocked;
+			globalState.save();
+		}
+	}
+
+	// העברה/שכפול רשימה בין משתמשים
+	copyListToUser(
+		fromUserId: string,
+		toUserId: string,
+		listId: string,
+		shouldMove: boolean = false
+	): string | null {
+		const originalList = globalState.state.lists[fromUserId]?.find((l) => l.id === listId);
+		if (!originalList) return null;
+
+		const newId = crypto.randomUUID();
+
+		// העתקה עמוקה של המשימות עם IDs חדשים
+		const copiedTasks: Task[] = originalList.tasks.map((task) => ({
+			...task,
+			id: crypto.randomUUID(),
+			isDone: false // אפס את הסטטוס של המשימות בעותק
+		}));
+
+		const copiedList: List = {
+			id: newId,
+			name: originalList.name,
+			tasks: copiedTasks,
+			greeting: originalList.greeting,
+			logo: originalList.logo,
+			title: originalList.title,
+			description: originalList.description,
+			peopleIds: originalList.peopleIds,
+			isPeopleSectionVisible: originalList.isPeopleSectionVisible,
+			isLocked: originalList.isLocked,
+			isDefault: false, // תמיד false - העתק לא יכול להיות default
+			isHidden: false
+		};
+
+		if (!globalState.state.lists[toUserId]) {
+			globalState.state.lists[toUserId] = [];
+		}
+
+		globalState.state.lists[toUserId].push(copiedList);
+
+		// אם זו העברה (לא שכפול) - מחיקת המקור
+		if (shouldMove && globalState.state.lists[fromUserId].length > 1) {
+			this.deleteList(fromUserId, listId);
+		}
+
+		globalState.save();
+		return newId;
+	}
 }
 
 export const listStore = new ListStore();

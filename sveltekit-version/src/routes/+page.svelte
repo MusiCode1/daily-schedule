@@ -126,6 +126,12 @@
           listsData={nav.userLists}
           onchange={(e) => nav.switchList(e.listId)} 
         />
+        
+        {#if nav.activeList?.isLocked}
+          <div class="locked-badge">
+            🔒 {TEXTS.LOCKED_LIST}
+          </div>
+        {/if}
       {/if}
       
       {#if nav.activeList?.title || nav.activeList?.description}
@@ -171,6 +177,15 @@
                 }}>
                   <span class="action-icon">{nav.activeList.isHidden ? '👁️' : '🚫'}</span>
                   <span class="action-label">{nav.activeList.isHidden ? 'הצג רשימה' : 'הסתר רשימה'}</span>
+                </button>
+                
+                <button class="action-card lock" onclick={() => { 
+                  if (session.currentUser && nav.activeList) {
+                    listStore.toggleListLock(session.currentUser.id, nav.activeList.id);
+                  }
+                }}>
+                  <span class="action-icon">{nav.activeList.isLocked ? '🔓' : '🔒'}</span>
+                  <span class="action-label">{nav.activeList.isLocked ? TEXTS.UNLOCK_LIST : TEXTS.LOCK_LIST}</span>
                 </button>
               {/if}
             {/if}
@@ -502,6 +517,19 @@
       box-shadow: 0 6px 16px rgba(234, 179, 8, 0.3);
     }
 
+    .action-card.lock {
+      border-color: #64748b;
+      color: #64748b;
+      background: #f8fafc;
+    }
+
+    .action-card.lock:hover {
+      background: #64748b;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(100, 116, 139, 0.3);
+    }
+
     @media (max-width: 600px) {
       .panel-actions {
         grid-template-columns: repeat(2, 1fr);
@@ -572,5 +600,18 @@
         padding: 2rem;
         background: rgba(255,255,255,0.5);
         border-radius: 1rem;
+    }
+    
+    .locked-badge {
+      font-size: 0.9rem;
+      color: #64748b;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 </style>

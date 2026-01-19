@@ -36,6 +36,7 @@ export interface List {
 	logo?: string; // רק מזהה תמונה
 	greeting?: string;
 	isHidden?: boolean;
+	isLocked?: boolean; // במצב נעול, לחיצה על משימה רק משמיעה את שמה (ללא חגיגה)
 	title?: string; // כותרת אופציונלית (להכנה לאירועים)
 	description?: string; // תיאור קצר אופציונלי
 	peopleIds?: string[]; // מזהי אנשים (צוות/משפחה) לרשימה זו
