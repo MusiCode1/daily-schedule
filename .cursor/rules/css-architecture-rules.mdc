@@ -1,0 +1,278 @@
+# CSS Architecture Rules - 3 Layers + @apply + Nested CSS
+
+> **Target Audience:** AI Assistant  
+> **Purpose:** Quick reference for implementing the project's CSS architecture
+
+---
+
+## Core Structure
+
+```
+1. Design Tokens (:root)           → CSS Variables (NOT a layer)
+2. Theme Variations (.theme-*)     → CSS Variables (NOT a layer)
+3. @layer base, components, theme-overrides;
+4. @layer base                     → Basic structure + resets
+5. @layer components               → Reusable components (WITH @apply)
+6. @layer theme-overrides          → Theme-specific overrides (WITH nested CSS)
+```
+
+---
+
+## Critical Rules
+
+### Layers
+
+```css
+/* ALWAYS declare layer order first! */
+@layer base, components, theme-overrides;
+
+/* Layers win by ORDER, not specificity */
+/* theme-overrides > components > base */
+```
+
+### @apply Usage
+
+**✅ USE @apply for:**
+- Components that repeat 5+ times: `.btn`, `.card`, `.avatar`, `.badge`, `.modal`
+- Complex components with states (hover, focus, active)
+
+**❌ DON'T use @apply for:**
+- Simple utilities: `.flex`, `.grid`, `.gap-2`, `.mt-4`
+- One-off layouts
+- Code that appears 1-4 times only
+
+**Rule of thumb:** If it repeats 5+ times → @apply. Otherwise → inline Tailwind.
+
+### Nesting
+
+**✅ USE nested CSS for:**
+- Theme overrides (all overrides in one block)
+- Pseudo-selectors with `&` (`:hover`, `:active`, `:focus`)
+- Max 3 levels deep
+
+**❌ DON'T nest:**
+- More than 3 levels
+- Outside `@layer theme-overrides`
+
+---
+
+## Code Templates
+
+### Component with @apply
+
+```css
+@layer components {
+  .btn {
+    @apply px-6 py-3 font-bold transition-all cursor-pointer;
+    background: var(--primary);
+    border-radius: var(--border-radius);
+    
+    &:hover {
+      @apply brightness-110;
+    }
+    
+    &:active {
+      @apply scale-95;
+    }
+  }
+}
+```
+
+### Theme Override with Nesting
+
+```css
+@layer theme-overrides {
+  .theme-playful {
+    .btn {
+      @apply shadow-lg transform translate-y-0;
+      
+      &:hover {
+        @apply -translate-y-0.5 shadow-xl;
+      }
+      
+      &:active {
+        @apply translate-y-1;
+        box-shadow: 0 0 0 0;
+      }
+    }
+    
+    .card {
+      @apply border-b-[6px] border-gray-300;
+    }
+  }
+}
+```
+
+### Design Tokens
+
+```css
+:root {
+  /* Colors */
+  --primary: #6366f1;
+  --secondary: #8b5cf6;
+  --success: #10b981;
+  --danger: #ef4444;
+  
+  /* Typography */
+  --text-main: #334155;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  
+  /* Borders & Shadows */
+  --border-radius: 16px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+}
+```
+
+### Theme Variation
+
+```css
+.theme-playful {
+  --primary: #f59e0b;
+  --border-radius: 24px;
+  --bg-main: #fff7ed;
+  background-image: radial-gradient(#fbbf24 2px, transparent 2px);
+  background-size: 32px 32px;
+}
+```
+
+---
+
+## File Structure (Future)
+
+```
+src/styles/
+├── tokens/
+│   └── design-tokens.css          ← :root
+├── themes/
+│   ├── focus.css                  ← .theme-focus
+│   ├── playful.css
+│   ├── gradient.css
+│   └── contrast.css
+├── layers/
+│   ├── base.css                   ← @layer base
+│   ├── components.css             ← @layer components (WITH @apply)
+│   └── theme-overrides.css        ← @layer theme-overrides (WITH nesting)
+└── main.css                       ← imports all + declares layer order
+```
+
+### main.css
+
+```css
+/* 1. Declare layer order FIRST */
+@layer base, components, theme-overrides;
+
+/* 2. Tokens (variables) */
+@import './tokens/design-tokens.css';
+
+/* 3. Themes (variables) */
+@import './themes/focus.css';
+@import './themes/playful.css';
+@import './themes/gradient.css';
+@import './themes/contrast.css';
+
+/* 4. Layers (order doesn't matter, declared above) */
+@import './layers/base.css';
+@import './layers/components.css';
+@import './layers/theme-overrides.css';
+```
+
+---
+
+## HTML Usage Patterns
+
+### ✅ Perfect: Component + Utilities
+
+```html
+<button class="btn flex items-center gap-2">
+  <!--     ↑        ↑ inline utilities      -->
+  <!--     └ component from @apply          -->
+  <span>שמור</span>
+</button>
+```
+
+### ✅ Component Only
+
+```html
+<div class="card">
+  <h3>כותרת</h3>
+</div>
+```
+
+### ✅ Component + Variant
+
+```html
+<button class="btn btn-secondary">ביטול</button>
+<button class="btn btn-danger">מחק</button>
+```
+
+---
+
+## Checklist for New Components
+
+- [ ] Does it repeat 5+ times? → Use @apply
+- [ ] Using CSS Variables for theme-dependent values?
+- [ ] Inside correct layer?
+- [ ] Nesting ≤ 3 levels?
+- [ ] Using `&` for pseudo-selectors?
+- [ ] Theme overrides in `@layer theme-overrides`?
+
+---
+
+## DO ✅
+
+1. Use CSS Variables for theme-dependent values
+2. Declare `@layer` order at the top
+3. Use @apply ONLY for repeating components (5+)
+4. Keep nesting ≤ 3 levels
+5. All theme overrides in `@layer theme-overrides`
+6. Use nested CSS for theme overrides
+7. Combine component classes + inline utilities
+
+---
+
+## DON'T ❌
+
+1. Don't use `!important` (unless absolutely necessary)
+2. Don't mix layers (keep each thing in its place)
+3. Don't write CSS outside layers (except tokens/themes)
+4. Don't duplicate variables (Single Source of Truth)
+5. Don't use hardcoded values instead of variables
+6. Don't use @apply for every small utility
+7. Don't nest more than 3 levels
+8. Don't write theme overrides outside `@layer theme-overrides`
+
+---
+
+## Quick Reference: When to Use What
+
+| Scenario | Solution |
+|----------|----------|
+| Component repeats 5+ times | `@layer components { .btn { @apply ... } }` |
+| Component repeats 1-4 times | Inline Tailwind classes |
+| Theme-specific styling | `@layer theme-overrides { .theme-x { .btn { } } }` |
+| Pseudo-selector | `&:hover`, `&:active`, `&:focus` |
+| Theme-dependent value | CSS Variable: `var(--primary)` |
+| Fixed value (same across themes) | Inline or Tailwind |
+
+---
+
+## Philosophy
+
+> **"Component classes for base, Tailwind utilities for flexibility, Theme overrides for uniqueness"**
+
+---
+
+## Version
+
+- **Created:** 2026-01-20
+- **Version:** 1.0
+- **Based on:** docs/css-architecture-guide.md v2.0

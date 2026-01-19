@@ -223,6 +223,8 @@ interface ImageMetadata {
 
 **חובה לעדכן בסיום כל משימה!**
 
+**חשוב:** לפני עדכון ה-walkthrough, השתמש בפקודה `Get-Date -Format "yyyy-MM-dd HH:mm"` (PowerShell) או `date +"%Y-%m-%d %H:%M"` (Bash) כדי לקבל את התאריך והשעה הנוכחיים המדויקים.
+
 **פורמט:**
 ```markdown
 ## [תאריך] [שעה]
@@ -293,6 +295,222 @@ $effect(() => {
 // ❌ לא נכון - Svelte 4
 let count = 0; // לא ריאקטיבי!
 $: doubled = count * 2;
+```
+
+### Tailwind CSS - גישה היברידית
+
+**עקרון:** קומפוננטות CSS לדברים שחוזרים, @apply לדברים מורכבים חד-פעמיים, Tailwind ישירות לדברים פשוטים.
+
+#### שלושת המקרים:
+
+**1. קומפוננטות חוזרות (3+ פעמים)**
+
+עבור אלמנטים ש**חוזרים על עצמם 3+ פעמים** או מורכבים:
+
+```css
+/* ✅ קומפוננטה ב-settings.css - חוזרת הרבה */
+@import '../layout.css';
+
+@layer components {
+  .user-card {
+    @apply bg-white border border-slate-200 rounded-2xl p-6 
+           flex flex-col items-center gap-4 shadow-md;
+  }
+  
+  .users-grid {
+    @apply grid gap-6 w-full;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
+```
+
+**2. מורכב (5+ classes) אבל חד-פעמי**
+
+עבור styling **מורכב שמופיע רק פעם אחת**:
+
+```svelte
+<style>
+  @reference "tailwindcss";
+  
+  /* ✅ מורכב אבל חד-פעמי - @apply בקומפוננטה */
+  .special-layout {
+    @apply flex flex-col gap-4 p-8 bg-white rounded-lg 
+           shadow-xl border-2 border-blue-500;
+  }
+  
+  .unique-grid {
+    @apply grid gap-8 mb-6;
+    grid-template-columns: 2fr 1fr;
+  }
+</style>
+```
+
+**3. פשוט/קטן (1-4 classes)**
+
+עבור styling **חד-פעמי או פשוט**:
+
+```svelte
+<!-- ✅ Tailwind ישירות - דברים קטנים -->
+<div class="flex gap-2 mt-4">
+  <span class="text-sm text-gray-500">פרטים</span>
+  <div class="space-y-2">...</div>
+</div>
+```
+
+#### כלל אצבע - מתי להשתמש?
+
+| מצב | פתרון | מיקום | דוגמה |
+|-----|--------|-------|-------|
+| חוזר 3+ פעמים | **CSS Component** | `settings.css` | `.user-card` (10 כרטיסים) |
+| מורכב (5+ classes) חד-פעמי | **@apply ב-`<style>`** | קומפוננטה | `.special-layout` |
+| פשוט (1-4 classes) | **Tailwind ישירות** | HTML | `class="flex gap-2"` |
+| Layout קטן | **Tailwind ישירות** | HTML | `class="mt-4 space-y-2"` |
+
+#### דוגמה משולבת:
+
+```svelte
+<script>
+  const users = [...];
+</script>
+
+<style>
+  @reference "tailwindcss";
+  
+  /* דף זה בלבד - header מיוחד */
+  .users-page-header {
+    @apply flex justify-between items-center 
+           bg-gradient-to-r from-blue-50 to-purple-50 
+           p-6 rounded-xl mb-8 shadow-sm;
+  }
+</style>
+
+<!-- קומפוננטה מרכזית - מוגדרת ב-settings.css -->
+<div class="page-container">
+  
+  <!-- styling חד-פעמי מורכב - @apply בקומפוננטה -->
+  <header class="users-page-header">
+    <h2 class="page-header">משתמשים</h2>
+    
+    <!-- styling פשוט - Tailwind ישירות -->
+    <div class="flex gap-2">
+      <button class="btn btn-primary">הוסף</button>
+    </div>
+  </header>
+  
+  <!-- קומפוננטה - חוזרת -->
+  <div class="users-grid">
+    {#each users as user}
+      <!-- קומפוננטה - חוזרת -->
+      <div class="user-card">
+        <!-- Tailwind - פשוט -->
+        <div class="flex gap-2 items-center">
+          <span class="text-sm font-medium">{user.name}</span>
+        </div>
+      </div>
+    {/each}
+  </div>
+</div>
+```
+
+#### כללים טכניים:
+
+1. **@import חובה**: `settings.css` צריך `@import '../layout.css';` בראש
+2. **@reference רק עם @apply**: הוסף `@reference "tailwindcss";` ב-`<style>` רק אם יש `@apply`
+3. **לא צריך CDN**: אין צורך ב-Tailwind CDN script ב-`+layout.svelte`
+
+#### כלל קריטי - HTML vs `<style>`:
+
+**אם אפשר לשים ב-HTML → תמיד HTML ישירות!**
+
+```svelte
+<!-- ✅ נכון - ב-HTML -->
+<div class="flex gap-2 mt-4">
+  <span class="text-sm">טקסט</span>
+</div>
+
+<!-- ❌ לא נכון - מיותר! -->
+<style>
+  .my-wrapper {
+    @apply flex gap-2 mt-4;
+  }
+</style>
+<div class="my-wrapper">...</div>
+```
+
+**אם חייבים `<style>` (nested, override) → תמיד @apply!**
+
+```svelte
+<!-- ✅ נכון - @apply ב-style -->
+<style>
+  @reference "tailwindcss";
+  
+  .modal-content h3 {
+    @apply text-center text-2xl mb-8;
+  }
+</style>
+
+<!-- ❌ לא נכון - CSS רגיל ב-style -->
+<style>
+  .modal-content h3 {
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+  }
+</style>
+```
+
+**הכלל הזהב**: כל Tailwind utility שנמצא ב-`<style>` **חייב** להיות דרך `@apply`!
+
+#### טעויות נפוצות:
+
+```svelte
+<!-- ❌ לא נכון - יצירת class לכל דבר קטן -->
+<style>
+  @reference "tailwindcss";
+  
+  .flex-gap-2 {
+    @apply flex gap-2;
+  }
+  
+  .text-small {
+    @apply text-sm;
+  }
+</style>
+
+<!-- ✅ נכון - Tailwind ישירות -->
+<div class="flex gap-2">
+  <span class="text-sm">טקסט</span>
+</div>
+
+<!-- ❌ לא נכון - Tailwind utilities למשהו שחוזר 10 פעמים -->
+{#each items as item}
+  <div class="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col items-center gap-4 shadow-md">
+    <!-- חוזר 10 פעמים! צריך .item-card ב-settings.css -->
+  </div>
+{/each}
+
+<!-- ✅ נכון - קומפוננטה ב-settings.css -->
+{#each items as item}
+  <div class="item-card">
+    <!-- ... -->
+  </div>
+{/each}
+
+<!-- ❌ לא נכון - @apply בלי @reference -->
+<style>
+  .my-class {
+    @apply flex gap-2; /* לא יעבוד! -->
+  }
+</style>
+
+<!-- ✅ נכון - עם @reference -->
+<style>
+  @reference "tailwindcss";
+  
+  .my-class {
+    @apply flex gap-2;
+  }
+</style>
 ```
 
 ### אודיו

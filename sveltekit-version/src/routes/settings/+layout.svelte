@@ -3,13 +3,14 @@
   import { goto } from '$app/navigation';
   import { TEXTS } from '$lib/services/language';
   import { fade } from 'svelte/transition';
+  import './settings.css';
 
   let { children } = $props();
 
   const TABS = [
     { id: 'users', label: TEXTS.USERS_TAB, icon: '👥', path: '/settings/users' },
     { id: 'lists', label: TEXTS.LISTS_TAB, icon: '📋', path: '/settings/lists' },
-    { id: 'people', label: 'אנשים', icon: '👨‍👩‍👧‍👦', path: '/settings/people' },
+    { id: 'people', label: TEXTS.PEOPLE_TAB, icon: '👨‍👩‍👧‍👦', path: '/settings/people' },
     { id: 'general', label: TEXTS.GENERAL_TAB, icon: '⚙️', path: '/settings/general' }
   ];
 
