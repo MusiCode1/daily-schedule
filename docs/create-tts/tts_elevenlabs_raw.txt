@@ -1,55 +1,107 @@
 
-# 2025-01-12
-[strong israeli accent] [cheering] אַתָּה אַלּוּף! [clapping]
-[strong israeli accent] [cheering] אַתְּ אַלּוּפָה! [clapping]
-[strong israeli accent] [excited] אַתָּה יֶלֶד נֶהֱדָר!
-[strong israeli accent] [excited] אַתְּ יַלְדָּה נֶהֱדֶרֶת!
+
+[strong israeli accent] [proud] אַתָּה אַלּוּ-ף!
+
+[strong israeli accent] [proud] אַתְּ a-lu fa!
+
+[strong israeli accent] [excited] אַתָּה יֶלֶד נֶהֱדָר!
+
+[strong israeli accent] [excited] אַתְּ יַלְדָּה נֶהֱדֶרֶת!
+
 [strong israeli accent] [happy] מְעוּלֶה!
-[strong israeli accent] [surprised] עָשִׂיתָ אֶת זֶה! [giggle]
-[strong israeli accent] [surprised] עָשִׂית אֶת זֶה! [giggle]
-[strong israeli accent] [relieved] סִיַּמְתָּ אֶת הַמְּשִׂימָה! [cheering]
-[strong israeli accent] [relieved] סִיַּמְתְּ אֶת הַמְּשִׂימָה! [cheering]
+
+[strong israeli accent] [surprised] עָשִׂיתָ אֶת זֶה! [giggle]
+
+[strong israeli accent] [surprised] עָשִׂית אֶת זֶה! [giggle]
+
 [strong israeli accent] [warm] יוֹפִי!
-[strong israeli accent] [laughing] אֵיזֶה כֵּיף!
+
+[strong israeli accent] [laughing] אֵיזֶה כֵּיף!
 
 [strong israeli accent] [whisper] שירותים
+
 [strong israeli accent] [cheerful] ארוחת בוקר
+
 [strong israeli accent] [cheerful] ארוחת צהריים
+
 [strong israeli accent] [cheerful] ארוחת ערב
-[strong israeli accent] [energetic] צחצוח שיניים
-[strong israeli accent] [relaxed] מקלחת
+
+[strong israeli accent] [energetic] לצחצח שיניים
+
+[strong israeli accent] [relaxed] להתקלח
+
 [strong israeli accent] [energetic] להתלבש
-[strong israeli accent] [excited] הליכה לאוטו
+
+[strong israeli accent] [excited] ללכת לאוטו
+
 [strong israeli accent] [happy] זמן משחק
+
 [strong israeli accent] [yawning] זמן שינה [softly]
+
 [strong israeli accent] [excited] טאבלט
+
 [strong israeli accent] [encouraging] שיעור
+
 [strong israeli accent] [cheering] הליכה לגינה
+
 [strong israeli accent] [thoughtful] ציור ויצירה
+
 [strong israeli accent] [gentle] לקחת תרופות
+
 [strong israeli accent] [happy] ללכת לסבא וסבתא
+
 [strong israeli accent] [respectful] תפילה
+
 [strong israeli accent] [encouraging] עבודה בקופסאות עבודה
+
 [strong israeli accent] [cheerful] חצר
-[strong israeli accent] [happy] חוג בעלי חיים
+
+[strong israeli accent] [happy] khug בעלי חיים
 
 [strong israeli accent] [energetic] שגרת בוקר
+
 [strong israeli accent] [relaxed] אחרי הצהריים
+
 [strong israeli accent] [happy] בוקר טוב!
+
 [strong israeli accent] [warm] אחרי צהריים טובים
+
 [strong israeli accent] [encouraging] בהצלחה!
+
 [strong israeli accent] [curious] מי משתמש בלוח היום?
+
 [strong israeli accent] [affirmative] הגדרות מערכת
+
 [strong israeli accent] [affirmative] שמור
+
 [strong israeli accent] [cheerful] חזרה ללוח
 
-# 2026-01-13 15:25
+
+
 [strong israeli accent] [celebratory] סִייַּמְתָּ אֶת
+
 [strong israeli accent] [celebratory] si-yamt את...
+
 [strong israeli accent] [celebratory] סִייַּמְתָּ
+
 [strong israeli accent] [celebratory] si-yamt...
+
 [strong israeli accent] [encouraging] עַכְשָׁיו...
+
 [strong israeli accent] [happy] [proud] סִייַּמְתָּ אֶת כָּל הַמְּשִׂימוֹת לְ-הַיּוֹם!
+
 [strong israeli accent] [happy] [proud] si-yamt אֶת כָּל הַמְּשִׂימוֹת לְ-הַיּוֹם!
+
 [strong israeli accent] [proud] כָּל הַכָּבוֹד, סִייַּמְתָּ הַכֹּל!
+
 [strong israeli accent] [proud] כָּל הַכָּבוֹד, si-yamt הַכֹּל!
+
+
+
+[strong israeli accent] [energetic] תמר!
+
+[strong israeli accent] [energetic] יונתן!
+
+[strong israeli accent] [energetic] אריאל!
+
+[strong israeli accent] [energetic] אבישי!
