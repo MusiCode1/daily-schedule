@@ -1,0 +1,1264 @@
+---
+alwaysApply: false
+description: מדריך העוזר המורחב - פרטים טכניים, דוגמאות ומידע מעמיק
+---
+
+# 📘 מדריך העוזר המורחב - סדר יום ויזואלי
+
+> **גרסה מורחבת** - קרא את [agent-guide.mdc](agent-guide.mdc) תחילה!
+
+מסמך זה מכיל פרטים טכניים מעמיקים, דוגמאות קוד מלאות, והסברים מפורטים.
+
+---
+
+## 📑 תוכן עניינים
+
+1. [מבנה תיקיות מפורט](#מבנה-תיקיות-מפורט)
+2. [ישויות מרכזיות - הרחבה](#ישויות-מרכזיות---הרחבה)
+3. [מנגנונים מיוחדים - פרטים טכניים](#מנגנונים-מיוחדים---פרטים-טכניים)
+4. [מערכת חיתוך תמונות - מדריך מלא](#מערכת-חיתוך-תמונות---מדריך-מלא)
+5. [מערכת אודיו - מדריך מלא](#מערכת-אודיו---מדריך-מלא)
+6. [מיגרציות - מדריך מלא](#מיגרציות---מדריך-מלא)
+7. [דוגמאות קוד מלאות](#דוגמאות-קוד-מלאות)
+8. [טעויות נפוצות - הרחבה](#טעויות-נפוצות---הרחבה)
+9. [FAQ - שאלות ותשובות](#faq---שאלות-ותשובות)
+10. [הקשר פדגוגי ומשפחתי מלא](#הקשר-פדגוגי-ומשפחתי-מלא)
+
+---
+
+## 🗂️ מבנה תיקיות מפורט
+
+```
+sveltekit-version/src/lib/
+├── actions/
+│   └── dbImage.ts
+│       # Action לטעינת תמונות מ-IndexedDB
+│       # ⚠️ לא לשימוש ישיר! רק דרך ImageDisplay
+│
+├── assets/
+│   ├── favicon.svg
+│   └── logo.svg
+│       # לוגו "סדר יום מובנה"
+│
+├── components/
+│   ├── AddModal.svelte
+│   │   # מודאל הוספה/עריכת משימה
+│   │   # Controller: משתמש ב-listStore ישירות
+│   │
+│   ├── CelebrationModal.svelte
+│   │   # מודאל חגיגה עם confetti
+│   │   # Props: show, onClose, celebrationData
+│   │
+│   ├── FloatingIframe.svelte
+│   │   # חלון צף ללוח תקשורת (Draggable, Resizable)
+│   │   # שמירת מצב: floatingBoardState.ts
+│   │
+│   ├── GoogleDriveBackup.svelte
+│   │   # ממשק גיבוי Google Drive
+│   │   # Controller: BackupController
+│   │
+│   ├── ImageCropEditor.svelte
+│   │   # עורך חיתוך תמונות אינטראקטיבי
+│   │   # Props: imageSrc, imageId, onSave
+│   │   # Scale יחסי!
+│   │
+│   ├── ImageDisplay.svelte
+│   │   # ⭐ תצוגת תמונות אחידה (כל תמונה חייבת דרכו!)
+│   │   # Props: imageSrc, alt, extraClasses, lazyLoad
+│   │   # טיפול: IndexedDB, Crop, Fallback
+│   │
+│   ├── ImageUploader.svelte
+│   │   # העלאת תמונות + crop
+│   │   # Props: currentImageSrc, onImageSelected
+│   │
+│   ├── ListSwitcher.svelte
+│   │   # החלפת רשימות
+│   │   # Controller: ListsNavigationController
+│   │
+│   ├── SplashScreen.svelte
+│   │   # מסך טעינה (5 שניות)
+│   │   # Props: onFinish
+│   │
+│   ├── TaskRow.svelte
+│   │   # שורת משימה (כרטיסייה)
+│   │   # Props: task, isActive, onToggle
+│   │   # עיצוב מיוחד למשימות "בוטלה"
+│   │
+│   └── UserSelector.svelte
+│       # בחירת משתמש (דף התחברות)
+│       # Controller: userStore
+│
+├── config.ts
+│   # קונפיגורציה: GOOGLE_CLIENT_ID, SCOPES
+│
+├── data/
+│   ├── boosts.ts
+│   │   # בנק חיזוקים (נתונים בלבד)
+│   │   # BOOSTS_BOY, BOOSTS_GIRL, BOOSTS_FILES
+│   │
+│   ├── defaults.ts
+│   │   # ⭐ SINGLE SOURCE OF TRUTH לנתונים סטטיים
+│   │   # ACTIVITIES, DEFAULT_LIST_DEFINITIONS, INITIAL_STATE
+│   │
+│   └── texts.ts
+│       # ⭐ SINGLE SOURCE OF TRUTH לטקסטים
+│       # TEXTS - כל הטקסטים במערכת
+│
+├── logic/
+│   ├── backupController.svelte.ts
+│   │   # Controller: לוגיקת גיבוי אוטומטי
+│   │   # Debounce 5 שניות, טריגר מ-globalState
+│   │
+│   ├── dragDrop.svelte.ts
+│   │   # Controller: ניהול Drag & Drop
+│   │   # HTML5 Drag API + reordering
+│   │
+│   ├── listsNavigation.svelte.ts
+│   │   # Controller: ניהול רשימות
+│   │   # getCurrentList(), switchList(), getVisibleLists()
+│   │
+│   ├── session.svelte.ts
+│   │   # Controller: ניהול סשן (זמן אחרון)
+│   │   # עדכון lastActiveTime
+│   │
+│   └── tasksBoard.svelte.ts
+│       # ⭐ Controller מרכזי (משימות + חגיגות)
+│       # toggleTask(), handleTaskClick(), openCommunicationBoard()
+│
+├── services/
+│   ├── audio.ts
+│   │   # ניגון קבצי אודיו בסיסי
+│   │   # play(url): Promise<void>
+│   │
+│   ├── audioSequencer.ts
+│   │   # רצפי אודיו (MP3 + TTS)
+│   │   # playSequence(segments: AudioSegment[]): Promise<void>
+│   │
+│   ├── boosts.ts
+│   │   # ⭐ שירות חיזוקים רנדומליים
+│   │   # getRandomBoost(gender), getFeedbackSequence()
+│   │
+│   ├── db.ts
+│   │   # IndexedDB wrapper
+│   │   # saveImage(blob), getImage(id), deleteImage(id)
+│   │
+│   ├── floatingBoardState.ts
+│   │   # שמירת מצב לוח תקשורת צף
+│   │   # localStorage נפרד (לא חלק מ-AppState)
+│   │
+│   ├── googleDriveService.ts
+│   │   # Google Drive API
+│   │   # authenticate(), upload(), download()
+│   │
+│   ├── language.ts
+│   │   # ⭐ SINGLE SOURCE OF TRUTH לטקסטים
+│   │   # TEXTS, LanguageService
+│   │
+│   └── migration.ts
+│       # ⭐ מיגרציות גרסאות
+│       # migrateToLatest(state): AppState
+│
+└── stores/
+    ├── globalState.svelte.ts
+    │   # ⭐ State מרכזי (AppState)
+    │   # Persistence, Migration, Auto-backup trigger
+    │
+    ├── imageStore.svelte.ts
+    │   # ניהול metadata של תמונות
+    │   # getImageMetadata(id), setImageCrop(id, crop)
+    │
+    ├── listStore.svelte.ts
+    │   # ניהול רשימות (CRUD)
+    │   # getLists(), addTask(), updateTask(), deleteTask()
+    │
+    ├── persistence.ts
+    │   # שמירה/טעינה מ-localStorage
+    │   # saveState(state), loadState(): AppState | null
+    │
+    └── userStore.svelte.ts
+        # ניהול משתמשים
+        # getUsers(), addUser(), setCurrentUser()
+```
+
+---
+
+## 📊 ישויות מרכזיות - הרחבה
+
+### AppState - מבנה מלא
+
+```typescript
+interface AppState {
+  version: number;  // גרסה נוכחית: 7
+  
+  // משתמשים
+  users: UserProfile[];
+  currentUserId: string | null;
+  
+  // רשימות (מנורמלות לפי userId)
+  lists: { [userId: string]: List[] };
+  activeListId: { [userId: string]: string };
+  
+  // תמונות (Normalized!)
+  images: { [imageId: string]: ImageMetadata };
+  
+  // הגדרות
+  settings: {
+    lastActiveTime: number;  // timestamp
+  };
+  
+  // גיבוי
+  lastModified: number;  // לזיהוי קונפליקטים
+}
+```
+
+### UserProfile - מבנה מלא
+
+```typescript
+interface UserProfile {
+  id: string;           // uuid
+  name: string;         // "תמר", "יונתן", "אריאל"
+  gender: 'boy' | 'girl'; // לפניה מגדרית
+  avatar: string;       // רק מזהה: "idb:xxx" או URL
+  themeColor: string;   // HEX: "#FF69B4"
+}
+```
+
+**דוגמה:**
+```typescript
+const user: UserProfile = {
+  id: 'user-123',
+  name: 'תמר',
+  gender: 'girl',
+  avatar: 'idb:avatar-456',
+  themeColor: '#FF69B4'
+};
+```
+
+### List - מבנה מלא
+
+```typescript
+interface List {
+  id: string;
+  name: string;           // "שגרת בוקר", "אחרי הצהריים"
+  tasks: Task[];
+  isDefault?: boolean;    // רשימת ברירת מחדל (לא למחיקה)
+  logo?: string;          // רק מזהה: "idb:xxx" או URL
+  greeting?: string;      // "בוקר טוב", "בהצלחה"
+  isHidden?: boolean;     // לא מוצג ב-ListSwitcher
+}
+```
+
+**דוגמה:**
+```typescript
+const list: List = {
+  id: 'list-morning',
+  name: 'שגרת בוקר',
+  logo: 'idb:logo-789',
+  greeting: 'בוקר טוב',
+  isDefault: true,
+  tasks: [
+    {
+      id: 'task-1',
+      name: 'צחצוח שיניים',
+      imageSrc: 'idb:img-001',
+      isDone: false
+    }
+  ]
+};
+```
+
+### Task - מבנה מלא
+
+```typescript
+interface Task {
+  id: string;
+  name: string;                      // "צחצוח שיניים"
+  imageSrc: string | null;           // "idb:xxx" או URL או null
+  isDone: boolean;
+  communicationBoardUrl?: string;    // URL ללוח תקשורת (Cboard)
+  changeType?: 'cancelled' | 'added'; // משימת שינוי
+}
+```
+
+**דוגמאות:**
+
+```typescript
+// משימה רגילה
+const regularTask: Task = {
+  id: 'task-1',
+  name: 'צחצוח שיניים',
+  imageSrc: 'idb:img-001',
+  isDone: false,
+  communicationBoardUrl: 'https://app.cboard.io/...'
+};
+
+// משימה מבוטלה
+const cancelledTask: Task = {
+  id: 'task-2',
+  name: 'הליכה לחוג',
+  imageSrc: 'idb:img-002',
+  isDone: false,
+  changeType: 'cancelled'  // 🚫
+};
+
+// משימה נוספה
+const addedTask: Task = {
+  id: 'task-3',
+  name: 'ביקור אצל סבתא',
+  imageSrc: 'idb:img-003',
+  isDone: false,
+  changeType: 'added'  // ✨
+};
+```
+
+### ImageMetadata - מבנה מלא
+
+```typescript
+interface ImageMetadata {
+  crop?: ImageCropData;
+}
+
+interface ImageCropData {
+  x: number;      // מיקום X באחוזים (0-100)
+  y: number;      // מיקום Y באחוזים (0-100)
+  scale: number;  // זום **יחסי** (1.0 = minScale, 2.0 = פי 2 מ-minScale)
+}
+```
+
+**חשוב:** Scale הוא **יחסי**, לא מוחלט!
+
+```typescript
+// דוגמה: תמונה עם crop
+AppState.images['idb:img-001'] = {
+  crop: {
+    x: 30,      // 30% מימין
+    y: 20,      // 20% מלמעלה
+    scale: 1.4  // פי 1.4 מה-minScale (לא 1.4 מוחלט!)
+  }
+};
+
+// דוגמה: תמונה ללא crop
+AppState.images['idb:img-002'] = {
+  crop: undefined  // או לא קיים בכלל
+};
+```
+
+---
+
+## 🔧 מנגנונים מיוחדים - פרטים טכניים
+
+### 1. Normalized Data Structure
+
+#### למה Normalized?
+
+במקום:
+```typescript
+// ❌ לא יעיל - כפילויות
+interface Task {
+  imageSrc: {
+    src: string;
+    crop: { x: number; y: number; scale: number };
+  };
+}
+
+// אותה תמונה בשני tasks → שני עותקים של crop!
+```
+
+עושים:
+```typescript
+// ✅ יעיל - מקור אמת יחיד
+interface Task {
+  imageSrc: string; // רק מזהה: "idb:abc123"
+}
+
+// מטאדטה במקום אחד
+AppState.images["idb:abc123"] = {
+  crop: { x: 50, y: 50, scale: 1.2 }
+};
+```
+
+#### איך משתמשים?
+
+```typescript
+// שמירת crop
+function saveTaskImage(taskId: string, imageId: string, crop: ImageCropData) {
+  // 1. שמור את המזהה ב-Task
+  task.imageSrc = imageId;
+  
+  // 2. שמור את ה-crop ב-images
+  imageStore.setImageCrop(imageId, crop);
+}
+
+// טעינת crop
+function getTaskImageCrop(task: Task): ImageCropData | undefined {
+  if (!task.imageSrc) return undefined;
+  return imageStore.getImageMetadata(task.imageSrc)?.crop;
+}
+```
+
+#### יתרונות
+
+1. **הפחתת כפילויות**: אותה תמונה בכמה משימות → metadata אחד
+2. **ניהול קל**: שינוי crop במקום אחד משפיע על כולם
+3. **גמישות**: קל להוסיף שדות (filter, brightness)
+4. **גיבוי**: קל ל-Hydrate/Dehydrate
+
+---
+
+## 🖼️ מערכת חיתוך תמונות - מדריך מלא
+
+### ארכיטקטורה
+
+```
+┌─────────────────────────────────────────┐
+│  ImageUploader.svelte                   │
+│  - העלאת קובץ                           │
+│  - פתיחת ImageCropEditor                │
+└──────────────┬──────────────────────────┘
+               ↓
+┌─────────────────────────────────────────┐
+│  ImageCropEditor.svelte                 │
+│  - עריכה אינטראקטיבית                  │
+│  - Drag, Zoom, Reset                    │
+│  - Scale יחסי (1.0 = minScale)          │
+└──────────────┬──────────────────────────┘
+               ↓
+┌─────────────────────────────────────────┐
+│  imageStore.setImageCrop(id, crop)      │
+│  - שמירה ב-AppState.images              │
+└──────────────┬──────────────────────────┘
+               ↓
+┌─────────────────────────────────────────┐
+│  ImageDisplay.svelte                    │
+│  - תצוגה אחידה (100% × 100%)            │
+│  - טעינה מ-IndexedDB                    │
+│  - החלת crop                            │
+└─────────────────────────────────────────┘
+```
+
+### Scale יחסי - הסבר מעמיק
+
+#### הבעיה
+
+אם `scale` מוחלט:
+```typescript
+crop = { x: 50, y: 50, scale: 0.333 }; // scale מוחלט
+```
+
+הבעיה: בקונטיינר 120px, `scale: 0.333` עובד מצוין.
+אבל בקונטיינר 400px, אותה תמונה נראית שונה לגמרי!
+
+#### הפתרון
+
+`scale` **יחסי** ל-minScale:
+```typescript
+crop = { x: 50, y: 50, scale: 1.4 }; // scale יחסי
+```
+
+כלומר: `actualScale = minScale * crop.scale`
+
+**minScale** = הזום המינימלי שממלא את הקונטיינר.
+
+#### דוגמה מלאה
+
+```typescript
+// תמונה: 1200px × 800px
+// קונטיינר: 400px × 400px (ריבוע)
+
+// חישוב minScale
+const minScale = Math.max(
+  400 / 1200,  // 0.333
+  400 / 800    // 0.5
+);
+// minScale = 0.5 (הצד הרחב קובע)
+
+// המשתמש בחר: scale = 1.4 (פי 1.4 מ-minScale)
+const actualScale = 0.5 * 1.4 = 0.7;
+
+// התמונה מוצגת ב-scale: 0.7
+// → רוחב: 1200 * 0.7 = 840px
+// → גובה: 800 * 0.7 = 560px
+```
+
+**תוצאה:** אותו `crop.scale = 1.4` נראה זהה בקונטיינר 120px ו-400px!
+
+### ImageDisplay - שימוש
+
+**כלל:** כל תמונה חייבת דרך `ImageDisplay`!
+
+```svelte
+<script>
+  import ImageDisplay from '$lib/components/ImageDisplay.svelte';
+</script>
+
+<!-- Parent קובע גודל -->
+<div style="width: 120px; height: 120px;">
+  <ImageDisplay
+    imageSrc={task.imageSrc}
+    alt={task.name}
+    extraClasses="task-image"
+    lazyLoad={true}
+  />
+</div>
+```
+
+**Props:**
+- `imageSrc`: string (מזהה: "idb:xxx" או URL)
+- `alt`: string (תיאור)
+- `extraClasses?`: string (מחלקות CSS נוספות)
+- `lazyLoad?`: boolean (lazy loading)
+
+**מה ImageDisplay עושה:**
+1. טעינה מ-IndexedDB (אם `idb:`)
+2. קבלת crop מ-imageStore
+3. חישוב minScale
+4. החלת crop (transform CSS)
+5. Fallback על שגיאה
+
+---
+
+## 🔊 מערכת אודיו - מדריך מלא
+
+### Hybrid Audio System
+
+```
+┌───────────────────────────────────┐
+│  audioSequencer.playSequence()    │
+└──────────────┬────────────────────┘
+               ↓
+     ┌─────────┴─────────┐
+     ↓                   ↓
+┌─────────┐         ┌─────────┐
+│  MP3    │         │  TTS    │
+│  File   │         │  Voice  │
+└─────────┘         └─────────┘
+```
+
+### AudioSegment Types
+
+```typescript
+type AudioSegment =
+  | { type: 'file'; content: string }    // "/sounds/praise.mp3"
+  | { type: 'tts'; content: string };    // "עכשיו, צחצוח שיניים"
+```
+
+### רצף משוב מלא - דוגמה
+
+```typescript
+// TasksBoardController.toggleTask()
+
+async function playCompletionFeedback(
+  task: Task,
+  nextTask: Task | null,
+  gender: 'boy' | 'girl'
+) {
+  const segments: AudioSegment[] = [
+    // 1. "סיימת את..."
+    { type: 'file', content: '/sounds/sequences/finished.mp3' },
+    { type: 'tts', content: task.name },
+    
+    // 2. חיזוק רנדומלי
+    ...await LanguageService.getFeedbackSequence(gender),
+    
+    // 3. המשימה הבאה
+    { type: 'file', content: '/sounds/sequences/now.mp3' },
+    { type: 'tts', content: nextTask ? nextTask.name : 'סיימת הכל!' }
+  ];
+  
+  await audioSequencer.playSequence(segments);
+}
+```
+
+### boosts.ts - חיזוקים רנדומליים
+
+```typescript
+import { BOOSTS_BOY, BOOSTS_GIRL, BOOSTS_FILES } from '$lib/data/boosts';
+
+// בחירת חיזוק רנדומלי
+export function getRandomBoost(gender: 'boy' | 'girl'): Boost {
+  const boosts = gender === 'boy' ? BOOSTS_BOY : BOOSTS_GIRL;
+  const randomIndex = Math.floor(Math.random() * boosts.length);
+  return boosts[randomIndex];
+}
+
+// יצירת רצף משוב
+export async function getFeedbackSequence(gender: 'boy' | 'girl'): Promise<AudioSegment[]> {
+  const boost = getRandomBoost(gender);
+  const audioFile = BOOSTS_FILES[boost.audioKey];
+  
+  if (audioFile) {
+    // MP3 preferred
+    return [{ type: 'file', content: audioFile }];
+  } else {
+    // TTS fallback
+    return [{ type: 'tts', content: boost.text }];
+  }
+}
+```
+
+### מבנה תיקיית אודיו
+
+```
+static/sounds/
+├── ui/
+│   ├── ding.mp3
+│   ├── click.mp3
+│   └── error.mp3
+│
+├── sequences/
+│   ├── finished.mp3        # "סיימת את..."
+│   ├── now.mp3             # "עכשיו..."
+│   ├── great_job.mp3       # "עבודה מעולה!"
+│   └── change.mp3          # "שינוי! היום..."
+│
+└── boosts/
+    ├── praise_aluf_boy.mp3     # "אתה אלוף!"
+    ├── praise_alufa_girl.mp3   # "את אלופה!"
+    ├── excellent_boy.mp3       # "מצוין!"
+    ├── excellent_girl.mp3      # "מצוין!"
+    ├── well_done_boy.mp3       # "כל הכבוד!"
+    ├── well_done_girl.mp3      # "כל הכבוד!"
+    └── ...
+```
+
+### למה רנדומלי?
+
+**אקולליה (Echolalia)** - בעיה נפוצה באוטיזם:
+- הילד שומע "אתה אלוף!" → מתחיל לחזור על זה כל הזמן
+- נכנס ל-"לופ" של בקשה לשמוע את אותו צליל שוב ושוב
+- משבש את התפקוד
+
+**פתרון:** משוב רנדומלי
+- כל פעם חיזוק שונה
+- מונע קיבעון על צליל/משפט ספציפי
+- עדיין חיובי ומעצים
+
+---
+
+## 🗂️ מיגרציות - מדריך מלא
+
+### תהליך מיגרציה
+
+```
+localStorage: { version: 5 }
+         ↓
+   migration.ts
+         ↓
+  migrateV5ToV6()
+         ↓
+  migrateV6ToV7()
+         ↓
+AppState: { version: 7 }
+```
+
+### דוגמה מלאה: הוספת שדה `changeType`
+
+#### 1. עדכון types.ts
+
+```typescript
+// הוספת שדה חדש
+export interface Task {
+  id: string;
+  name: string;
+  imageSrc: string | null;
+  isDone: boolean;
+  communicationBoardUrl?: string;
+  changeType?: 'cancelled' | 'added'; // ← שדה חדש!
+}
+```
+
+#### 2. הוספת מיגרציה
+
+```typescript
+// src/lib/services/migration.ts
+
+function migrateV6ToV7(state: any): AppState {
+  return {
+    ...state,
+    version: 7,
+    
+    // הוסף changeType לכל המשימות
+    lists: Object.fromEntries(
+      Object.entries(state.lists).map(([userId, lists]) => [
+        userId,
+        (lists as any[]).map((list: any) => ({
+          ...list,
+          tasks: list.tasks.map((task: any) => ({
+            ...task,
+            changeType: task.changeType || undefined // ערך ברירת מחדל
+          }))
+        }))
+      ])
+    )
+  };
+}
+
+// הוסף למפה
+const MIGRATIONS: { [version: number]: (state: any) => AppState } = {
+  1: migrateV1ToV2,
+  2: migrateV2ToV3,
+  3: migrateV3ToV4,
+  4: migrateV4ToV5,
+  5: migrateV5ToV6,
+  6: migrateV6ToV7, // ← הוסף כאן!
+};
+```
+
+#### 3. עדכון גרסה ב-defaults.ts
+
+```typescript
+// src/lib/data/defaults.ts
+
+export const INITIAL_STATE: AppState = {
+  version: 7, // ← עדכן כאן!
+  users: [],
+  lists: {},
+  // ...
+};
+```
+
+#### 4. בדיקה
+
+```typescript
+// יצירת נתונים ישנים לבדיקה
+const oldState = {
+  version: 6,
+  users: [...],
+  lists: {
+    'user-1': [
+      {
+        id: 'list-1',
+        tasks: [
+          { id: 'task-1', name: 'משימה', isDone: false }
+          // אין changeType!
+        ]
+      }
+    ]
+  }
+};
+
+// הרצת מיגרציה
+const newState = migrateToLatest(oldState);
+
+// בדיקה
+console.log(newState.version); // 7
+console.log(newState.lists['user-1'][0].tasks[0].changeType); // undefined
+```
+
+### כללי מיגרציות
+
+1. **תמיכה לאחור חובה**: משתמשים קיימים לא יכולים לאבד נתונים
+2. **שדה חדש = optional**: תמיד `?` או ערך ברירת מחדל
+3. **מספור גרסאות**: רציף (6 → 7 → 8)
+4. **תיעוד**: תאר מה השתנה בכל גרסה
+
+### גרסאות קיימות
+
+| גרסה | תיאור | תאריך |
+|------|-------|-------|
+| 1 | גרסה ראשונית | - |
+| 2 | הוספת `UserProfile.gender` | - |
+| 3 | הוספת `AppState.images` (Normalized) | - |
+| 4 | הוספת `List.isHidden` | - |
+| 5 | הוספת `AppState.lastModified` | - |
+| 6 | הוספת `Task.communicationBoardUrl` | - |
+| 7 | הוספת `Task.changeType` | 2026-01-19 |
+
+---
+
+## 💻 דוגמאות קוד מלאות
+
+### דוגמה 1: Controller חדש
+
+```typescript
+// src/lib/logic/myFeatureController.svelte.ts
+
+import { globalState } from '$lib/stores/globalState.svelte';
+import { listStore } from '$lib/stores/listStore.svelte';
+import type { Task } from '$lib/types';
+
+/**
+ * Controller לניהול הפיצ'ר שלי
+ */
+export class MyFeatureController {
+  // UI State
+  private _isModalOpen = $state(false);
+  private _selectedTask = $state<Task | null>(null);
+  
+  // Getters (לחשיפה ל-View)
+  get isModalOpen() {
+    return this._isModalOpen;
+  }
+  
+  get selectedTask() {
+    return this._selectedTask;
+  }
+  
+  // Derived state
+  get currentList() {
+    return listStore.getCurrentList();
+  }
+  
+  // Actions
+  openModal(task: Task) {
+    this._selectedTask = task;
+    this._isModalOpen = true;
+  }
+  
+  closeModal() {
+    this._isModalOpen = false;
+    this._selectedTask = null;
+  }
+  
+  async saveChanges() {
+    if (!this._selectedTask) return;
+    
+    // עדכון דרך listStore
+    await listStore.updateTask(this._selectedTask.id, {
+      name: this._selectedTask.name
+    });
+    
+    this.closeModal();
+  }
+}
+```
+
+### דוגמה 2: שימוש ב-Controller
+
+```svelte
+<!-- src/routes/my-feature/+page.svelte -->
+
+<script lang="ts">
+  import { MyFeatureController } from '$lib/logic/myFeatureController.svelte';
+  import { TEXTS } from '$lib/services/language';
+  
+  const controller = new MyFeatureController();
+</script>
+
+<div class="my-feature">
+  <h1>{TEXTS.MY_FEATURE_TITLE}</h1>
+  
+  {#each controller.currentList?.tasks || [] as task}
+    <button onclick={() => controller.openModal(task)}>
+      {task.name}
+    </button>
+  {/each}
+</div>
+
+{#if controller.isModalOpen}
+  <div class="modal">
+    <h2>{TEXTS.EDIT_TASK}</h2>
+    
+    <input
+      type="text"
+      bind:value={controller.selectedTask.name}
+    />
+    
+    <button onclick={() => controller.saveChanges()}>
+      {TEXTS.SAVE}
+    </button>
+    
+    <button onclick={() => controller.closeModal()}>
+      {TEXTS.CANCEL}
+    </button>
+  </div>
+{/if}
+
+<style>
+  /* עיצוב RTL */
+  .my-feature {
+    direction: rtl;
+    text-align: start;
+  }
+</style>
+```
+
+### דוגמה 3: הוספת טקסט חדש
+
+```typescript
+// src/lib/data/texts.ts
+
+export const TEXTS = {
+  // ... טקסטים קיימים
+  
+  // הוספת טקסטים חדשים
+  MY_FEATURE_TITLE: 'הפיצ'ר שלי',
+  EDIT_TASK: 'עריכת משימה',
+  SAVE: 'שמירה',
+  CANCEL: 'ביטול',
+};
+```
+
+---
+
+## 🚨 טעויות נפוצות - הרחבה
+
+### 1. לוגיקה ב-Component (מורחב)
+
+```svelte
+<!-- ❌ דוגמה לטעות: לוגיקה עסקית בקומפוננטה -->
+<script lang="ts">
+  import { listStore } from '$lib/stores/listStore.svelte';
+  import { audioSequencer } from '$lib/services/audioSequencer';
+  
+  let tasks = $state([]);
+  let activeIndex = $state(0);
+  let showCelebration = $state(false);
+  
+  // לוגיקה עסקית מורכבת = צריך Controller!
+  function handleTaskToggle(taskId: string) {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    task.isDone = !task.isDone;
+    listStore.updateTask(taskId, { isDone: task.isDone });
+    
+    if (task.isDone) {
+      const nextTask = tasks[activeIndex + 1];
+      
+      if (nextTask) {
+        activeIndex++;
+        
+        audioSequencer.playSequence([
+          { type: 'tts', content: `סיימת את ${task.name}` },
+          { type: 'file', content: '/sounds/praise.mp3' },
+          { type: 'tts', content: `עכשיו, ${nextTask.name}` }
+        ]);
+      } else {
+        showCelebration = true;
+        audioSequencer.playSequence([
+          { type: 'tts', content: 'סיימת הכל!' },
+          { type: 'file', content: '/sounds/celebration.mp3' }
+        ]);
+      }
+    }
+  }
+</script>
+
+<!-- ✅ הדרך הנכונה - לוגיקה ב-Controller -->
+<script lang="ts">
+  import { TasksBoardController } from '$lib/logic/tasksBoard.svelte';
+  
+  const controller = new TasksBoardController();
+</script>
+
+<button onclick={() => controller.toggleTask(task.id)}>
+  {task.name}
+</button>
+
+<!-- ✅ תצוגה פשוטה - OK בקומפוננטה -->
+<script lang="ts">
+  let items = ['א', 'ב', 'ג'];
+</script>
+
+{#each items as item}
+  <div class:selected={item === currentItem}>
+    {item}
+  </div>
+{/each}
+```
+
+**למה זה רע?**
+- לוגיקה עסקית מורכבת קשה לבדיקה
+- קשה לשימוש חוזר
+- קשה לתחזוקה
+- ערבוב של UI State עם Business Logic
+
+**כלל אצבע:**
+- פחות מ-5 שורות לוגיקת תצוגה → OK בקומפוננטה
+- יותר מ-5 שורות או לוגיקה עסקית → Controller
+
+### 2. שכפול נתונים (מורחב)
+
+```typescript
+// ❌ דוגמה לטעות
+
+// src/lib/data/myActivities.ts
+export const MY_ACTIVITIES = [
+  { id: 'toilet', name: 'שירותים', image: '/images/toilet.png' },
+  { id: 'shower', name: 'מקלחת', image: '/images/shower.png' },
+  // ... עוד פעילויות
+];
+
+// src/lib/data/defaults.ts
+export const ACTIVITIES = [
+  { id: 'toilet', name: 'שירותים', image: '/images/toilet.png' },
+  { id: 'shower', name: 'מקלחת', image: '/images/shower.png' },
+  // ... אותן פעילויות!
+];
+```
+
+**בעיה:** שכפול! שינוי במקום אחד לא משפיע במקום השני.
+
+```typescript
+// ✅ הדרך הנכונה
+
+// src/lib/data/defaults.ts (רק כאן!)
+export const ACTIVITIES = [
+  { id: 'toilet', name: 'שירותים', image: '/images/toilet.png' },
+  { id: 'shower', name: 'מקלחת', image: '/images/shower.png' },
+];
+
+// src/lib/components/MyComponent.svelte
+import { ACTIVITIES } from '$lib/data/defaults';
+// שימוש ישיר ב-ACTIVITIES
+```
+
+### 3. חישוב minScale ב-$derived (מורחב)
+
+```typescript
+// ❌ לא עובד!
+let imageRef = $state<HTMLImageElement | null>(null);
+let containerRef = $state<HTMLDivElement | null>(null);
+
+let minScale = $derived.by(() => {
+  if (!imageRef || !containerRef) return 1;
+  
+  // naturalWidth/Height = 0 כשהתמונה עוד לא נטענה!
+  return Math.max(
+    containerRef.offsetWidth / imageRef.naturalWidth,
+    containerRef.offsetHeight / imageRef.naturalHeight
+  );
+});
+```
+
+**בעיה:** `$derived` מחושב מיד, לפני טעינת התמונה. `naturalWidth = 0`!
+
+```typescript
+// ✅ הדרך הנכונה
+let imageRef = $state<HTMLImageElement | null>(null);
+let containerRef = $state<HTMLDivElement | null>(null);
+let minScale = $state(1); // ערך ברירת מחדל
+
+function handleLoad() {
+  if (!imageRef || !containerRef) return;
+  
+  // עכשיו naturalWidth/Height זמינים!
+  minScale = Math.max(
+    containerRef.offsetWidth / imageRef.naturalWidth,
+    containerRef.offsetHeight / imageRef.naturalHeight
+  );
+}
+```
+
+---
+
+## ❓ FAQ - שאלות ותשובות
+
+### למה Controllers Topic-Based ולא Page-Based?
+
+**שאלה:** למה לא Controller לכל דף? נוח יותר!
+
+**תשובה:**
+- דף אחד יכול להשתמש במספר Controllers
+- כמה דפים יכולים לחלוק Controller
+- הפרדה לוגית: לפי **תחום אחריות**, לא לפי מסך
+
+**דוגמה:**
+- `+page.svelte` (דף ראשי) משתמש ב:
+  - `TasksBoardController` (משימות)
+  - `ListsNavigationController` (רשימות)
+- `test-board/+page.svelte` משתמש גם ב-`TasksBoardController`
+
+אם היה `HomePageController` → כפילות קוד!
+
+### למה Scale יחסי ולא מוחלט?
+
+**שאלה:** למה לא לשמור `scale: 0.5` (מוחלט)?
+
+**תשובה:**
+אותו crop צריך להיראות **זהה** בגדלי קונטיינר שונים:
+- קרטיסייה קטנה: 120px × 120px
+- מודאל: 400px × 400px
+- הגדרות: 150px × 150px
+
+עם scale **מוחלט** → כל גודל נראה שונה!
+עם scale **יחסי** → כולם נראים זהים!
+
+### למה localStorage נפרד ל-floatingBoardState?
+
+**שאלה:** למה לא בתוך AppState?
+
+**תשובה:**
+- זו הגדרת **UI** (לא נתוני משתמש)
+- משותפת לכל המשתמשים
+- לא צריכה להיכלל בגיבויים
+- עדכונים תכופים (כל גרירה) → לא לטריגר auto-backup
+
+### איך יוצרים תמונות חדשות?
+
+**שאלה:** איך ליצור תמונות לפעילויות?
+
+**תשובה:**
+השתמש בפרומפטים מ-`docs/prompts/image-prompts.md`:
+
+```
+Create a 16:9 wide image, 3d render style, cute icon design,
+clay material, soft flat lighting, solid pure white background #FFFFFF,
+no shadows on background, minimalist style, high quality render,
+subject: [SUBJECT_HERE]
+
+Examples:
+- "child brushing teeth with blue toothbrush"
+- "child eating breakfast at table"
+- "child getting dressed"
+```
+
+**כלי:** Midjourney, DALL-E, Stable Diffusion
+
+### איך יוצרים TTS חדשים?
+
+**שאלה:** איך ליצור קבצי אודיו חדשים?
+
+**תשובה:**
+השתמש בפרומפטים מ-`docs/prompts/create-tts/`:
+
+**ElevenLabs:**
+- Voice: "Bella" (ילדה), "Bill" (ילד)
+- Settings: Stability 50%, Similarity 75%
+- Style: Friendly, encouraging, warm
+
+**טקסט לדוגמה:**
+```
+אתה אלוף!
+את אלופה!
+עבודה מעולה!
+כל הכבוד!
+```
+
+---
+
+## 👨‍👩‍👧‍👦 הקשר פדגוגי ומשפחתי מלא
+
+> **הערה:** אין צורך לקרוא את מסמך האפיון המלא בכל משימה. ההקשר החשוב מרוכז כאן!
+
+### המשפחה
+
+- **אמא:** רבקה (מובילה את הפרויקט)
+- **ילדים:**
+  - **תמר** (בת) - אוטיזם + תסמונת דאון
+  - **יונתן** (בן) - אוטיזם + תסמונת דאון
+  - **אריאל** (בן) - אוטיזם + תסמונת דאון
+
+### הבעיה המרכזית
+
+**"לופים" עם אייפד/יוטיוב:**
+- הילדים נכנסים למצב של חזרה אובססיבית
+- יונתן: "זה זה!" (בקשה חוזרת ליוטיוב)
+- תמר: "קפה קר שתיה" (אקולליה)
+- משבש את התפקוד היומיומי
+
+**דוגמאות מהפגישות:**
+```
+יונתן: "זה זה! זה זה! זה זה!" [בקשה חוזרת ליוטיוב]
+מאיה: "לא עכשיו, עכשיו סדר יום"
+יונתן: [מתפרץ, ממשיך לבקש]
+
+תמר: "שותה מים עם הלשון, שותה מים עם הלשון..."
+מאיה: "כן מותק, עכשיו בואי נעשה [פעילות]"
+תמר: [ממשיכה לחזור]
+```
+
+### הפתרון
+
+**מכשיר ייעודי (Kiosk Mode):**
+- רק אפליקציית סדר יום
+- אין גישה ליוטיוב/אפליקציות אחרות
+- לא אייפד רגיל!
+
+**משוב רנדומלי:**
+- מניעת קיבעון על צליל/משפט ספציפי
+- גיוון בחיזוקים
+- כל פעם חיובי, אבל שונה
+
+### עקרונות TEACCH
+
+המערכת מבוססת על גישת TEACCH (מובנת בארץ):
+
+1. **Physical Structure** - מבנה ויזואלי ברור
+   - כל משימה בכרטיסייה נפרדת
+   - סדר מלמעלה למטה
+   - מרווחים ברורים
+
+2. **Predictability** - סדר צפוי
+   - הילד יודע מה הבא
+   - אין הפתעות
+   - "עכשיו, [משימה הבאה]"
+
+3. **Visual Clarity** - בהירות חזותית
+   - תמונות גדולות וברורות
+   - טקסט קריא
+   - צבעים רכים, לא מסיחי דעת
+
+4. **Structured Teaching** - הוראה מובנית
+   - "First-Then" (קודם זה, אחר כך זה)
+   - מעקב ויזואלי (V)
+   - חגיגה על השלמה
+
+### משוב חיובי ומיידי
+
+**למה חשוב:**
+- ילדים עם אוטיזם זקוקים למשוב מיידי
+- חיזוק חיובי מעודד עצמאות
+- מונע תסכול
+
+**איך מיישמים:**
+- לחיצה על משימה → מיד V (סימון)
+- מיד הקראה: "סיימת את [משימה]!"
+- מיד חיזוק: "[רנדומלי]!"
+- מיד המשך: "עכשיו, [משימה הבאה]"
+
+**רצף מלא < 5 שניות!**
+
+### עצמאות
+
+**מטרה:**
+- צמצום תלות במבוגרים
+- הילד מנהל את סדר היום בעצמו
+- המבוגר רק מפקח, לא מוביל
+
+**איך:**
+- ממשק פשוט וברור
+- הצלחה מיידית (חגיגה)
+- בניית ביטחון עצמי
+
+---
+
+## 📊 סטטיסטיקות
+
+### גודל הפרויקט (נכון ל-2026-01-19)
+
+- **פיצ'רים מיושמים:** ~25
+- **קבצי Svelte:** ~20
+- **Services:** ~10
+- **Controllers:** ~5
+- **גרסת נתונים:** 7
+
+### זמני טעינה
+
+- **First Load:** ~2 שניות (כולל Splash Screen 5s)
+- **Subsequent Loads:** <0.5 שניות (localStorage cache)
+- **Image Load:** <0.3 שניות (IndexedDB)
+
+---
+
+## 🔗 קישורים שימושיים
+
+### תיעוד חיצוני
+
+- [Svelte 5 Docs](https://svelte-5-preview.vercel.app/docs)
+- [SvelteKit Docs](https://kit.svelte.dev/docs)
+- [Cloudflare Pages](https://developers.cloudflare.com/pages/)
+
+### תיעוד פנימי
+
+- `README.md` - סקירה כללית
+- `walkthrough.md` - יומן פיתוח
+- `features-status.md` - מעקב פיצ'רים
+- `agent-guide.mdc` - מדריך ראשי (קצר)
+
+---
+
+**סוף המדריך המורחב** 🎉
+
+**זכור:** זהו מסמך עזר. המסמך הראשי הוא [agent-guide.mdc](agent-guide.mdc)!
