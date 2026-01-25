@@ -55,7 +55,7 @@
 
 <div class="users-grid">
     {#each userStore.users as user (user.id)}
-        <div class="user-card">
+        <div class="card user-card">
             <div class="avatar avatar-md">
                 {#if user.avatar}
                     <ImageDisplay 
@@ -116,8 +116,27 @@
     </div>
 {/if}
 
-<style>
+<style type="text/postcss">
   @reference "tailwindcss";
+  
+  /* user-card - override מקומי */
+  .user-card {
+    @apply max-w-[280px];
+  }
+  
+  /* user-details - ייחודי */
+  .user-details {
+    @apply text-center w-full;
+  }
+  
+  .user-details h3 {
+    @apply text-xl font-bold text-slate-800 mb-2 m-0;
+  }
+  
+  /* user-actions - ייחודי */
+  .user-actions {
+    @apply flex gap-3 mt-2 w-full justify-center;
+  }
   
   /* Avatar Override - תמונת פרופיל (override ל-ImageDisplay) */
   .avatar :global(.image-display) { 

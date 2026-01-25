@@ -118,13 +118,13 @@
             {/each}
         </select>
     </div>
-    <button class="btn-primary-small" onclick={openAddList}>{TEXTS.NEW_LIST}</button>
+    <button class="btn-primary" onclick={openAddList}>{TEXTS.NEW_LIST}</button>
 </div>
 
 <div class="lists-grid">
     {#each listStore.getAllLists(managedUserId) as list (list.id)}
-        <div class="list-card {list.id === listStore.getActiveList(managedUserId)?.id ? 'active-list-card' : ''} {list.isHidden ? 'hidden-list' : ''}">
-            <div class="list-icon-wrapper">
+        <div class="card list-card {list.id === listStore.getActiveList(managedUserId)?.id ? 'list-card-active' : ''} {list.isHidden ? 'list-card-hidden' : ''}">
+            <div class="list-icon">
                 <ImageDisplay 
                     imageSrc={list.logo || DEFAULT_LIST_IMAGE}
                     alt={list.name}
@@ -182,213 +182,89 @@
   onselect={handleUserSelected}
 />
 
-<style>
-  h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #334155;
-    margin: 0;
-  }
-
-  .header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 2rem;
-      border-bottom: 1px solid #f1f5f9;
-      padding-bottom: 1.5rem;
-      flex-wrap: wrap; 
-      gap: 1rem;       
-  }
-
-  .btn-primary-small {
-      background: #6366f1;
-      color: white;
-      border: none;
-      padding: 0.6rem 1.2rem;
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
-  }
+<style type="text/postcss">
+  @reference "tailwindcss";
   
-  .btn-primary-small:hover {
-      background: #4f46e5;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 8px -1px rgba(99, 102, 241, 0.4);
-  }
-
-  /* רשת רשימות */
-  .lists-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 1.25rem;
-      width: 100%;
-  }
-
+  /* list-card - override מקומי */
   .list-card {
-      background: white;
-      border: 2px solid #e2e8f0;
-      border-radius: 16px;
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.75rem;
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    @apply border-2 p-5 gap-3 max-w-[250px] relative;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   }
   
   .list-card:hover {
-      border-color: #cbd5e1;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.15);
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.15);
   }
   
-  .active-list-card {
-      border-color: #818cf8;
-      background: #f5f7ff;
-      box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.15);
+  /* list-card פעיל */
+  .list-card-active {
+    @apply bg-indigo-50;
+    border-color: #818cf8;
+    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.15);
   }
   
-  .list-icon-wrapper {
-      width: 64px;
-      height: 64px;
-      background: #f8fafc;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      border: 2px solid #e2e8f0;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
-      overflow: hidden;
-      flex-shrink: 0;
+  /* list-card מוסתר */
+  .list-card-hidden {
+    @apply opacity-60;
+    border-style: dashed;
   }
   
-  .list-icon-wrapper :global(.image-display) {
-      width: 100%;
-      height: 100%;
-      border-radius: 0;
-  }
-  
+  /* list-info - מידע על הרשימה */
   .list-info {
-      width: 100%;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
+    @apply w-full text-center flex flex-col gap-2;
   }
   
   .list-info h3 {
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin: 0;
-      color: #1e293b;
-      line-height: 1.3;
+    @apply text-lg font-bold m-0 text-slate-800 leading-tight;
   }
   
+  /* list-meta - מטא-דאטה */
   .list-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      font-size: 0.8rem;
+    @apply flex flex-col gap-1 text-xs;
   }
   
   .greeting-badge {
-      color: #64748b;
-      font-style: italic;
+    @apply text-slate-600 italic text-xs;
   }
   
   .tasks-count {
-      color: #94a3b8;
-      font-weight: 500;
-  }
-  
-  .list-actions {
-      width: 100%;
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-      padding-top: 0.5rem;
-      border-top: 1px solid #f1f5f9;
-  }
-  
-  .user-select-control {
-      background: #f8fafc;
-      padding: 0.5rem 1rem;
-      border-radius: 12px;
-      border: 1px solid #e2e8f0;
-  }
-  
-  .user-select-control select {
-      background: transparent;
-      border: none;
-      font-weight: 600;
-      color: #334155;
-      font-size: 1rem;
-      padding-right: 0.5rem;
-      cursor: pointer;
-  }
-  .user-select-control select:focus { outline: none; }
-  
-  .action-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid #e2e8f0;
-      background: #f8fafc;
-      color: #64748b;
-      cursor: pointer;
-      transition: all 0.2s;
-      flex: 1;
-  }
-  
-  .action-btn:hover {
-      background: white;
-      color: #6366f1;
-      border-color: #6366f1;
-      transform: translateY(-1px);
-  }
-  
-  .action-btn.delete:hover {
-      color: #ef4444;
-      border-color: #ef4444;
-      background: #fef2f2;
-  }
-  
-  .action-btn.duplicate:hover {
-      color: #8b5cf6;
-      border-color: #8b5cf6;
-      background: #f5f3ff;
-  }
-  
-  .action-btn.visibility:hover {
-      color: #f59e0b;
-      border-color: #f59e0b;
-      background: #fffbeb;
-  }
-  
-  .action-btn.transfer:hover {
-      color: #06b6d4;
-      border-color: #06b6d4;
-      background: #ecfeff;
-  }
-  
-  .hidden-list {
-      opacity: 0.6;
-      border-style: dashed;
+    @apply text-slate-400 font-medium text-xs;
   }
   
   .hidden-badge {
-      font-size: 0.75rem;
-      color: #f59e0b;
-      font-weight: 500;
-      margin-right: 0.25rem;
+    @apply text-xs text-amber-500 font-medium mr-1;
+  }
+  
+  /* list-actions - כפתורי פעולה */
+  .list-actions {
+    @apply w-full flex gap-2 justify-center pt-2 border-t border-slate-100;
+  }
+  
+  /* lists-grid - רשת רשימות */
+  .lists-grid {
+    @apply grid gap-5 w-full;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  
+  /* שאר הסגנונות */
+  h2 {
+    @apply text-2xl font-bold text-slate-700 m-0;
   }
 
+  .header-row {
+    @apply flex justify-between items-center mb-8 border-b border-slate-100 pb-6 flex-wrap gap-4;
+  }
+
+  .user-select-control {
+    @apply bg-slate-50 px-4 py-2 rounded-xl border border-slate-200;
+  }
+  
+  .user-select-control select {
+    @apply bg-transparent border-none font-semibold text-slate-700 text-base pr-2 cursor-pointer;
+  }
+  
+  .user-select-control select:focus { 
+    @apply outline-none;
+  }
 </style>

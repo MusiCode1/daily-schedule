@@ -1,5 +1,295 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-01-25 17:25
+
+### ניקוי ארכיטקטורת CSS - מעבר לגישת .card + overrides מקומיים
+
+הסרנו ניסיונות ירושה שלא עבדו ועברנו לגישה פשוטה יותר: שימוש ב-`.card` גלובלי עם overrides מקומיים קטנים בכל דף.
+
+---
+
+#### מה בוצע?
+
+**1. ניקוי components.css**
+
+- **הסרנו `.card-base`** (שורות 738-743) - היה כפולה של `.card` ולא עבד כ-utility לירושה
+- **הסרנו `.user-card` + hover** (שורות 792-801) - רק 2 קבצים משתמשים בו, לא עובר את הסף של "3+ פעמים"
+- **הסרנו `.user-details` ו-`.user-actions`** - לא היו נדרשים גלובלית
+- **קבצים ששונו**: `sveltekit-version/src/routes/components.css`
+
+**2. עדכון דפי ההגדרות**
+
+עדכנו 3 דפים להשתמש בגישה החדשה:
+
+- **users/+page.svelte**:
+  - HTML: `class="user-card"` → `class="card user-card"`
+  - `<style>`: הוסר `@apply card-base` השבור, נשאר רק override קטן `max-w-[280px]`
+
+- **lists/+page.svelte**:
+  - HTML: `class="list-card"` → `class="card list-card"`
+  - `<style>`: הוסר `@apply card-base` השבור, תוקן `@reference` מ-`"../../layout.css"` ל-`"tailwindcss"`
+  - נשאר override מקומי: `border-2 p-5 gap-3 max-w-[250px]`
+
+- **people/+page.svelte**:
+  - HTML: `class="person-card"` → `class="card person-card"`
+  - `<style>`: הוסר `@apply card-base` השבור, נשאר רק override קטן `max-w-[280px]`
+
+**קבצים ששונו**:
+- `sveltekit-version/src/routes/settings/users/+page.svelte`
+- `sveltekit-version/src/routes/settings/lists/+page.svelte`
+- `sveltekit-version/src/routes/settings/people/+page.svelte`
+
+---
+
+#### החלטות ארכיטקטורה
+
+- **נטישת גישת הירושה ב-CSS**: ניסינו להשתמש ב-`@utility` ו-`@extend` אבל זה היה מסובך מדי ולא עבד טוב עם Tailwind v4. במקום זאת, החלטנו על גישה פשוטה יותר: class גלובלי אחד (`.card`) + overrides מקומיים קטנים.
+
+- **כלל "3+ פעמים"**: החלטנו לעקוב אחרי הכלל "If it repeats 3+ times → @apply in components.css". כרטיסים שמופיעים רק ב-1-2 קבצים (כמו `.user-card`, `.list-card`, `.person-card`) לא מוגדרים ב-components.css אלא רק כ-overrides מקומיים.
+
+- **DRY מול פשטות**: בחרנו בפשטות על פני DRY מוחלט. כן, יש קצת כפילות (כל דף מגדיר את ה-override שלו), אבל הקוד הרבה יותר קריא ונוח לתחזוקה.
+
+---
+
+#### מעקפים ופתרונות
+
+- **הערה על action-btn modifiers**: במהלך הניקוי הסרנו בטעות את הסגנונות ל-`.action-btn.delete:hover`, `.action-btn.duplicate:hover` וכו' מ-lists/+page.svelte. המשתמש החליט לא להחזיר אותם, אז כרגע כל הכפתורים נראים אותו דבר בהובר (כחול ברירת מחדל) במקום צבעים שונים (אדום למחיקה, סגול לשכפול וכו').
+
+---
+
+## 2026-01-25 12:53
+
+### מעבר ל-PostCSS Setup + הוספת @extend למערכת CSS
+
+הושלמה הגירה מוצלחת מ-`@tailwindcss/vite` ל-`@tailwindcss/postcss` + `postcss-extend-rule`, והוספת מנגנון ירושה מפורשת (@extend) לקומפוננטות CSS.
+
+---
+
+#### מה בוצע?
+
+**1. הגירה ל-PostCSS Setup**
+
+- **הסרת התלות ב-Vite Plugin**: הסרנו `@tailwindcss/vite` מ-`package.json` ו-`vite.config.ts`
+- **הוספת PostCSS Dependencies**:
+  ```json
+  {
+    "devDependencies": {
+      "@tailwindcss/postcss": "^4.1.17",
+      "postcss": "^8.4.49",
+      "postcss-extend-rule": "^4.0.0"
+    }
+  }
+  ```
+- **יצירת postcss.config.js**:
+  ```js
+  export default {
+    plugins: {
+      '@tailwindcss/postcss': {},
+      'postcss-extend-rule': {}
+    }
+  }
+  ```
+- **עדכון vite.config.ts**: הסרנו את `tailwindcss()` מרשימת ה-plugins
+
+**קבצים שנוצרו**:
+- `sveltekit-version/postcss.config.js`
+
+**קבצים ששונו**:
+- `sveltekit-version/package.json`
+- `sveltekit-version/vite.config.ts`
+
+---
+
+**2. הוספת קומפוננטות חסרות ל-components.css**
+
+הוספנו קומפוננטות חדשות ל-`components.css`:
+
+```css
+/* Button Outline - רקע שקוף */
+.btn-outline {
+  /* ... */
+}
+
+/* Button Text - טקסט בלבד */
+.btn-text {
+  /* ... */
+}
+
+/* Action Button - כפתורי פעולה קטנים */
+.action-btn {
+  /* ... */
+}
+
+/* Select Input - תיבת בחירה מעוצבת */
+select.input {
+  /* ... */
+}
+```
+
+**קבצים ששונו**:
+- `sveltekit-version/src/routes/components.css`
+
+---
+
+**3. רפקטור דפי הגדרות עם @extend**
+
+רפקטרנו 3 דפי הגדרות להשתמש ב-@extend לירושה מ-.card:
+
+```svelte
+<!-- users/+page.svelte -->
+<style>
+  @reference "tailwindcss";
+  
+  .user-card {
+    @extend .card;
+    @apply max-w-[280px];
+  }
+</style>
+
+<!-- lists/+page.svelte -->
+<style>
+  @reference "tailwindcss";
+  
+  .list-card {
+    @extend .card;
+    @apply max-w-[250px] relative;
+  }
+</style>
+
+<!-- people/+page.svelte -->
+<style>
+  @reference "tailwindcss";
+  
+  .person-card {
+    @extend .card;
+    @apply max-w-[280px];
+  }
+</style>
+```
+
+**קבצים ששונו**:
+- `sveltekit-version/src/routes/settings/users/+page.svelte`
+- `sveltekit-version/src/routes/settings/lists/+page.svelte`
+- `sveltekit-version/src/routes/settings/people/+page.svelte`
+
+---
+
+**4. ארגון CSS Properties**
+
+ארגנו את הקומפוננטות החדשות לפי סדר Properties מוגדר:
+
+1. **Positioning** → `position`, `display`, `flex`, `grid`
+2. **Box Model** → `width`, `height`, `padding`, `margin`, `border`
+3. **Typography** → `font-*`, `text-*`
+4. **Visual** → `color`, `background`
+5. **Effects** → `cursor`, `transition`, `transform`
+
+**דוגמה**:
+```css
+.action-btn {
+  /* Positioning */
+  @apply flex items-center justify-center;
+  
+  /* Box Model */
+  @apply w-10 h-10;
+  padding: 0;
+  border: 1px solid;
+  @apply border-slate-200 rounded-lg;
+  
+  /* Visual */
+  @apply bg-slate-50;
+  color: #64748b;
+  
+  /* Effects */
+  cursor: pointer;
+  @apply transition-all;
+}
+```
+
+---
+
+**5. עדכון תיעוד**
+
+עדכנו 3 מסמכי תיעוד עם הכללים החדשים:
+
+**`.cursor/rules/css-architecture-rules.mdc`**:
+- הוספת PostCSS Setup (dependencies, config)
+- הוספת כללי @extend (מתי להשתמש, syntax)
+- הוספת כללי Property Organization (סדר, workflow)
+
+**`.cursor/rules/agent-guide.mdc`**:
+- הוספת PostCSS לכללים טכניים
+- הוספת דוגמה ל-@extend
+- עדכון @reference לכלול גם @extend
+
+**`docs/css-architecture-guide.md`**:
+- (לא עודכן במפורש, אבל הכללים החדשים רלוונטיים גם לו)
+
+**קבצים ששונו**:
+- `.cursor/rules/css-architecture-rules.mdc`
+- `.cursor/rules/agent-guide.mdc`
+
+---
+
+#### החלטות ארכיטקטורה
+
+**1. מדוע PostCSS במקום Vite Plugin?**
+
+- **בעיה**: Tailwind CSS v4 מגיע עם Vite Plugin ייעודי (`@tailwindcss/vite`) שלא תומך בפלאגינים נוספים של PostCSS
+- **פתרון**: מעבר ל-`@tailwindcss/postcss` מאפשר לנו להשתמש ב-`postcss-extend-rule` לירושה מפורשת
+- **Trade-off**: קצת יותר configuration, אבל יכולות מתקדמות יותר
+
+**2. מדוע @extend?**
+
+- **בעיה**: רצינו ירושה דקלרטיבית מפורשת (כמו Sass @extend) ללא שכפול קוד
+- **פתרון**: `postcss-extend-rule` מספק @extend native ל-PostCSS
+- **יתרון**: קומפוננטות מקומיות יכולות לרשת מקומפוננטות גלובליות בצורה נקייה
+
+**3. כללי Property Organization**
+
+- **בעיה**: ארגון Properties יכול להאט את הפיתוח
+- **פתרון**: גישה דו-שלבית:
+  1. **Development Phase**: התמקדות בפונקציונליות, ללא דאגה לסדר
+  2. **Organization Pass**: לאחר השלמת פיצ'ר, ריצה נפרדת לסידור Properties
+- **יתרון**: איזון בין איכות קוד למהירות פיתוח
+
+---
+
+#### בדיקות שבוצעו
+
+- ✅ **bun install**: התקנת החבילות החדשות הצליחה
+- ✅ **bun run dev**: ה-dev server עלה בהצלחה על localhost:5175
+- ✅ **bun run check**: 0 errors, 49 warnings צפויים על @apply/@extend/@reference
+- ✅ **bun run build**: Build production הצליח ללא שגיאות
+- ✅ **ReadLints**: רק warnings צפויים (Unknown at rule @apply/@extend/@reference)
+
+---
+
+#### סיכום טכני
+
+**קבצים שנוצרו (1)**:
+- `sveltekit-version/postcss.config.js`
+
+**קבצים ששונו (8)**:
+- `sveltekit-version/package.json`
+- `sveltekit-version/vite.config.ts`
+- `sveltekit-version/src/routes/components.css`
+- `sveltekit-version/src/routes/settings/users/+page.svelte`
+- `sveltekit-version/src/routes/settings/lists/+page.svelte`
+- `sveltekit-version/src/routes/settings/people/+page.svelte`
+- `.cursor/rules/css-architecture-rules.mdc`
+- `.cursor/rules/agent-guide.mdc`
+
+**תלויות חדשות (3)**:
+- `@tailwindcss/postcss@^4.1.17`
+- `postcss@^8.4.49`
+- `postcss-extend-rule@^4.0.0`
+
+**תלויות שהוסרו (1)**:
+- `@tailwindcss/vite`
+
+---
+
 ## 2026-01-25 11:26
 
 ### העברת מערכת CSS למרכז הפרויקט עם CSS Layers

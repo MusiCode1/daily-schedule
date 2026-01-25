@@ -1,4 +1,5 @@
 @import './layout.css';
+@import 'tailwindcss';
 
 /* ============================================
    COMPONENTS CSS - מערכת קומפוננטות מרכזית
@@ -268,6 +269,127 @@
     filter: brightness(1.1);
   }
   
+  /* Button Outline - רקע שקוף */
+  .btn-outline {
+    /* Positioning: (none) */
+    
+    /* Box Model */
+    padding: 0.5rem 1rem;
+    border: 2px solid;
+    border-color: var(--primary);
+    border-radius: var(--radius-md);
+    
+    /* Typography */
+    font-weight: 600;
+    
+    /* Visual */
+    @apply bg-transparent;
+    color: var(--primary);
+    
+    /* Effects */
+    cursor: pointer;
+    @apply transition-all;
+  }
+  
+  .btn-outline:hover {
+    background-color: var(--primary);
+    color: white;
+  }
+  
+  /* Button Text - טקסט בלבד */
+  .btn-text {
+    /* Positioning: (none) */
+    
+    /* Box Model */
+    padding: 0.5rem 1rem;
+    @apply border-none;
+    
+    /* Typography */
+    font-size: 0.9rem;
+    font-weight: 500;
+    @apply underline;
+    
+    /* Visual */
+    @apply bg-transparent;
+    color: var(--primary);
+    
+    /* Effects */
+    cursor: pointer;
+    @apply transition-colors;
+  }
+  
+  .btn-text:hover {
+    @apply no-underline;
+    color: var(--secondary);
+  }
+  
+  .btn-text:disabled {
+    @apply opacity-70 cursor-not-allowed;
+  }
+  
+  /* Button Primary - כפתור ראשי */
+  .btn-primary {
+    /* Positioning: (none) */
+    
+    /* Box Model */
+    padding: 0.6rem 1.2rem;
+    border: none;
+    border-radius: 10px;
+    
+    /* Typography */
+    @apply font-semibold;
+    
+    /* Visual */
+    background: #6366f1;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+    
+    /* Effects */
+    cursor: pointer;
+    @apply transition-all;
+  }
+  
+  .btn-primary:hover {
+    background: #4f46e5;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(99, 102, 241, 0.4);
+  }
+  
+  /* ==================== ACTION BUTTONS ==================== */
+  
+  /* Action Button - כפתורי פעולה קטנים */
+  .action-btn {
+    /* Positioning: (none) */
+    
+    /* Box Model */
+    @apply w-10 h-10;
+    padding: 0;
+    border: 1px solid;
+    @apply border-slate-200 rounded-lg;
+    @apply flex items-center justify-center;
+    
+    /* Typography: (none - icons only) */
+    
+    /* Visual */
+    @apply bg-slate-50;
+    color: #64748b;
+    
+    /* Effects */
+    cursor: pointer;
+    @apply transition-all;
+  }
+  
+  .action-btn:hover {
+    transform: translateY(-1px);
+    @apply bg-white border-indigo-500;
+    color: var(--primary);
+  }
+  
+  .action-btn-danger:hover {
+    @apply bg-red-50 border-red-500;
+    color: var(--danger);
+  }
+  
   /* ==================== CARDS ==================== */
   
   /* Task Card - כרטיס משימה */
@@ -300,6 +422,21 @@
   
   textarea.input {
     resize: vertical;
+  }
+  
+  /* Select Input - תיבת בחירה מעוצבת */
+  select.input {
+    @apply w-full px-4 py-3 border-2 border-slate-200 rounded-xl
+           transition-all cursor-pointer appearance-none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: left 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-left: 2.5rem;
+  }
+  
+  select.input:focus {
+    @apply outline-none border-indigo-500 ring-4 ring-indigo-100;
   }
   
   /* ==================== BADGES ==================== */
@@ -574,6 +711,30 @@
     @apply -translate-y-1 shadow-2xl border-slate-300;
   }
   
+  /* List Icon - אייקון רשימה */
+  .list-icon {
+    /* Positioning: (none) */
+    
+    /* Box Model */
+    @apply w-16 h-16 rounded-xl;
+    @apply border-2 border-slate-200;
+    @apply flex items-center justify-center;
+    @apply overflow-hidden shrink-0;
+    
+    /* Typography */
+    font-size: 2rem;
+    
+    /* Visual */
+    @apply bg-slate-50;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    
+    /* Effects: (none) */
+  }
+  
+  .list-icon :global(.image-display) {
+    @apply w-full h-full rounded-none;
+  }
+  
   /* ==================== FORM COMPONENTS ==================== */
   
   /* Form Group - קבוצת שדות */
@@ -618,28 +779,6 @@
   .users-grid {
     @apply grid gap-6 w-full;
     grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  }
-
-  /* User Card - כרטיס משתמש (מרחיב את .card) */
-  .user-card {
-    @apply bg-white border border-slate-200 rounded-2xl p-6 
-           flex flex-col items-center gap-4
-           transition-all duration-300 ease-in-out
-           shadow-md;
-  }
-  
-  .user-card:hover {
-    @apply -translate-y-1 shadow-2xl border-slate-300;
-  }
-
-  /* User Details - פרטי משתמש */
-  .user-details h3 {
-    @apply m-0 mb-2 text-xl text-slate-800;
-  }
-
-  /* User Actions - כפתורי פעולה */
-  .user-actions {
-    @apply flex gap-3 mt-2 w-full justify-center;
   }
   
   /* ==================== MISC ==================== */

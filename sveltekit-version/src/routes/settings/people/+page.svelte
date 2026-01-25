@@ -36,7 +36,7 @@
 
 <div class="people-grid">
   {#each peopleStore.getAllPeople() as person (person.id)}
-    <div class="person-card">
+    <div class="card person-card">
       <div class="avatar-wrapper">
         {#if person.avatar}
           <ImageDisplay 
@@ -84,32 +84,67 @@
   </div>
 {/if}
 
-<style>
+<style type="text/postcss">
+  @reference "tailwindcss";
+  
+  /* person-card - override מקומי */
+  .person-card {
+    @apply max-w-[280px];
+  }
+  
+  /* avatar-wrapper - תמונת פרופיל */
+  .avatar-wrapper {
+    @apply w-20 h-20 rounded-full bg-slate-100 overflow-hidden
+           flex items-center justify-center
+           border-3 border-white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+  
+  .avatar-wrapper :global(.image-display) { 
+    @apply w-full h-full rounded-none;
+  }
+  
+  .initial { 
+    @apply text-4xl text-slate-400 font-extrabold;
+  }
+
+  /* person-details - פרטי האדם */
+  .person-details {
+    @apply text-center w-full;
+  }
+  
+  .person-details h3 {
+    @apply text-xl font-bold text-slate-900 m-0;
+  }
+
+  /* person-actions - כפתורי פעולה */
+  .person-actions {
+    @apply flex gap-3 mt-2 w-full justify-center;
+  }
+  
+  /* people-grid - רשת אנשים */
+  .people-grid {
+    @apply grid gap-6 w-full;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+  
+  /* שאר הסגנונות */
   h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #334155;
-    margin: 0;
+    @apply text-2xl font-bold text-slate-700 m-0;
   }
 
   .header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-    border-bottom: 1px solid #f1f5f9;
-    padding-bottom: 1.5rem;
-    flex-wrap: wrap;
-    gap: 1rem;
+    @apply flex justify-between items-center mb-8 
+           border-b border-slate-100 pb-6 flex-wrap gap-4;
   }
 
   .btn-primary-small {
+    @apply font-semibold;
     background: #6366f1;
     color: white;
     border: none;
     padding: 0.6rem 1.2rem;
     border-radius: 10px;
-    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
     box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
@@ -121,146 +156,33 @@
     box-shadow: 0 6px 8px -1px rgba(99, 102, 241, 0.4);
   }
 
-  /* כרטיסי אנשים */
-  .people-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1.5rem;
-    width: 100%;
-  }
-
-  .person-card {
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-  }
-  
-  .person-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-    border-color: #cbd5e1;
-  }
-
-  .avatar-wrapper {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: #f1f5f9;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 3px solid white;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  }
-  
-  .avatar-wrapper :global(.image-display) { 
-    width: 100%; 
-    height: 100%; 
-    border-radius: 0;
-  }
-  
-  .initial { 
-    font-size: 2.5rem; 
-    color: #94a3b8; 
-    font-weight: 800; 
-  }
-
-  .person-details h3 {
-    margin: 0;
-    font-size: 1.25rem;
-    color: #1e293b;
-    text-align: center;
-  }
-
-  .person-actions {
-    display: flex;
-    gap: 0.75rem;
-    margin-top: 0.5rem;
-    width: 100%;
-    justify-content: center;
-  }
-  
-  .action-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #e2e8f0;
-    background: white;
-    color: #64748b;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .action-btn:hover {
-    background: #f8fafc;
-    color: #6366f1;
-    border-color: #6366f1;
-  }
-  
-  .action-btn.delete:hover {
-    color: #ef4444;
-    border-color: #ef4444;
-    background: #fef2f2;
-  }
-
   .empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: #64748b;
+    @apply text-center py-12 px-4 text-slate-500;
   }
 
   .empty-state p {
-    font-size: 1.1rem;
-    margin: 0.5rem 0;
+    @apply text-lg my-2;
   }
 
   .empty-state .subtitle {
-    font-size: 0.95rem;
-    color: #94a3b8;
+    @apply text-base text-slate-400;
   }
 
   /* מודאל */
   .modal-card {
-    background: white;
-    padding: 2.5rem;
-    border-radius: 24px;
-    width: 100%;
-    max-width: 450px;
+    @apply bg-white p-10 rounded-3xl w-full max-w-[450px] relative;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     border: 1px solid #f1f5f9;
-    position: relative;
     z-index: 1001;
   }
   
   .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    @apply fixed inset-0 bg-black/50 flex justify-center items-center;
     z-index: 1000;
     backdrop-filter: blur(4px);
   }
   
   .modal-card h3 {
-    text-align: center;
-    font-size: 1.5rem;
-    margin-bottom: 2rem;
-    color: #1e293b;
+    @apply text-center text-2xl mb-8 text-slate-800;
   }
 </style>
