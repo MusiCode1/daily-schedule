@@ -1,5 +1,116 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-01-25 11:26
+
+### העברת מערכת CSS למרכז הפרויקט עם CSS Layers
+
+הושלמה הגירה מוצלחת של מערכת הקומפוננטות CSS מ-`settings.css` לקובץ מרכזי חדש `components.css`, תוך שימוש ב-CSS Layers למניעת התנגשויות עם קוד קיים.
+
+---
+
+#### מה בוצע?
+
+**1. יצירת components.css - מערכת קומפוננטות מרכזית**
+
+יצרנו קובץ CSS מרכזי חדש `sveltekit-version/src/routes/components.css` (687 שורות) עם 4 חלקים עיקריים:
+
+```css
+/* SECTION 1: DESIGN TOKENS (לא layer!) */
+:root {
+  --primary: #6366f1;
+  --text-main: #334155;
+  /* ... כל המשתנים */
+}
+
+/* SECTION 2: THEME VARIATIONS (לא layer!) */
+.theme-focus {
+  --primary: #6366f1;
+  /* ... עקיפות משתנים */
+}
+
+/* הגדרת סדר Layers */
+@layer base, components;
+
+/* SECTION 3: @layer base */
+@layer base {
+  body { /* ... */ }
+  h1, h2, h3 { /* ... */ }
+}
+
+/* SECTION 4: @layer components */
+@layer components {
+  .btn { @apply px-6 py-3; }
+  .card { @apply rounded-xl; }
+  /* ... כל הקומפוננטות */
+}
+
+/* KEYFRAMES (מחוץ ל-layer) */
+@keyframes pulse-border { /* ... */ }
+```
+
+- **קבצים שנוצרו**: `sveltekit-version/src/routes/components.css`
+
+**2. עדכון מערכת ה-imports**
+
+עדכנו את מבנה ה-imports כדי שהקומפוננטות יהיו זמינות גלובלית:
+
+- **+layout.svelte השורשי**: הוספנו `import './components.css'`
+- **settings/+layout.svelte**: הסרנו `import './settings.css'`
+- **מחיקת settings.css**: הקובץ המקורי נמחק כי כל התוכן הועבר
+
+- **קבצים ששונו**: 
+  - `sveltekit-version/src/routes/+layout.svelte`
+  - `sveltekit-version/src/routes/settings/+layout.svelte`
+- **קבצים שנמחקו**: `sveltekit-version/src/routes/settings/settings.css`
+
+**3. בדיקה מקיפה של כל הפרויקט**
+
+ביצענו בדיקה יסודית של כל דפי הפרויקט:
+
+**דפי Settings** (כולם עובדים מצוין ✅):
+- `users/+page.svelte` - כרטיסי משתמשים עם אווטרים ✅
+- `lists/+page.svelte` - ניהול רשימות ✅
+- `people/+page.svelte` - ניהול אנשים (empty state) ✅
+- `general/+page.svelte` - הגדרות כלליות וגיבוי ✅
+
+**דפים ישנים** (אף אחד לא השתבש ✅):
+- `+page.svelte` - דף ראשי עם לוח משימות ✅
+- `login/+page.svelte` - מסך כניסה עם בחירת משתמש ✅
+- `test-board/+page.svelte` - מערכת תקשורת Cboard ✅
+- `privacy/+page.svelte` - מדיניות פרטיות ✅
+
+**תוצאת `npm run check`**: ✅ 0 errors, 4 warnings (רק על `@reference` ו-`@apply` - צפוי)
+
+---
+
+#### החלטות ארכיטקטורה
+
+- **CSS Layers במקום Wrapper Classes**: בחרנו בגישת CSS Layers (`@layer base, components`) למניעת התנגשויות במקום wrapper classes (כמו `.design-system .btn`). הסיבות:
+  1. **layout.css נקי לחלוטין** - אין בו custom classes שיכולות להתנגש
+  2. **HTML נשאר נקי** - אין צורך ב-wrapper divs מיותרים
+  3. **פתרון מודרני וסטנדרטי** - CSS Layers הוא חלק מהסטנדרט
+  4. **הירארכיה ברורה**: CSS ללא layer (100) → @layer components (20) → @layer base (10)
+
+- **Design Tokens ו-Theme Variations מחוץ ל-layers**: משתני CSS (`:root`, `.theme-focus`) לא צריכים להיות ב-layer כי הם רק משתנים ולא סגנונות. רק base ו-components הם layers.
+
+- **4 חלקים במקום 3**: החלטנו על מבנה של 4 חלקים:
+  1. Design Tokens (`:root`)
+  2. Theme Variations (`.theme-focus`)
+  3. `@layer base`
+  4. `@layer components`
+  
+  במקום לאחד את Design Tokens ו-Theme Variations, כי זה יותר ברור ומסודר.
+
+---
+
+#### מעקפים ופתרונות
+
+- **`@import` בראש components.css**: הוספנו `@import './layout.css';` בשורה הראשונה של components.css כדי ש-Tailwind v4 CDN יעבד את הקובץ כראוי. בלי ה-import, Tailwind לא מזהה את ה-`@apply` directives.
+
+- **התנגשות `.empty-state` לא דורסת**: גילינו ש-`.empty-state` מופיע גם ב-settings.css וגם ב-+page.svelte, אבל ב-+page.svelte הוא ב-`<style>` scoped, כך שאין התנגשות בפועל. CSS Layers מבטיח שגם אם יש התנגשות, הקוד הישן תמיד ינצח.
+
+---
+
 ## 2026-01-19 23:35
 
 ### הבהרה והחלה של כללי Tailwind CSS - גישה היברידית

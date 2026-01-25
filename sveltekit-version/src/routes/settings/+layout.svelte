@@ -3,7 +3,6 @@
   import { goto } from '$app/navigation';
   import { TEXTS } from '$lib/services/language';
   import { fade } from 'svelte/transition';
-  import './settings.css';
 
   let { children } = $props();
 

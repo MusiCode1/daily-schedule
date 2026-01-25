@@ -1,5 +1,6 @@
 <script lang="ts">
 	import './layout.css';
+	import './components.css';
 	import favicon from '$lib/assets/logo.svg';
 
 	import { onMount } from 'svelte';
