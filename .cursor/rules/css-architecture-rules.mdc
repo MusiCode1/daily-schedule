@@ -18,30 +18,140 @@
 
 ---
 
+## PostCSS Setup
+
+**Critical:** This project uses **PostCSS** for Tailwind CSS v4.
+
+### postcss.config.js
+
+```js
+export default {
+  plugins: {
+    '@tailwindcss/postcss': {}
+  }
+}
+```
+
+### package.json Dependencies
+
+```json
+{
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.17",
+    "postcss": "^8.4.49"
+  }
+}
+```
+
+---
+
 ## Critical Rules
 
 ### Layers
 
 ```css
 /* ALWAYS declare layer order first! */
-@layer base, components, theme-overrides;
+@layer base, components, utilities, theme-overrides;
 
 /* Layers win by ORDER, not specificity */
-/* theme-overrides > components > base */
+/* theme-overrides > utilities > components > base */
 ```
 
 ### @apply Usage
 
 **✅ USE @apply for:**
-- Components that repeat 5+ times: `.btn`, `.card`, `.avatar`, `.badge`, `.modal`
+- Components that repeat 3+ times: `.btn`, `.card`, `.avatar`, `.badge`, `.modal`
 - Complex components with states (hover, focus, active)
 
 **❌ DON'T use @apply for:**
 - Simple utilities: `.flex`, `.grid`, `.gap-2`, `.mt-4`
 - One-off layouts
-- Code that appears 1-4 times only
+- Code that appears 1-2 times only
 
-**Rule of thumb:** If it repeats 5+ times → @apply. Otherwise → inline Tailwind.
+**Rule of thumb:** If it repeats 3+ times → @apply. Otherwise → inline Tailwind.
+
+### Inheritance with @utility
+
+**Component Inheritance:** Define reusable utilities in `components.css`:
+
+```css
+/* components.css */
+@layer utilities {
+  @utility card-base {
+    @apply bg-white border border-slate-200 rounded-2xl p-6 
+           flex flex-col items-center gap-4
+           transition-all duration-300 ease-in-out shadow-md;
+  }
+  
+  @utility btn-icon {
+    @apply w-10 h-10 p-0 border border-slate-200 rounded-lg
+           flex items-center justify-center bg-slate-50;
+  }
+}
+```
+
+**Use in components with inheritance on separate line:**
+
+```svelte
+<style>
+  @reference "tailwindcss";
+  
+  .list-card {
+    @apply card-base;  /* ירושה - שורה נפרדת! */
+    @apply border-2 p-5 gap-3 duration-200;
+  }
+  
+  .user-actions {
+    @apply btn-icon;  /* ירושה */
+    @apply flex gap-3 mt-2;  /* Tailwind */
+  }
+</style>
+```
+
+**Critical Rule:** Custom utilities must be applied on a separate line to distinguish them from built-in Tailwind utilities.
+
+**Critical:** Always add `@reference "tailwindcss";` when using @apply in `<style>` blocks!
+
+### Property Organization
+
+**Critical:** CSS properties MUST be organized in this order:
+
+1. **Positioning** → `position`, `top`, `right`, `z-index`, `display`, `flex`, `grid`
+2. **Box Model** → `width`, `height`, `padding`, `margin`, `border`
+3. **Typography** → `font-*`, `text-*`, `line-height`, `letter-spacing`
+4. **Visual** → `color`, `background`, `opacity`
+5. **Effects** → `transform`, `transition`, `animation`, `cursor`
+
+**Workflow:**
+- **Development Phase:** Focus on functionality, don't worry about order
+- **Organization Pass:** After completing a feature, run a dedicated "CSS organization pass" to reorder properties
+
+**Example:**
+
+```css
+.my-component {
+  /* Positioning */
+  position: relative;
+  @apply flex items-center justify-center;
+  
+  /* Box Model */
+  @apply w-full h-20 p-4;
+  border: 2px solid;
+  @apply border-slate-200 rounded-lg;
+  
+  /* Typography */
+  font-size: 1rem;
+  font-weight: 600;
+  
+  /* Visual */
+  @apply bg-white;
+  color: var(--text-main);
+  
+  /* Effects */
+  cursor: pointer;
+  @apply transition-all;
+}
+```
 
 ### Nesting
 

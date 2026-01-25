@@ -1,5 +1,41 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-01-25 18:05
+
+### 🛠️ תחזוקה ועדכון קונפיגורציה
+
+ביצענו עדכון רוחבי לקבצים ומסמכי תיעוד כדי ליישר קו עם השינויים האחרונים.
+
+---
+
+#### מה בוצע?
+
+**1. עדכון קבצי קונפיגורציה**
+
+- עודכנו קבצי הליבה: `package.json`, `bun.lock`, `vite.config.ts`, `svelte.config.js`.
+- עדכון הגדרות Workspace (`daily-schedule.code-workspace`).
+
+**2. עדכון חוקים ותיעוד**
+
+- עדכון חוקי ה-Agent (`.cursor/rules/agent-guide.mdc`).
+- עדכון מסמך סטטוס פיצ'רים (`docs/features-status.md`).
+- עדכון מדריך CSS (`docs/css-architecture-guide.md`).
+
+**קבצים ששונו**:
+
+- `.cursor/mcp.json`
+- `.cursor/rules/agent-guide.mdc`
+- `.cursor/rules/css-architecture-rules.mdc`
+- `daily-schedule.code-workspace`
+- `docs/css-architecture-guide.md`
+- `docs/features-status.md`
+- `sveltekit-version/bun.lock`
+- `sveltekit-version/package.json`
+- `sveltekit-version/svelte.config.js`
+- `sveltekit-version/vite.config.ts`
+
+---
+
 ## 2026-01-25 17:25
 
 ### ניקוי ארכיטקטורת CSS - מעבר לגישת .card + overrides מקומיים
@@ -35,6 +71,7 @@
   - `<style>`: הוסר `@apply card-base` השבור, נשאר רק override קטן `max-w-[280px]`
 
 **קבצים ששונו**:
+
 - `sveltekit-version/src/routes/settings/users/+page.svelte`
 - `sveltekit-version/src/routes/settings/lists/+page.svelte`
 - `sveltekit-version/src/routes/settings/people/+page.svelte`
@@ -84,17 +121,19 @@
   ```js
   export default {
     plugins: {
-      '@tailwindcss/postcss': {},
-      'postcss-extend-rule': {}
-    }
-  }
+      "@tailwindcss/postcss": {},
+      "postcss-extend-rule": {},
+    },
+  };
   ```
 - **עדכון vite.config.ts**: הסרנו את `tailwindcss()` מרשימת ה-plugins
 
 **קבצים שנוצרו**:
+
 - `sveltekit-version/postcss.config.js`
 
 **קבצים ששונו**:
+
 - `sveltekit-version/package.json`
 - `sveltekit-version/vite.config.ts`
 
@@ -127,6 +166,7 @@ select.input {
 ```
 
 **קבצים ששונו**:
+
 - `sveltekit-version/src/routes/components.css`
 
 ---
@@ -139,7 +179,7 @@ select.input {
 <!-- users/+page.svelte -->
 <style>
   @reference "tailwindcss";
-  
+
   .user-card {
     @extend .card;
     @apply max-w-[280px];
@@ -149,7 +189,7 @@ select.input {
 <!-- lists/+page.svelte -->
 <style>
   @reference "tailwindcss";
-  
+
   .list-card {
     @extend .card;
     @apply max-w-[250px] relative;
@@ -159,7 +199,7 @@ select.input {
 <!-- people/+page.svelte -->
 <style>
   @reference "tailwindcss";
-  
+
   .person-card {
     @extend .card;
     @apply max-w-[280px];
@@ -168,6 +208,7 @@ select.input {
 ```
 
 **קבצים ששונו**:
+
 - `sveltekit-version/src/routes/settings/users/+page.svelte`
 - `sveltekit-version/src/routes/settings/lists/+page.svelte`
 - `sveltekit-version/src/routes/settings/people/+page.svelte`
@@ -185,21 +226,22 @@ select.input {
 5. **Effects** → `cursor`, `transition`, `transform`
 
 **דוגמה**:
+
 ```css
 .action-btn {
   /* Positioning */
   @apply flex items-center justify-center;
-  
+
   /* Box Model */
   @apply w-10 h-10;
   padding: 0;
   border: 1px solid;
   @apply border-slate-200 rounded-lg;
-  
+
   /* Visual */
   @apply bg-slate-50;
   color: #64748b;
-  
+
   /* Effects */
   cursor: pointer;
   @apply transition-all;
@@ -213,19 +255,23 @@ select.input {
 עדכנו 3 מסמכי תיעוד עם הכללים החדשים:
 
 **`.cursor/rules/css-architecture-rules.mdc`**:
+
 - הוספת PostCSS Setup (dependencies, config)
 - הוספת כללי @extend (מתי להשתמש, syntax)
 - הוספת כללי Property Organization (סדר, workflow)
 
 **`.cursor/rules/agent-guide.mdc`**:
+
 - הוספת PostCSS לכללים טכניים
 - הוספת דוגמה ל-@extend
 - עדכון @reference לכלול גם @extend
 
 **`docs/css-architecture-guide.md`**:
+
 - (לא עודכן במפורש, אבל הכללים החדשים רלוונטיים גם לו)
 
 **קבצים ששונו**:
+
 - `.cursor/rules/css-architecture-rules.mdc`
 - `.cursor/rules/agent-guide.mdc`
 
@@ -268,9 +314,11 @@ select.input {
 #### סיכום טכני
 
 **קבצים שנוצרו (1)**:
+
 - `sveltekit-version/postcss.config.js`
 
 **קבצים ששונו (8)**:
+
 - `sveltekit-version/package.json`
 - `sveltekit-version/vite.config.ts`
 - `sveltekit-version/src/routes/components.css`
@@ -281,11 +329,13 @@ select.input {
 - `.cursor/rules/agent-guide.mdc`
 
 **תלויות חדשות (3)**:
+
 - `@tailwindcss/postcss@^4.1.17`
 - `postcss@^8.4.49`
 - `postcss-extend-rule@^4.0.0`
 
 **תלויות שהוסרו (1)**:
+
 - `@tailwindcss/vite`
 
 ---
@@ -323,19 +373,31 @@ select.input {
 
 /* SECTION 3: @layer base */
 @layer base {
-  body { /* ... */ }
-  h1, h2, h3 { /* ... */ }
+  body {
+    /* ... */
+  }
+  h1,
+  h2,
+  h3 {
+    /* ... */
+  }
 }
 
 /* SECTION 4: @layer components */
 @layer components {
-  .btn { @apply px-6 py-3; }
-  .card { @apply rounded-xl; }
+  .btn {
+    @apply px-6 py-3;
+  }
+  .card {
+    @apply rounded-xl;
+  }
   /* ... כל הקומפוננטות */
 }
 
 /* KEYFRAMES (מחוץ ל-layer) */
-@keyframes pulse-border { /* ... */ }
+@keyframes pulse-border {
+  /* ... */
+}
 ```
 
 - **קבצים שנוצרו**: `sveltekit-version/src/routes/components.css`
@@ -348,7 +410,7 @@ select.input {
 - **settings/+layout.svelte**: הסרנו `import './settings.css'`
 - **מחיקת settings.css**: הקובץ המקורי נמחק כי כל התוכן הועבר
 
-- **קבצים ששונו**: 
+- **קבצים ששונו**:
   - `sveltekit-version/src/routes/+layout.svelte`
   - `sveltekit-version/src/routes/settings/+layout.svelte`
 - **קבצים שנמחקו**: `sveltekit-version/src/routes/settings/settings.css`
@@ -358,12 +420,14 @@ select.input {
 ביצענו בדיקה יסודית של כל דפי הפרויקט:
 
 **דפי Settings** (כולם עובדים מצוין ✅):
+
 - `users/+page.svelte` - כרטיסי משתמשים עם אווטרים ✅
 - `lists/+page.svelte` - ניהול רשימות ✅
 - `people/+page.svelte` - ניהול אנשים (empty state) ✅
 - `general/+page.svelte` - הגדרות כלליות וגיבוי ✅
 
 **דפים ישנים** (אף אחד לא השתבש ✅):
+
 - `+page.svelte` - דף ראשי עם לוח משימות ✅
 - `login/+page.svelte` - מסך כניסה עם בחירת משתמש ✅
 - `test-board/+page.svelte` - מערכת תקשורת Cboard ✅
@@ -388,7 +452,7 @@ select.input {
   2. Theme Variations (`.theme-focus`)
   3. `@layer base`
   4. `@layer components`
-  
+
   במקום לאחד את Design Tokens ו-Theme Variations, כי זה יותר ברור ומסודר.
 
 ---
@@ -473,7 +537,9 @@ select.input {
 
 ```css
 /* ✅ עובד - settings.css */
-.my-class { @apply text-xl; }
+.my-class {
+  @apply text-xl;
+}
 ```
 
 ```svelte
@@ -488,7 +554,7 @@ select.input {
 #### 🔴 לקח 2: @import חובה!
 
 ```css
-@import '../layout.css'; /* ← חובה בשורה 1! */
+@import "../layout.css"; /* ← חובה בשורה 1! */
 
 @layer base, components;
 ```
@@ -517,6 +583,7 @@ select.input {
 #### ✅ עדכון agent-guide.mdc
 
 נוסף סעיף מפורט:
+
 - כללים קריטיים
 - דוגמאות נכון/לא נכון
 - מתי להשתמש ב-@reference
@@ -597,6 +664,7 @@ select.input {
 ```
 
 **קבצים שנוצרו/שונו:**
+
 - `sveltekit-version/src/routes/settings/settings.css` (+80 שורות)
 
 ---
@@ -636,6 +704,7 @@ select.input {
 ```
 
 **קבצים ששונו:**
+
 - `sveltekit-version/src/routes/settings/settings.css` (+35 שורות)
 
 ---
@@ -655,6 +724,7 @@ select.input {
 **שינויי CSS:**
 
 **לפני (105 שורות CSS):**
+
 ```css
 h2 { font-size: 1.5rem; font-weight: 700; ... }
 .header-row { display: flex; justify-content: ... }
@@ -672,11 +742,12 @@ h2 { font-size: 1.5rem; font-weight: 700; ... }
 ```
 
 **אחרי (15 שורות CSS בלבד!):**
+
 ```css
 /* Avatar Override - תמונת פרופיל (override ל-ImageDisplay) */
-.avatar :global(.image-display) { 
-  width: 100%; 
-  height: 100%; 
+.avatar :global(.image-display) {
+  width: 100%;
+  height: 100%;
   border-radius: 0;
 }
 
@@ -694,6 +765,7 @@ h2 { font-size: 1.5rem; font-weight: 700; ... }
 ```
 
 **מה נמחק:**
+
 - ❌ `h2` → עכשיו `.page-header` ב-settings.css
 - ❌ `.header-row` → עכשיו ב-settings.css
 - ❌ `.users-grid` → עכשיו ב-settings.css
@@ -705,9 +777,11 @@ h2 { font-size: 1.5rem; font-weight: 700; ... }
 - ❌ `.modal-actions` → עכשיו ב-settings.css
 
 **מה נשאר:**
+
 - ✅ רק 3 overrides ספציפיים (avatar, modal)
 
 **קבצים ששונו:**
+
 - `sveltekit-version/src/routes/settings/users/+page.svelte` (-90 שורות!)
 
 ---
@@ -716,10 +790,10 @@ h2 { font-size: 1.5rem; font-weight: 700; ... }
 
 **📊 סטטיסטיקה:**
 
-| קובץ | לפני | אחרי | שיפור |
-|------|------|------|-------|
-| **users/+page.svelte** | 225 שורות (105 CSS) | 135 שורות (15 CSS) | **-86% CSS!** |
-| **settings.css** | 582 שורות | 697 שורות | +115 שורות (משותפות!) |
+| קובץ                   | לפני                | אחרי               | שיפור                 |
+| ---------------------- | ------------------- | ------------------ | --------------------- |
+| **users/+page.svelte** | 225 שורות (105 CSS) | 135 שורות (15 CSS) | **-86% CSS!**         |
+| **settings.css**       | 582 שורות           | 697 שורות          | +115 שורות (משותפות!) |
 
 **💡 היתרון המרכזי:**
 
@@ -752,6 +826,7 @@ people/+page.svelte:  ~15 שורות (ספציפי) - עתידי
 **1. למה @apply רק ב-CSS files?**
 
 **הבעיה:**
+
 ```svelte
 <!-- ❌ לא עובד! -->
 <style>
@@ -762,10 +837,12 @@ people/+page.svelte:  ~15 שורות (ספציפי) - עתידי
 ```
 
 **הסיבה:**
+
 - Tailwind v4 Browser CDN מעבד רק **קבצי CSS** (לא `<style>` tags)
 - ה-CDN סורק `.css` files בלבד ב-runtime
 
 **הפתרון:**
+
 ```css
 /* ✅ עובד! (ב-settings.css) */
 .my-class {
@@ -799,15 +876,18 @@ settings.css
 **3. שלושה סוגי CSS**
 
 **א. קומפוננטות גלובליות (ב-settings.css):**
+
 - משמשות **בכל** דפי ההגדרות
 - דוגמה: `.btn`, `.avatar`, `.page-header`, `.form-group`
 
 **ב. קומפוננטות ספציפיות לדף (ב-settings.css):**
+
 - משמשות רק בדף אחד, אבל עם @apply
 - דוגמה: `.users-grid`, `.user-card`
 - למה ב-settings.css? כי @apply לא עובד ב-Svelte `<style>`!
 
 **ג. Overrides (ב-component `<style>`):**
+
 - רק customizations **מינימליים** לקומפוננטה הספציפית
 - **ללא @apply** (CSS רגיל)
 - דוגמה: `.avatar :global(.image-display)`, `.modal-content { max-width: ... }`
@@ -817,6 +897,7 @@ settings.css
 #### קבצים שנוצרו/שונו
 
 **שונו:**
+
 - `sveltekit-version/src/routes/settings/settings.css` (+115 שורות)
 - `sveltekit-version/src/routes/settings/users/+page.svelte` (-90 שורות CSS, +2 classes בHTML)
 
@@ -854,12 +935,14 @@ settings.css
 נוצר קובץ CSS חדש: `sveltekit-version/src/routes/settings/settings.css`
 
 **תוכן הקובץ:**
+
 - ✅ **Design Tokens** - רק Theme Focus (ברירת מחדל)
 - ✅ **@layer base** - Typography + Background
 - ✅ **@layer components** - כל 35+ הקומפוננטות
 - ✅ **@keyframes** - animations (pulse-border, pulse)
 
 **קבצים שנוצרו:**
+
 - `sveltekit-version/src/routes/settings/settings.css`
 
 ---
@@ -874,6 +957,7 @@ settings.css
 ```
 
 **קבצים ששונו:**
+
 - `sveltekit-version/src/routes/settings/+layout.svelte`
 
 **תיקון נוסף:** החלפת `'אנשים'` ב-`TEXTS.PEOPLE_TAB` (טקסט hardcoded!)
@@ -883,6 +967,7 @@ settings.css
 **3. רפקטורינג דף Users להשתמש בקומפוננטות**
 
 **לפני:**
+
 ```svelte
 <button class="btn-primary-small">משתמש חדש</button>
 <div class="avatar-wrapper">...</div>
@@ -893,6 +978,7 @@ settings.css
 ```
 
 **אחרי:**
+
 ```svelte
 <button class="btn btn-sm">משתמש חדש</button>
 <div class="avatar avatar-md">...</div>
@@ -903,9 +989,11 @@ settings.css
 ```
 
 **קבצים ששונו:**
+
 - `sveltekit-version/src/routes/settings/users/+page.svelte`
 
 **קומפוננטות שהוחלפו:**
+
 - ✅ `.btn-primary-small` → `.btn .btn-sm`
 - ✅ `.avatar-wrapper` → `.avatar .avatar-md`
 - ✅ `.gender-tag` → `.badge`
@@ -915,6 +1003,7 @@ settings.css
 - ✅ modal buttons → `.btn`, `.btn-secondary`
 
 **CSS שנמחק מהדף:**
+
 - ❌ ~60 שורות CSS מיותרות!
 - ❌ כל סגנונות הכפתורים
 - ❌ כל סגנונות ה-avatars
@@ -923,6 +1012,7 @@ settings.css
 - ❌ כל סגנונות המודאלים
 
 **CSS שנשאר בדף:**
+
 - ✅ רק Layout specific (grid, spacing)
 - ✅ רק Custom overrides (user-card animations)
 
@@ -939,6 +1029,7 @@ settings.css
 ```
 
 **קבצים ששונו:**
+
 - `sveltekit-version/src/routes/settings/settings.css`
 
 ---
@@ -947,11 +1038,11 @@ settings.css
 
 **📊 סטטיסטיקה:**
 
-| מדד | לפני | אחרי | שיפור |
-|-----|------|------|-------|
-| שורות CSS בדף | ~220 | ~160 | **-27%** |
-| Classes בHTML | inline styles | component classes | **עקביות!** |
-| תחזוקה | בכל דף בנפרד | מרכזי | **קל יותר!** |
+| מדד           | לפני          | אחרי              | שיפור        |
+| ------------- | ------------- | ----------------- | ------------ |
+| שורות CSS בדף | ~220          | ~160              | **-27%**     |
+| Classes בHTML | inline styles | component classes | **עקביות!**  |
+| תחזוקה        | בכל דף בנפרד  | מרכזי             | **קל יותר!** |
 
 ---
 
@@ -964,6 +1055,7 @@ settings.css
 - ✅ דף הגדרות לא צריך theme switching
 
 **בהמשך:**
+
 - נוסיף themes נוספים למסך הראשי
 - נוסיף theme selector
 - נוסיף theme-overrides layer
@@ -973,6 +1065,7 @@ settings.css
 **2. מה נשאר בדף users?**
 
 **רק סגנונות ספציפיים לדף:**
+
 ```css
 /* Layout */
 .users-grid { grid-template-columns: ...; }
@@ -992,6 +1085,7 @@ settings.css
 **3. למה זה טוב?**
 
 **לפני (ללא Design System):**
+
 ```
 users/+page.svelte: 220 שורות CSS
 lists/+page.svelte: 180 שורות CSS
@@ -1001,6 +1095,7 @@ people/+page.svelte: 150 שורות CSS
 ```
 
 **אחרי (עם Design System):**
+
 ```
 settings.css: 420 שורות (משותף!)
 users/+page.svelte: 60 שורות (ספציפי)
@@ -1011,6 +1106,7 @@ people/+page.svelte: 40 שורות (ספציפי)
 ```
 
 **יתרונות:**
+
 - ✅ שינוי בכפתור = שינוי במקום אחד!
 - ✅ עקביות מובטחת
 - ✅ קל להוסיף דפים חדשים
@@ -1020,9 +1116,11 @@ people/+page.svelte: 40 שורות (ספציפי)
 #### קבצים שנוצרו/שונו
 
 **נוצרו:**
+
 - `sveltekit-version/src/routes/settings/settings.css` (420 שורות)
 
 **שונו:**
+
 - `sveltekit-version/src/routes/settings/+layout.svelte` (הוספת import + תיקון TEXTS)
 - `sveltekit-version/src/routes/settings/users/+page.svelte` (רפקטורינג מלא)
 
@@ -1059,17 +1157,29 @@ people/+page.svelte: 40 שורות (ספציפי)
 
 ```css
 @layer components {
-  .avatar { /* base */ }
-  .avatar-sm { @apply w-10 h-10 border-2; }
-  .avatar-md { @apply w-20 h-20 border-4; }
-  .avatar-lg { width: 120px; height: 120px; }
+  .avatar {
+    /* base */
+  }
+  .avatar-sm {
+    @apply w-10 h-10 border-2;
+  }
+  .avatar-md {
+    @apply w-20 h-20 border-4;
+  }
+  .avatar-lg {
+    width: 120px;
+    height: 120px;
+  }
 }
 ```
 
 **שימוש:**
+
 ```html
 <!-- לפני -->
-<div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
+<div
+  class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm"
+>
   <img src="..." />
 </div>
 
@@ -1087,18 +1197,32 @@ people/+page.svelte: 40 שורות (ספציפי)
 
 ```css
 @layer components {
-  .task-card-waiting { @apply opacity-70 transition; }
-  .task-card-active { scale: 1.05; ring-width: var(--ring-width); }
-  .task-card-done { background: var(--success-bg); }
-  .task-card-cancelled { background: var(--cancelled); }
-  .task-card-added { background: var(--added); }
+  .task-card-waiting {
+    @apply opacity-70 transition;
+  }
+  .task-card-active {
+    scale: 1.05;
+    ring-width: var(--ring-width);
+  }
+  .task-card-done {
+    background: var(--success-bg);
+  }
+  .task-card-cancelled {
+    background: var(--cancelled);
+  }
+  .task-card-added {
+    background: var(--added);
+  }
 }
 ```
 
 **שימוש:**
+
 ```html
 <!-- לפני -->
-<div class="task-card flex items-center p-4 gap-4 opacity-70 hover:opacity-100 transition hover:shadow-lg bg-white">
+<div
+  class="task-card flex items-center p-4 gap-4 opacity-70 hover:opacity-100 transition hover:shadow-lg bg-white"
+>
   ...
 </div>
 
@@ -1114,14 +1238,23 @@ people/+page.svelte: 40 שורות (ספציפי)
 
 ```css
 @layer components {
-  .status-indicator { @apply rounded-full flex items-center justify-center; }
-  .status-indicator-empty { @apply w-12 h-12 border-4 border-gray-200; }
-  .status-indicator-active { @apply w-16 h-16 animate-pulse; }
-  .status-indicator-done { @apply w-12 h-12 text-2xl; }
+  .status-indicator {
+    @apply rounded-full flex items-center justify-center;
+  }
+  .status-indicator-empty {
+    @apply w-12 h-12 border-4 border-gray-200;
+  }
+  .status-indicator-active {
+    @apply w-16 h-16 animate-pulse;
+  }
+  .status-indicator-done {
+    @apply w-12 h-12 text-2xl;
+  }
 }
 ```
 
 **שימוש:**
+
 ```html
 <!-- לפני -->
 <div class="w-12 h-12 rounded-full border-4 border-gray-200"></div>
@@ -1140,22 +1273,29 @@ people/+page.svelte: 40 שורות (ספציפי)
     @apply flex flex-col items-center gap-2 p-3;
     @apply rounded-xl bg-gray-50 border-2 border-transparent;
     @apply transition cursor-pointer;
-    
+
     &:hover {
       @apply bg-gray-100;
       border-color: var(--primary);
     }
   }
-  
-  .activity-card-img { @apply w-16 h-16 rounded-lg object-cover shadow-sm; }
-  .activity-card-label { @apply text-xs font-medium text-center leading-tight; }
+
+  .activity-card-img {
+    @apply w-16 h-16 rounded-lg object-cover shadow-sm;
+  }
+  .activity-card-label {
+    @apply text-xs font-medium text-center leading-tight;
+  }
 }
 ```
 
 **שימוש:**
+
 ```html
 <!-- לפני -->
-<button class="flex flex-col items-center gap-2 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 border-2 border-transparent hover:border-[var(--primary)] transition">
+<button
+  class="flex flex-col items-center gap-2 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 border-2 border-transparent hover:border-[var(--primary)] transition"
+>
   <img src="..." class="w-16 h-16 rounded-lg object-cover shadow-sm" />
   <span class="text-xs font-medium text-center leading-tight">ארוחת בוקר</span>
 </button>
@@ -1181,7 +1321,7 @@ people/+page.svelte: 40 שורות (ספציפי)
     background-color: rgba(0, 0, 0, 0.8);
     backdrop-filter: blur(4px);
   }
-  
+
   .modal-content {
     @apply relative w-full max-w-lg rounded-3xl p-8 text-center;
     background-color: var(--modal-bg);
@@ -1191,17 +1331,27 @@ people/+page.svelte: 40 שורות (ספציפי)
 ```
 
 **שימוש:**
+
 ```html
 <!-- לפני -->
-<div id="celebrationModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-  <div class="relative w-full max-w-lg rounded-[3rem] p-8 text-center transform scale-90 transition-transform duration-300" style="background-color: var(--modal-bg);">
+<div
+  id="celebrationModal"
+  class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300"
+>
+  <div
+    class="relative w-full max-w-lg rounded-[3rem] p-8 text-center transform scale-90 transition-transform duration-300"
+    style="background-color: var(--modal-bg);"
+  >
     ...
   </div>
 </div>
 
 <!-- אחרי -->
 <div id="celebrationModal" class="modal-overlay hidden opacity-0">
-  <div class="modal-content rounded-[3rem] scale-90" style="background-color: var(--modal-bg);">
+  <div
+    class="modal-content rounded-[3rem] scale-90"
+    style="background-color: var(--modal-bg);"
+  >
     ...
   </div>
 </div>
@@ -1217,7 +1367,7 @@ people/+page.svelte: 40 שורות (ספציפי)
     @apply text-3xl font-black mb-6 pb-3;
     @apply border-b-2 border-gray-200;
   }
-  
+
   .section-description {
     @apply mb-6;
     color: var(--text-muted);
@@ -1226,22 +1376,17 @@ people/+page.svelte: 40 שורות (ספציפי)
 ```
 
 **שימוש:**
+
 ```html
 <!-- לפני -->
 <h2 class="text-3xl font-black mb-6 border-b-2 border-gray-200 pb-3">
   2️⃣ כפתורים (Buttons)
 </h2>
-<p class="text-[var(--text-muted)] mb-6">
-  7 סוגי כפתורים...
-</p>
+<p class="text-[var(--text-muted)] mb-6">7 סוגי כפתורים...</p>
 
 <!-- אחרי -->
-<h2 class="section-title">
-  2️⃣ כפתורים (Buttons)
-</h2>
-<p class="section-description">
-  7 סוגי כפתורים...
-</p>
+<h2 class="section-title">2️⃣ כפתורים (Buttons)</h2>
+<p class="section-description">7 סוגי כפתורים...</p>
 ```
 
 ---
@@ -1251,7 +1396,7 @@ people/+page.svelte: 40 שורות (ספציפי)
 **📦 סה"כ קומפוננטות שנוצרו:**
 
 ```
-Buttons:         .btn, .btn-secondary, .btn-danger, .btn-edit, 
+Buttons:         .btn, .btn-secondary, .btn-danger, .btn-edit,
                  .btn-warning, .btn-sm, .btn-xs, .btn-icon, .btn-fab
 
 Inputs:          .input (+ textarea)
@@ -1282,6 +1427,7 @@ Misc:            .now-indicator, .swatch
 #### רפקטורינג שבוצע ב-HTML
 
 **מה שונה:**
+
 - ✅ 6 Avatars → רפקטורינג מלא
 - ✅ 5 Task Card States → רפקטורינג מלא
 - ✅ 10 Section Titles → רפקטורינג מלא
@@ -1297,13 +1443,13 @@ Misc:            .now-indicator, .swatch
 
 **📊 סטטיסטיקה מעודכנת:**
 
-| Component | לפני | אחרי | חיסכון |
-|-----------|------|------|--------|
-| Avatar | 13 classes | 2 classes | **~85%** |
+| Component       | לפני         | אחרי        | חיסכון   |
+| --------------- | ------------ | ----------- | -------- |
+| Avatar          | 13 classes   | 2 classes   | **~85%** |
 | Task Card State | 8-12 classes | 3-4 classes | **~70%** |
-| Activity Card | 17 classes | 3 classes | **~82%** |
-| Modal | 14+ classes | 2-3 classes | **~80%** |
-| Section Header | 7 classes | 1 class | **~86%** |
+| Activity Card   | 17 classes   | 3 classes   | **~82%** |
+| Modal           | 14+ classes  | 2-3 classes | **~80%** |
+| Section Header  | 7 classes    | 1 class     | **~86%** |
 
 **ממוצע חיסכון: ~81%!** 🎯
 
@@ -1324,6 +1470,7 @@ Misc:            .now-indicator, .swatch
 ```
 
 **יתרונות:**
+
 - ✅ קל להוסיף גדלים חדשים
 - ✅ עקביות בין כל ה-avatars
 - ✅ קוד נקי ב-HTML
@@ -1337,9 +1484,9 @@ Misc:            .now-indicator, .swatch
 ```html
 <!-- ✅ טוב - CSS Variable -->
 <div class="modal-content" style="background-color: var(--modal-bg);">
-
-<!-- ❌ לא טוב - סגנון ישיר -->
-<div class="modal-content" style="background-color: #ffffff;">
+  <!-- ❌ לא טוב - סגנון ישיר -->
+  <div class="modal-content" style="background-color: #ffffff;"></div>
+</div>
 ```
 
 **למה?** כי ה-CSS Variables משתנים בין themes!
@@ -1350,14 +1497,21 @@ Misc:            .now-indicator, .swatch
 
 ```css
 /* Base Card */
-.task-card { /* עיצוב בסיסי */ }
+.task-card {
+  /* עיצוב בסיסי */
+}
 
 /* State Modifiers */
-.task-card-active { /* רק ההבדלים! */ }
-.task-card-done { /* רק ההבדלים! */ }
+.task-card-active {
+  /* רק ההבדלים! */
+}
+.task-card-done {
+  /* רק ההבדלים! */
+}
 ```
 
 **שימוש:**
+
 ```html
 <div class="task-card task-card-active">
   <!-- המחלקות מצטברפות! -->
@@ -1378,6 +1532,7 @@ Misc:            .now-indicator, .swatch
 #### הקבצים המעודכנים
 
 **מסמכי תיעוד:**
+
 - [`docs/design_demo.html`](docs/design_demo.html) - ✨ דמו מלא עם כל הקומפוננטות
 - [`docs/css-architecture-guide.md`](docs/css-architecture-guide.md) - מדריך מלא (v2.0)
 - [`docs/walkthrough.md`](docs/walkthrough.md) - יומן (מסמך זה)
@@ -1400,7 +1555,7 @@ Misc:            .now-indicator, .swatch
 
 ## 2026-01-20 02:30
 
-### רפקטורינג מלא: Component Classes במקום Inline Utilities! 
+### רפקטורינג מלא: Component Classes במקום Inline Utilities!
 
 **רפקטורינג גדול** של `design_demo.html` - החלפת כל ה-inline utilities לקומפוננטות CSS מאורגנות.
 
@@ -1416,17 +1571,17 @@ Misc:            .now-indicator, .swatch
 @layer components {
   /* Base Button */
   .btn { ... }
-  
+
   /* Variants */
   .btn-secondary { ... }
   .btn-danger { ... }
   .btn-edit { ... }
   .btn-warning { ... }
-  
+
   /* Sizes */
   .btn-sm { ... }
   .btn-xs { ... }
-  
+
   /* Special */
   .btn-icon { ... }
   .btn-fab { ... }
@@ -1434,17 +1589,19 @@ Misc:            .now-indicator, .swatch
 ```
 
 **לפני:**
+
 ```html
-<button class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-[var(--border-radius)] font-bold transition">
+<button
+  class="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-[var(--border-radius)] font-bold transition"
+>
   ביטול
 </button>
 ```
 
 **אחרי:**
+
 ```html
-<button class="btn btn-secondary">
-  ביטול
-</button>
+<button class="btn btn-secondary">ביטול</button>
 ```
 
 **📉 מ-11 classes ל-2 classes!**
@@ -1454,6 +1611,7 @@ Misc:            .now-indicator, .swatch
 **2. החלפת כל הכפתורים ב-HTML**
 
 עדכנו:
+
 - ✅ כפתורים רגילים (Primary, Secondary, Danger, Edit, Warning)
 - ✅ כפתורי אייקון (Lock, Settings, Close)
 - ✅ כפתור צף (FAB)
@@ -1474,14 +1632,14 @@ Misc:            .now-indicator, .swatch
     @apply w-full px-4 py-3 transition-all;
     border: 2px solid #e5e7eb;
     border-radius: var(--radius-md);
-    
+
     &:focus {
       @apply outline-none ring-4;
       border-color: var(--primary);
       box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
     }
   }
-  
+
   textarea.input {
     @apply resize-vertical;
   }
@@ -1489,12 +1647,17 @@ Misc:            .now-indicator, .swatch
 ```
 
 **לפני:**
+
 ```html
-<input type="text" placeholder="הכנס טקסט..." 
-  class="w-full px-4 py-3 border-2 border-gray-200 rounded-[var(--radius-md)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary)]/10 transition" />
+<input
+  type="text"
+  placeholder="הכנס טקסט..."
+  class="w-full px-4 py-3 border-2 border-gray-200 rounded-[var(--radius-md)] focus:border-[var(--primary)] focus:ring-4 focus:ring-[var(--primary)]/10 transition"
+/>
 ```
 
 **אחרי:**
+
 ```html
 <input type="text" placeholder="הכנס טקסט..." class="input" />
 ```
@@ -1502,6 +1665,7 @@ Misc:            .now-indicator, .swatch
 **📉 מ-13+ classes ל-1 class!**
 
 עדכנו:
+
 - ✅ 8 text inputs
 - ✅ 2 textareas
 
@@ -1515,7 +1679,7 @@ Misc:            .now-indicator, .swatch
     @apply inline-flex items-center gap-1 px-3 py-1;
     @apply text-sm font-bold rounded-full;
   }
-  
+
   .badge-success { ... }
   .badge-danger { ... }
   .badge-warning { ... }
@@ -1523,6 +1687,7 @@ Misc:            .now-indicator, .swatch
 ```
 
 עדכנו:
+
 - ✅ Now Badge (`.now-indicator`)
 - ✅ Cancelled Badge (`.badge-danger`)
 - ✅ Added Badge (`.badge-warning`)
@@ -1534,16 +1699,16 @@ Misc:            .now-indicator, .swatch
 
 **📊 סטטיסטיקה:**
 
-| Component | לפני | אחרי | חיסכון |
-|-----------|------|------|--------|
-| Button | 8-15 classes | 1-3 classes | **~80%** |
-| Input | 13+ classes | 1 class | **~92%** |
-| Badge | 6-8 classes | 1-2 classes | **~75%** |
+| Component | לפני         | אחרי        | חיסכון   |
+| --------- | ------------ | ----------- | -------- |
+| Button    | 8-15 classes | 1-3 classes | **~80%** |
+| Input     | 13+ classes  | 1 class     | **~92%** |
+| Badge     | 6-8 classes  | 1-2 classes | **~75%** |
 
 **📦 Component Classes שנוספו:**
 
 ```
-Buttons:    .btn, .btn-secondary, .btn-danger, .btn-edit, 
+Buttons:    .btn, .btn-secondary, .btn-danger, .btn-edit,
             .btn-warning, .btn-sm, .btn-xs, .btn-icon, .btn-fab
 Inputs:     .input (עובד גם על textarea)
 Badges:     .badge, .badge-success, .badge-danger, .badge-warning
@@ -1566,23 +1731,25 @@ Existing:   .task-card, .now-indicator, .swatch
 
 ```html
 <!-- ❌ לא טוב - חוזר על עצמו 25 פעמים! -->
-<button class="px-6 py-3 bg-[var(--danger)] hover:brightness-110 text-white rounded-[var(--border-radius)] font-bold transition">
+<button
+  class="px-6 py-3 bg-[var(--danger)] hover:brightness-110 text-white rounded-[var(--border-radius)] font-bold transition"
+>
   מחק
 </button>
 
 <!-- ✅ טוב - שימוש חוזר! -->
-<button class="btn btn-danger">
-  מחק
-</button>
+<button class="btn btn-danger">מחק</button>
 ```
 
 **הבעיה עם Inline Utilities:**
+
 - 📝 חוזרים על אותו קוד שוב ושוב
 - 🐛 קל לשכוח class (כמו `transition`)
 - 🎨 קשה להחיל theme overrides
 - 📏 HTML ארוך ולא קריא
 
 **הפתרון עם Components:**
+
 - ✅ הגדרה אחת, שימוש חוזר
 - ✅ עקביות מובטחת
 - ✅ theme overrides פשוטים
@@ -1593,15 +1760,18 @@ Existing:   .task-card, .now-indicator, .swatch
 **2. מתי להשתמש ב-Component Class?**
 
 **✅ כן - יצירת Component:**
+
 - הרכיב חוזר על עצמו 3+ פעמים
 - יש לו מבנה קבוע (כמו כפתור)
 - צריך theme overrides
 
 **⚠️ אולי - תלוי בהקשר:**
+
 - הרכיב חוזר 1-2 פעמים
 - יש וריאציות רבות
 
 **❌ לא - Inline Utilities:**
+
 - הרכיב ייחודי (רק פעם אחת)
 - סגנון פשוט מאוד (כמו `flex gap-2`)
 
@@ -1611,22 +1781,37 @@ Existing:   .task-card, .now-indicator, .swatch
 
 ```css
 /* Base Class */
-.btn { /* המשותף לכולם */ }
+.btn {
+  /* המשותף לכולם */
+}
 
 /* Variants (צבעים) */
-.btn-secondary { /* רק ההבדלים */ }
-.btn-danger { /* רק ההבדלים */ }
+.btn-secondary {
+  /* רק ההבדלים */
+}
+.btn-danger {
+  /* רק ההבדלים */
+}
 
 /* Modifiers (גדלים) */
-.btn-sm { /* padding קטן יותר */ }
-.btn-xs { /* padding עוד יותר קטן */ }
+.btn-sm {
+  /* padding קטן יותר */
+}
+.btn-xs {
+  /* padding עוד יותר קטן */
+}
 
 /* Special (תפקידים) */
-.btn-icon { /* כפתור אייקון */ }
-.btn-fab { /* כפתור צף */ }
+.btn-icon {
+  /* כפתור אייקון */
+}
+.btn-fab {
+  /* כפתור צף */
+}
 ```
 
 **שימוש:**
+
 ```html
 <button class="btn">Primary</button>
 <button class="btn btn-secondary">Secondary</button>
@@ -1648,6 +1833,7 @@ Existing:   .task-card, .now-indicator, .swatch
 #### הקבצים המעודכנים
 
 **מסמכי תיעוד:**
+
 - [`docs/design_demo.html`](docs/design_demo.html) - ✨ דמו מרופקטר
 - [`docs/css-architecture-guide.md`](docs/css-architecture-guide.md) - מדריך מלא (v2.0)
 - [`docs/walkthrough.md`](docs/walkthrough.md) - יומן (מסמך זה)
@@ -1682,11 +1868,13 @@ Existing:   .task-card, .now-indicator, .swatch
 **1. עדכון ל-Tailwind v4 Browser CDN**
 
 **הבעיה המקורית:**
+
 - Tailwind CDN v3 לא תמך ב-`@apply` directives
 - הכפתורים עם `.btn` class לא עבדו
 - ה-demo לא הצליח להדגים את @apply
 
 **הפתרון:**
+
 ```html
 <!-- לפני: Tailwind v3 -->
 <script src="https://cdn.tailwindcss.com"></script>
@@ -1698,11 +1886,13 @@ Existing:   .task-card, .now-indicator, .swatch
 ```
 
 **שינויים:**
+
 - החלפת CDN ל-`@tailwindcss/browser@4`
 - הוספת `type="text/tailwindcss"` ל-style tag
 - **תמיכה מלאה ב-runtime processing!**
 
 **קבצים ששונו:**
+
 - `temp/design_demo.html` → `docs/design_demo.html`
 
 ---
@@ -1713,7 +1903,9 @@ Existing:   .task-card, .now-indicator, .swatch
 
 ```html
 <!-- @apply Test Section -->
-<div class="fixed bottom-4 right-4 bg-white/95 backdrop-blur p-4 rounded-xl shadow-2xl border-2 border-green-500">
+<div
+  class="fixed bottom-4 right-4 bg-white/95 backdrop-blur p-4 rounded-xl shadow-2xl border-2 border-green-500"
+>
   <!-- שני כפתורים להשוואה -->
   <button class="btn">שמור (@apply)</button>
   <button class="px-6 py-3... inline Tailwind">שמור (inline)</button>
@@ -1721,6 +1913,7 @@ Existing:   .task-card, .now-indicator, .swatch
 ```
 
 **מטרה:**
+
 - השוואה ויזואלית מיידית
 - אם שני הכפתורים זהים → @apply עובד!
 - אם שונים → בעיה עם @apply
@@ -1750,6 +1943,7 @@ temp/design_demo.html → docs/design_demo.html
 ```
 
 **מיקום סופי:**
+
 - `docs/design_demo.html` - הדמו החי
 - `docs/css-architecture-guide.md` - המדריך המלא
 - `docs/walkthrough.md` - יומן הפיתוח (קובץ זה)
@@ -1764,6 +1958,7 @@ temp/design_demo.html → docs/design_demo.html
 **1. למה Tailwind v4 Browser CDN?**
 
 **יתרונות:**
+
 - ✅ Runtime processing - מעבד CSS בזמן ריצה
 - ✅ תמיכה מלאה ב-`@apply` directives
 - ✅ תמיכה ב-`@layer` ו-nested CSS
@@ -1771,6 +1966,7 @@ temp/design_demo.html → docs/design_demo.html
 - ✅ מושלם לקובץ demo
 
 **חסרונות:**
+
 - ⚠️ לא לשימוש ב-production (אמור להיות עם build)
 - ⚠️ טעינה קצת איטית יותר (runtime processing)
 
@@ -1781,11 +1977,13 @@ temp/design_demo.html → docs/design_demo.html
 **2. למה "כמעט זהים" זה הצלחה?**
 
 ההבדלים הזעירים בין שני הכפתורים נובעים מ:
+
 - **Timing**: ה-runtime processor עובד אסינכרונית
 - **Rendering order**: הסדר שבו הסגנונות מוחלים
 - **Browser rendering**: הבדלים מינימליים בעיבוד
 
 **העיקר:** שני הכפתורים יש להם:
+
 - ✅ אותו padding (`px-6 py-3`)
 - ✅ אותו font-weight (bold)
 - ✅ אותו צבע רקע (var(--primary))
@@ -1799,12 +1997,14 @@ temp/design_demo.html → docs/design_demo.html
 **3. למה זה חשוב?**
 
 עכשיו יש לנו:
+
 1. **Demo חי** שמדגים את כל הגישה
 2. **הוכחה** ש-@apply + nested CSS + @layer עובדים
 3. **דוגמה ויזואלית** ל-4 themes שונים
 4. **מסמך למידה** אינטראקטיבי
 
 **הקובץ `docs/design_demo.html` משמש כ:**
+
 - 📚 תיעוד חי
 - 🎨 Design system showcase
 - 🧪 Testing ground
@@ -1828,6 +2028,7 @@ temp/design_demo.html → docs/design_demo.html
 #### הקבצים הסופיים
 
 **מסמכי תיעוד:**
+
 - [`docs/design_demo.html`](docs/design_demo.html) - ✨ הדמו החי והאינטראקטיבי
 - [`docs/css-architecture-guide.md`](docs/css-architecture-guide.md) - מדריך מלא (גרסה 2.0)
 - [`docs/walkthrough.md`](docs/walkthrough.md) - יומן הפיתוח
@@ -1866,6 +2067,7 @@ temp/design_demo.html → docs/design_demo.html
 ```
 
 **קבצים ששונו:**
+
 - `temp/design_demo.html` - הוספת declaration בראש ה-CSS
 
 ---
@@ -1873,14 +2075,18 @@ temp/design_demo.html → docs/design_demo.html
 **2. המרת @layer base**
 
 **לפני:**
+
 ```css
 body {
   font-family: "Heebo", sans-serif;
-  transition: background-color 0.3s, color 0.3s;
+  transition:
+    background-color 0.3s,
+    color 0.3s;
 }
 ```
 
 **אחרי:**
+
 ```css
 @layer base {
   body {
@@ -1889,16 +2095,21 @@ body {
     background: var(--bg-main);
     background-attachment: fixed;
     color: var(--text-main);
-    transition: background-color 0.3s, color 0.3s;
+    transition:
+      background-color 0.3s,
+      color 0.3s;
   }
-  
-  h1, h2, h3 {
+
+  h1,
+  h2,
+  h3 {
     font-family: var(--font-heading);
   }
 }
 ```
 
 **שינויים:**
+
 - הוספת `@apply font-sans` לעקביות
 - הוספת body styles מרכזיות ל-layer
 - הכל ב-@layer base אחד
@@ -1908,6 +2119,7 @@ body {
 **3. המרת @layer components עם @apply**
 
 **לפני:**
+
 ```css
 .btn {
   background-color: var(--primary);
@@ -1922,6 +2134,7 @@ body {
 ```
 
 **אחרי:**
+
 ```css
 @layer components {
   .btn {
@@ -1929,7 +2142,7 @@ body {
     background-color: var(--primary);
     color: white;
     border-radius: var(--border-radius);
-    
+
     &:hover {
       @apply brightness-110;
     }
@@ -1938,11 +2151,13 @@ body {
 ```
 
 **שינויים:**
+
 - שימוש ב-`@apply` ל-utilities שחוזרים (`px-6 py-3 font-bold transition-all cursor-pointer`)
 - CSS Variables למשתנים שמשתנים בין themes
 - Nested selector (`&:hover`) במקום selector נפרד
 
 **קומפוננטים נוספים שהומרו:**
+
 - `.task-card` - עם `@apply relative overflow-hidden`
 - `.now-indicator` - עם `@apply flex items-center gap-2`
 - `.swatch` - עם `@apply w-12 h-12 flex items-center justify-center`
@@ -1952,6 +2167,7 @@ body {
 **4. יצירת @layer theme-overrides עם Nested CSS**
 
 **לפני (פזור בקובץ):**
+
 ```css
 .theme-playful .task-card {
   border-bottom: 6px solid #e5e7eb;
@@ -1965,41 +2181,42 @@ body {
 ```
 
 **אחרי (מרוכז ב-nested CSS):**
+
 ```css
 @layer theme-overrides {
   .theme-playful {
     .task-card {
       @apply border-b-[6px] border-gray-300 transform translate-y-0 transition-transform;
-      
+
       &:hover {
         @apply -translate-y-1;
       }
     }
-    
+
     .btn,
     button[class*="bg-"] {
       @apply shadow-lg transform translate-y-0;
       box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.2);
-      
+
       &:hover {
         @apply -translate-y-0.5;
         box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.2);
       }
-      
+
       &:active {
         @apply translate-y-1;
         box-shadow: 0 0 0 0;
       }
     }
   }
-  
+
   .theme-gradient {
     .task-card {
       @apply backdrop-blur-md;
       -webkit-backdrop-filter: blur(12px);
     }
   }
-  
+
   .theme-contrast {
     .task-card,
     .btn,
@@ -2007,11 +2224,11 @@ body {
     .modal-content {
       @apply border-2 border-white;
     }
-    
+
     .btn {
       @apply text-black;
     }
-    
+
     .swatch {
       @apply border border-white text-black;
     }
@@ -2020,6 +2237,7 @@ body {
 ```
 
 **יתרונות:**
+
 - כל ה-overrides של theme אחד במקום אחד
 - Nested CSS עד 2-3 רמות בלבד
 - קל לראות מה משתנה בכל theme
@@ -2039,17 +2257,20 @@ body {
 #### החלטות ארכיטקטורה
 
 **1. למה @apply לקומפוננטים אבל לא להכל?**
+
 - `@apply px-6 py-3` - חוזר בכל כפתור → ברור
 - `border-radius: var(--border-radius)` - משתנה בין themes → CSS Variable
 - **כלל:** @apply ל-utilities קבועים, CSS Variables למשתנים
 
 **2. למה Nested CSS רק ב-theme-overrides?**
+
 - זה המקום הטבעי - כל theme בבלוק אחד
 - מקסימום 3 רמות (`.theme-playful .btn &:hover`)
 - קריאות מעולה
 - קל לתחזוקה
 
 **3. למה keyframes מחוץ ל-layer?**
+
 - keyframes לא יכולים להיות בתוך @layer
 - הם צריכים להיות ברמה הגלובלית
 - זה בסדר - הם לא משפיעים על cascade
@@ -2075,6 +2296,7 @@ body {
 יצירת rule file תמציתי עבור העוזר:
 
 **מבנה הקובץ:**
+
 - Core Structure (3 Layers + 2 Sections)
 - Critical Rules (@layer, @apply, nesting)
 - Code Templates (מוכנים להעתקה)
@@ -2082,9 +2304,11 @@ body {
 - Quick Reference Table
 
 **מיקום:**
+
 - `.cursor/rules/css-architecture-rules.mdc`
 
 **תכלית:**
+
 - מדריך מהיר לעוזר הקוד
 - ללא הסברים מיותרים
 - דוגמאות מעשיות
@@ -2095,6 +2319,7 @@ body {
 #### מה הלאה?
 
 הקובץ `design_demo.html` כעת משמש כדוגמה חיה לגישה החדשה. השלב הבא:
+
 1. בדיקה ויזואלית מלאה של כל הרכיבים
 2. תיקון באגים אם יש
 3. העברת הגישה לפרויקט האמיתי (`sveltekit-version/src/styles/`)
@@ -2114,6 +2339,7 @@ body {
 **1. שינוי המבנה הכללי - מ-5 Layers ל-3 Layers**
 
 **המבנה החדש:**
+
 - **Section 1:** Design Tokens (`:root` - משתנים בלבד, לא layer)
 - **Section 2:** Theme Variations (`.theme-*` - משתנים בלבד, לא layer)
 - **Layer 1:** `@layer base` (מבנה בסיסי עם `@apply`)
@@ -2121,9 +2347,11 @@ body {
 - **Layer 3:** `@layer theme-overrides` (עם nested CSS)
 
 **הבהרה קריטית שנוספה:**
+
 > Design Tokens ו-Theme Variations הם **משתנים בלבד** (CSS Variables), לא layers!
 
 **קבצים ששונו:**
+
 - `docs/css-architecture-guide.md` - עדכון מלא של כל הסעיפים
 
 ---
@@ -2133,27 +2361,32 @@ body {
 סעיף חדש מקיף המסביר:
 
 **מתי להשתמש ב-@apply?**
+
 - ✅ **כן**: קומפוננטים שחוזרים הרבה (`.btn`, `.card`, `.avatar`, `.badge`)
 - ❌ **לא**: utilities פשוטים (`.flex`, `.grid`, `.gap-2`)
 
 **כלל האצבע:**
+
 ```
 אם הקוד חוזר 5+ פעמים → @apply
 אם הקוד מופיע 1-4 פעמים → ישירות ב-HTML
 ```
 
 **למה Tailwind לא אוהבים את @apply:**
+
 - חוזרים למצב הישן (CSS מסורתי)
 - Bundle Size
 - פילוסופיה (שובר Utility-First)
 
 **למה זה בסדר בפרויקט שלנו:**
+
 - Design System - לא אתר marketing
 - קומפוננטות לשימוש חוזר
 - עקביות מוחלטת
 - תחזוקה קלה
 
 **דוגמה מלאה:**
+
 ```css
 @layer components {
   .btn {
@@ -2178,33 +2411,36 @@ body {
 סעיף חדש המסביר את CSS Nesting (תכונה רשמית מ-2023):
 
 **כללי Nesting:**
+
 1. **מקסימום 3 רמות** - יותר מדי קשה לקריאה
 2. **השתמש ב-`&`** לפסאודו-אלמנטים
 3. **Theme Overrides** - המקום הטבעי לקינון
 
 **למה Nesting מושלם ל-Theme Overrides:**
+
 - ארגון לוגי - כל theme בבלוק אחד
 - קריאות - רואים מיד מה שייך לאיזה theme
 - תחזוקה קלה
 - פחות חזרה
 
 **דוגמה מלאה:**
+
 ```css
 @layer theme-overrides {
   .theme-playful {
     .btn {
       @apply shadow-lg transform translate-y-0;
-      
+
       &:hover {
         @apply -translate-y-0.5 shadow-xl;
       }
-      
+
       &:active {
         @apply translate-y-1;
         box-shadow: 0 0 0 0;
       }
     }
-    
+
     .card {
       @apply border-b-[6px] border-gray-300;
     }
@@ -2213,6 +2449,7 @@ body {
 ```
 
 **תמיכה בדפדפנים:**
+
 - Chrome/Edge 112+
 - Safari 16.5+
 - Firefox 117+
@@ -2225,6 +2462,7 @@ body {
 שינוי מלא של המבנה המוצע:
 
 **המבנה החדש:**
+
 ```
 sveltekit-version/src/styles/
 ├── tokens/
@@ -2242,21 +2480,22 @@ sveltekit-version/src/styles/
 ```
 
 **main.css מעודכן:**
+
 ```css
 /* הגדרת סדר Layers - ראשון! */
 @layer base, components, theme-overrides;
 
 /* Tokens (משתנים) */
-@import './tokens/design-tokens.css';
+@import "./tokens/design-tokens.css";
 
 /* Themes (משתנים) */
-@import './themes/focus.css';
+@import "./themes/focus.css";
 /* ... */
 
 /* Layers */
-@import './layers/base.css';
-@import './layers/components.css';
-@import './layers/theme-overrides.css';
+@import "./layers/base.css";
+@import "./layers/components.css";
+@import "./layers/theme-overrides.css";
 ```
 
 **דוגמאות מלאות של `components.css` ו-`theme-overrides.css`**
@@ -2274,6 +2513,7 @@ sveltekit-version/src/styles/
 5. **שילוב מושלם** - component + utilities
 
 **הדגשים:**
+
 - שילוב `.btn` (component מ-@apply) + `flex items-center gap-2` (utilities ישירות)
 - שינוי class אחד → כל הקומפוננטים מתעדכנים
 - הפילוסופיה: component classes לבסיס, utilities לגמישות
@@ -2283,16 +2523,19 @@ sveltekit-version/src/styles/
 **6. עדכון "כללי עבודה ו-Best Practices"**
 
 הוספת 3 כללים חדשים ל-DO:
+
 - השתמש ב-@apply רק לקומפוננטים בסיסיים
 - שמור nesting עד 3 רמות
 - Theme overrides תמיד ב-layer האחרון
 
 הוספת 3 כללים חדשים ל-DON'T:
+
 - אל תשתמש ב-@apply לכל class
 - אל תקנן יותר מ-3 רמות
 - אל תכתוב theme overrides מחוץ ל-@layer theme-overrides
 
 **דוגמאות מורחבות:**
+
 - דוגמה רעה: @apply לכל דבר קטן
 - דוגמה רעה: קינון עמוק מדי (6 רמות)
 - דוגמה טובה: מקסימום 3 רמות
@@ -2302,6 +2545,7 @@ sveltekit-version/src/styles/
 **7. עדכון "סיכום והמלצות"**
 
 **7 יתרונות מעודכנים:**
+
 1. Design Tokens - מקור אמת יחיד (משתנים CSS)
 2. 4 Themes - החלפה פשוטה
 3. 3 CSS Layers - סדר ברור וקל לתחזוקה
@@ -2311,6 +2555,7 @@ sveltekit-version/src/styles/
 7. Scalable - קל להוסיף
 
 **דיאגרמה ויזואלית:**
+
 ```
 Design Tokens (:root)
          ↓
@@ -2326,9 +2571,11 @@ Theme Variations (.theme-*)
 ```
 
 **הפילוסופיה במשפט אחד:**
+
 > "Component classes לבסיס (עם @apply), Tailwind utilities לגמישות, Theme overrides לייחודיות"
 
 **Checklist לפני יישום:**
+
 - [ ] קראתי והבנתי את כללי @layer
 - [ ] הבנתי מתי להשתמש ב-@apply
 - [ ] הבנתי את כללי ה-nesting
@@ -2342,6 +2589,7 @@ Theme Variations (.theme-*)
 **8. עדכון כל דוגמאות הקוד במדריך**
 
 כל דוגמאות הקוד הראשיות עודכנו:
+
 - הוספת `@layer base, components, theme-overrides;` בראש
 - שימוש ב-`@apply` בכל הקומפוננטים
 - Nested CSS ב-theme-overrides
@@ -2353,12 +2601,14 @@ Theme Variations (.theme-*)
 #### החלטות ארכיטקטורה
 
 **1. למה 3 Layers ולא 5?**
+
 - **פשטות**: 3 layers קל יותר להבין ולתחזק
 - **מספיק**: base, components, theme-overrides מכסים את כל הצרכים
 - **Design Tokens ו-Themes**: הם משתנים בלבד, לא layers לוגיים
 - **עקביות**: מתאים לגישת Tailwind המקורית (3 layers)
 
 **2. למה @apply למרות שTailwind לא אוהבים?**
+
 - **Design System**: אנחנו בונים מערכת עיצוב, לא אתר marketing
 - **קומפוננטות**: רכיבים שחוזרים הרבה צריכים קוד מרוכז
 - **עקביות**: כל `.btn` נראה זהה תמיד
@@ -2366,6 +2616,7 @@ Theme Variations (.theme-*)
 - **כלל אצבע**: רק לקומפוננטים שחוזרים 5+ פעמים
 
 **3. למה Nested CSS?**
+
 - **CSS Native**: תכונה רשמית של CSS (2023)
 - **Theme Overrides**: המקום הטבעי לקינון
 - **ארגון לוגי**: כל theme בבלוק אחד
@@ -2373,6 +2624,7 @@ Theme Variations (.theme-*)
 - **Vite**: ממילא ידהר לתמיכה מלאה
 
 **4. למה Theme Overrides ב-Layer?**
+
 - **עקביות**: כל הסגנונות ב-layers
 - **סדר עדיפויות**: layer אחרון מנצח תמיד
 - **בטיחות**: אם מישהו יכתוב CSS ללא layer, זה לא ישבור
@@ -2397,6 +2649,7 @@ Theme Variations (.theme-*)
 #### השלב הבא
 
 לפי התוכנית: יישום הגישה החדשה ב-`temp/design_demo.html`:
+
 - להמיר את כל הקומפוננטים ל-`@apply`
 - לארגן theme overrides עם nested CSS
 - להגדיר `@layer base, components, theme-overrides`
@@ -2419,6 +2672,7 @@ Theme Variations (.theme-*)
 הרחבתי את משתני העיצוב בכל ארבע ערכות הנושא (Focus, Playful, Gradient, Contrast):
 
 **משתנים חדשים:**
+
 - **צבעים**: `--secondary`, `--edit`, `--warning`, `--info`, `--cancelled`, `--cancelled-border`, `--added`, `--added-border`
 - **טיפוגרפיה**: `--text-xs` עד `--text-2xl` (6 גדלים)
 - **מרווחים**: `--space-xs` עד `--space-xl` (5 גדלים)
@@ -2426,11 +2680,13 @@ Theme Variations (.theme-*)
 - **צללים**: `--shadow-sm` עד `--shadow-xl` (4 רמות)
 
 **הערות תיעוד מפורטות:**
+
 - הוספתי תיעוד מקיף בראש ה-CSS המסביר איך להשתמש במשתנים
 - דוגמאות שימוש ב-HTML inline styles, Tailwind ו-CSS רגיל
 - הוראות להוספת משתנים חדשים
 
 **קבצים שנוצרו/שונו:**
+
 - `temp/design_demo.html` - עודכן מלא (1890 שורות)
 
 ---
@@ -2438,6 +2694,7 @@ Theme Variations (.theme-*)
 **2. Atomic Components - רכיבי בסיס**
 
 **Buttons (7 variants):**
+
 - Primary - כפתור ראשי כחול
 - Secondary - כפתור משני אפור
 - Danger - מחיקה אדום
@@ -2447,6 +2704,7 @@ Theme Variations (.theme-*)
 - FAB - כפתור צף (Floating Action Button)
 
 **Card States (5 מצבים):**
+
 - Waiting - רגיל, opacity מופחת
 - Active - "עכשיו" עם ring וbadge
 - Done - ירוק עם V
@@ -2454,18 +2712,21 @@ Theme Variations (.theme-*)
 - Added - צהוב עם ✨ badge
 
 **Avatars (3 גדלים):**
+
 - Small (40px) - Header
 - Medium (80px) - People Display
 - Large (120px) - User Selector
 - כל אווטר עם fallback לאות ראשונה
 
 **Badges (4 סוגים):**
+
 - Now - אדום מהבהב עם חץ
 - Cancelled - 🚫 שינוי - בוטל
 - Added - ✨ פעילות חדשה
 - Info - ℹ️ מידע
 
 **Inputs (5 סוגים):**
+
 - Text - שדה טקסט רגיל
 - Textarea - טקסט ארוך
 - File - העלאת קובץ מקווקו
@@ -2477,29 +2738,34 @@ Theme Variations (.theme-*)
 **3. Composed Components - רכיבים מורכבים**
 
 **Modals (4 סוגים):**
+
 1. **Celebration Modal** - מודאל הצלחה עם רקע צהוב, קונפטי, תמונת משתמש ומחמאה
 2. **Add Activity Modal** - הוספת פעילות עם Grid של פעילויות וטופס
 3. **List Edit Modal** - עריכת רשימה: שם, ברכה, כותרת, תיאור, לוגו
 4. **Image Crop Modal** - חיתוך תמונה עם drag, zoom ואיפוס
 
 **תכונות משותפות:**
+
 - סגירה ב-Esc
 - סגירה בלחיצה על overlay
 - אנימציות fade + scale
 - תמיכה בכל ערכות הנושא
 
 **Section Headers (3 סוגים):**
+
 1. **List Header** - כותרת רשימה עם לוגו גדול וגרדיאנט
 2. **People Display** - "מי יהיה איתנו היום?" עם Grid של אווטרים
 3. **Action Panel** - פאנל פעולות עם Action Cards
 
 **Grids (4 סוגים):**
+
 - Activities Grid - 100px minimum, auto-fill
 - People Grid - 80px minimum
 - Users Grid - 150px minimum
 - Action Cards - 2-3 columns responsive
 
 **Floating Window:**
+
 - חלון צף ללוח תקשורת
 - Header עם drag functionality
 - Resize handle
@@ -2510,6 +2776,7 @@ Theme Variations (.theme-*)
 **4. Selectors & Pickers**
 
 **User Selector:**
+
 - מסך בחירת משתמש מלא
 - Header עם לוגו האפליקציה
 - "מי היום?" כשאלה
@@ -2517,6 +2784,7 @@ Theme Variations (.theme-*)
 - Hover effects ו-border הדגשה
 
 **People Picker:**
+
 - בורר אנשים עם checkboxes
 - Grid responsive
 - אווטרים בגודל בינוני (80px)
@@ -2527,18 +2795,21 @@ Theme Variations (.theme-*)
 **5. Special Elements**
 
 **Empty State:**
+
 - אייקון 📭
 - כותרת "אין משימות ברשימה"
 - הנחייה "לחץ על כפתור + להוספת משימה חדשה"
 - רקע מקווקו עם border-dashed
 
 **Glass Container (List Switcher):**
+
 - רקע שקוף עם blur
 - border לבן חצי-שקוף
 - shadow עדין
 - כרטיסי רשימות קטנים
 
 **Image Uploader:**
+
 - מצב ריק - אזור העלאה מקווקו
 - מצב עם תמונה - preview עם כפתורי עריכה
 - אינטגרציה עם Image Crop Modal
@@ -2548,15 +2819,18 @@ Theme Variations (.theme-*)
 **6. אינטראקטיביות ונגישות**
 
 **Keyboard Support:**
+
 - `Esc` - סגירת כל המודאלים והחלונות הצפים
 - `Tab` navigation - כל האלמנטים נגישים
 
 **Mouse Interactions:**
+
 - Click on overlay - סגירת מודאלים
 - Drag - הזזת Floating Window
 - Hover states - כל הכפתורים והכרטיסים
 
 **Animations:**
+
 - Fade in/out למודאלים
 - Scale 90%→100% למודאלים
 - Bounce לקונפטי
@@ -2568,17 +2842,20 @@ Theme Variations (.theme-*)
 **7. תיעוד מקיף**
 
 **CSS Comments:**
+
 - הערות מפורטות על משתני העיצוב
 - הסבר איך להשתמש במשתנים
 - הוראות להוספת צבעים חדשים
 - תיעוד כל קטגוריית רכיבים
 
 **HTML Comments:**
+
 - תיעוד כל סעיף בגלריה
 - הסבר על השימוש בכל רכיב
 - דוגמאות קוד
 
 **Usage Guide (סעיף מסכם בסוף הדף):**
+
 - התחלה מהירה - 5 צעדים
 - רכיבים זמינים - סיכום
 - התאמה אישית - איך לעבוד עם משתנים
@@ -2590,12 +2867,14 @@ Theme Variations (.theme-*)
 **8. תכונות מיוחדות לערכת Playful**
 
 **אפקט כפתור "נופל":**
+
 - Shadow תחתון (box-shadow: 0 4px 0 0)
 - Hover - עליה קלה
 - Active - נפילה (translateY(4px))
 - חל על כל הכפתורים בערכה
 
 **רקע נקודות:**
+
 - radial-gradient עם נקודות צהובות
 - background-size: 32px 32px
 
@@ -2605,18 +2884,21 @@ Theme Variations (.theme-*)
 
 **1. Tailwind CSS + CSS Variables**
 החלטתי להשתמש בשילוב של Tailwind לעיצוב מהיר ו-CSS Variables לגמישות ערכות הנושא. זה מאפשר:
+
 - שינוי צבעים מיידי עם החלפת theme class
 - שימוש ב-Tailwind utilities עם var(--color-name)
 - עקביות מלאה בין כל הרכיבים
 
 **2. Section-Based Structure**
 חילקתי את הגלריה ל-13 סעיפים נפרדים לפי סוג הרכיב, לא לפי תפקוד. זה מקל על:
+
 - מציאת רכיבים ספציפיים
 - העתקת קוד
 - תחזוקה עתידית
 
 **3. Interactive Demos**
 כל מודאל וחלון ניתן לפתיחה בלחיצת כפתור, מה שמאפשר:
+
 - בדיקה מיידית של עיצוב
 - התנסות עם אינטראקציות
 - בדיקה בערכות נושא שונות
@@ -2645,7 +2927,7 @@ Theme Variations (.theme-*)
 ✅ FAB נשאר בפינה בכל גודל מסך  
 ✅ Responsive - כל הרכיבים מתאימים למובייל  
 ✅ RTL - כיווניות נכונה  
-✅ אנימציות חלקות בכל הדפדפנים  
+✅ אנימציות חלקות בכל הדפדפנים
 
 ---
 
@@ -2670,18 +2952,21 @@ Theme Variations (.theme-*)
 הוספת מצב "נעילה" לרשימות, המיועד לתרגול והכנה ללא משוב מלא.
 
 **תכונות:**
+
 - שדה חדש `isLocked?: boolean` בממשק `List`
 - כשהרשימה נעולה: לחיצה על משימה רק משמיעה את שמה (TTS)
 - לא מסומנת כהושלמה, לא מופיע מודאל חגיגה, לא עוברים למשימה הבאה
 - שימושי לתרגול הילדים על הפעילויות לפני היום עצמו
 
 **ממשק:**
+
 - כפתור נעילה/שחרור (🔒/🔓) בפאנל הפעולות במסך הראשי
 - עיצוב אפור-כחול (`#64748b`) למראה ניטרלי
 - אינדיקטור ויזואלי: תג "🔒 (נעולה)" מתחת ל-ListSwitcher כשהרשימה נעולה
 - רשימות ברירת מחדל לא ניתנות לנעילה (חסימה ב-toggleListLock)
 
 **קבצים שהשתנו:**
+
 - `src/lib/types.ts` - הוספת `isLocked?: boolean` ל-`List`
 - `src/lib/logic/tasksBoard.svelte.ts` - בדיקת `isLocked` ב-`toggleTask()`, הוספת `playTaskName()`
 - `src/routes/+page.svelte` - כפתור נעילה/שחרור + תג ויזואלי + סטיילינג
@@ -2697,6 +2982,7 @@ Theme Variations (.theme-*)
 מנגנון להעברה או שכפול רשימה ממשתמש אחד לאחר (למשל: העתקת לוח מתמר ליונתן).
 
 **תכונות:**
+
 - **שכפול (Copy)**: יוצר עותק של הרשימה אצל משתמש אחר, המקור נשאר
 - **העברה (Move)**: מעביר את הרשימה למשתמש אחר ומוחק את המקור
 - העתקה עמוקה של כל המשימות עם IDs חדשים
@@ -2704,6 +2990,7 @@ Theme Variations (.theme-*)
 - השמירה על כל השדות: `title`, `description`, `peopleIds`, `isLocked`, `logo`, `greeting`
 
 **ממשק:**
+
 - כפתור "העבר/שכפל למשתמש" בדף ניהול רשימות (`/settings/lists`)
 - `UserPickerModal` - מודאל בחירת משתמש יעד:
   - רשת משתמשים עם אווטארים (סינון: רק משתמשים אחרים)
@@ -2712,9 +2999,11 @@ Theme Variations (.theme-*)
 - אייקון העברה (חיצים בכל הכיוונות) בכפתור הפעולה
 
 **קובץ חדש:**
+
 - `src/lib/components/UserPickerModal.svelte` - מודאל בחירה מלא עם נגישות (a11y)
 
 **קבצים שהשתנו:**
+
 - `src/lib/stores/listStore.svelte.ts` - הוספת `copyListToUser()` - פונקציה מלאה להעתקה/העברה
 - `src/routes/settings/lists/+page.svelte` - אינטגרציה: state, פונקציות (`openUserPicker`, `handleUserSelected`), כפתור, סטיילינג
 - `src/lib/data/texts.ts` - טקסטים: `COPY_TO_USER`, `COPY_LIST_TO_USER`, `MOVE_INSTEAD_OF_COPY`, `COPY`, `MOVE`
@@ -2724,11 +3013,13 @@ Theme Variations (.theme-*)
 #### החלטות ארכיטקטורה
 
 **רשימות נעולות:**
+
 - **מיקום הבדיקה**: החלטנו לבדוק `isLocked` **לפני** בדיקת `changeType` ב-`toggleTask()`, כי זה פשוט יותר - אם הרשימה נעולה, כל המשימות מתנהגות אותו דבר
 - **לא לנעול ברירת מחדל**: רשימות `isDefault` לא ניתנות לנעילה - הגנה מפני טעות של ההורה
 - **אינדיקטור בולט**: הצבנו את התג "נעולה" מיד אחרי ListSwitcher כדי שההורה יראה במבט ראשון שהרשימה במצב תרגול
 
 **העברה/שכפול:**
+
 - **IDs חדשים תמיד**: גם בשכפול, כל המשימות מקבלות IDs חדשים למניעת קונפליקטים
 - **איפוס isDone**: משימות בעותק מתחילות מחדש (לא מועתק הסטטוס "בוצע")
 - **שמירת כל השדות**: העתקה מלאה של `title`, `description`, `peopleIds`, `isLocked` - כך שלוח מוכן לאירוע ניתן להעתיק לכמה ילדים
@@ -2737,6 +3028,7 @@ Theme Variations (.theme-*)
 - **מחיקה בטוחה**: בהעברה (move), בודקים שנשארת לפחות רשימה אחת למשתמש המקור
 
 **UserPickerModal:**
+
 - **קומפוננטה גנרית**: ניתן לשימוש חוזר במקומות אחרים (לא רק רשימות)
 - **סינון אוטומטי**: `otherUsers` מסנן את המשתמש הנוכחי - לא ניתן להעתיק לעצמו
 - **איפוס state**: `$effect` מאפס את הבחירה בכל פתיחה של המודאל
@@ -2747,11 +3039,13 @@ Theme Variations (.theme-*)
 #### מעקפים ופתרונות
 
 **אזהרות a11y ב-UserPickerModal:**
+
 - **בעיה**: svelte-check הציג אזהרות על modal-overlay ו-modal-card
 - **פתרון**: הוספת `role="button"`, `role="dialog"`, `tabindex`, `onkeydown` לנגישות מלאה
 - **תוצאה**: 0 שגיאות, 0 אזהרות ב-svelte-check
 
 **שכפול vs העברה:**
+
 - **בעיה**: איך למנוע מחיקת הרשימה האחרונה בהעברה?
 - **פתרון**: בדיקת `globalState.state.lists[fromUserId].length > 1` לפני קריאה ל-`deleteList()`
 - **תוצאה**: המשתמש תמיד נשאר עם לפחות רשימה אחת
@@ -2773,6 +3067,7 @@ Theme Variations (.theme-*)
 מסמך מקוצר (~560 שורות) שנקרא אוטומטית בכל שיחה עם העוזר.
 
 **תוכן:**
+
 - מטרות הפרויקט וחזון (TEACCH, אקולליה, לופים)
 - סטאק טכנולוגי מלא
 - ארכיטקטורה: 3 שכבות (Data → Logic → View)
@@ -2802,6 +3097,7 @@ Theme Variations (.theme-*)
 מסמך מפורט (~1265 שורות) שנקרא לפי צורך לפרטים טכניים מעמיקים.
 
 **תוכן:**
+
 - מבנה תיקיות מפורט עם הסברים לכל קובץ
 - ישויות מרכזיות עם דוגמאות קוד מלאות
 - Normalized Data Structure - הסבר מעמיק
@@ -2825,11 +3121,13 @@ Theme Variations (.theme-*)
 לאחר המעבר של `language.ts` ל-`texts.ts` ב-`data/`, עודכנו כל ההפניות במסמכי ההנחיה.
 
 **שינויים:**
+
 - `src/lib/services/language.ts` → `src/lib/data/texts.ts`
 - הסרת הערות "לעתיד" - הקובץ כבר במקום הנכון
 - עדכון בכל דוגמאות הקוד
 
 **קבצים ששונו:**
+
 - `.cursor/rules/agent-guide.mdc` - הפניות ל-`texts.ts`
 - `.cursor/rules/agent-guide-extended.mdc` - מבנה תיקיות + דוגמאות
 
@@ -2838,12 +3136,14 @@ Theme Variations (.theme-*)
 #### החלטות ארכיטקטורה
 
 **1. פיצול למסמך ראשי + מורחב:**
+
 - מסמך ראשי (560 שורות) - נטען תמיד, מכיל עיקרי עיקרים
 - מסמך מורחב (1265 שורות) - נטען לפי צורך, פרטים מעמיקים
 - מונע טעינה מיותרת של מידע מפורט בכל שיחה
 - מאפשר גישה מהירה לכללים קריטיים
 
 **2. הפרדת לוגיקה - ספקטרום (לא דיכוטומי):**
+
 - תצוגה פשוטה (if/else, map, formatting) → OK בקומפוננטה
 - ניהול UI State → תלוי במורכבות
 - לוגיקה עסקית (API, stores, חישובים) → Controller
@@ -2851,11 +3151,13 @@ Theme Variations (.theme-*)
 - מונע פישוט יתר, נותן גמישות סבירה
 
 **3. הקשר פדגוגי במסמך עצמו:**
+
 - אין צורך לקרוא `docs/private-docs/אפיון...` בכל משימה
 - כל ההקשר החשוב (אקולליה, לופים, TEACCH) כבר במסמך הראשי
 - חיסכון בזמן ומניעת טעינת מידע מיותר
 
 **4. מנגנונים מיוחדים - כותרות בלבד:**
+
 - במסמך הראשי: רק כותרות + נקודות עיקריות
 - פירוט מלא במסמך המורחב
 - הפניה ברורה בין המסמכים
@@ -2865,14 +3167,17 @@ Theme Variations (.theme-*)
 #### מעקפים ופתרונות
 
 **בעיה 1: מסמך מקורי מורחב מדי (1100 שורות)**
+
 - **פתרון:** פיצול לראשי (560) + מורחב (1265)
 - תוצאה: טעינה מהירה יותר, פוקוס על עיקר
 
 **בעיה 2: ניסוח "Dumb Components" יכול לגרום לפישוט יתר**
+
 - **פתרון:** שינוי ל-"הפרדת לוגיקה מתצוגה" + ספקטרום
 - תוצאה: גמישות סבירה, לא "all or nothing"
 
 **בעיה 3: הפניות ל-language.ts אחרי המעבר ל-texts.ts**
+
 - **פתרון:** עדכון כל ההפניות במסמכים
 - תוצאה: עקביות מלאה עם הקוד הנוכחי
 
@@ -2893,18 +3198,22 @@ Theme Variations (.theme-*)
 הוספת אפשרות להגדיר כותרת ותיאור אופציונליים לכל רשימה, המיועדים בעיקר להכנה לאירועים מיוחדים (לא לשגרה יומיומית).
 
 **תכונות:**
+
 - שדות אופציונליים `title` ו-`description` לכל רשימה
 - הצגה ויזואלית מעל רשימת המשימות עם לוגו מוגדל (200px)
 - רק אם מוגדר כותרת או תיאור - המערכת מציגה את הסקשן
 
 **דוגמאות שימוש:**
+
 - "ביום ראשון נוסעים לטיול!" + תמונת אוטו/מטוס
 - "ביום רביעי סבא וסבתא באים" + תמונות סבא וסבתא
 
 **קבצים חדשים:**
+
 - `src/lib/components/ListHeader.svelte` - קומפוננטה להצגת כותרת גדולה עם לוגו ותיאור
 
 **קבצים שהשתנו:**
+
 - `src/lib/types.ts` - הוספת `title?: string` ו-`description?: string` לממשק `List`
 - `src/routes/+page.svelte` - אינטגרציה של `ListHeader` מעל רשימת המשימות
 - `src/routes/settings/lists/+page.svelte` - הוספת שדות כותרת ותיאור בטופס עריכת רשימה
@@ -2919,11 +3228,13 @@ Theme Variations (.theme-*)
 מערכת מקיפה לניהול אנשים (צוות ובני משפחה) עם מאגר גלובלי, בחירה ברמת רשימה, והצגה ויזואלית במסך הראשי.
 
 **ארכיטקטורה:**
+
 - **מאגר מרכזי**: רשימת `people: Person[]` ב-`AppState` - normalization (איש מוגדר פעם אחת)
 - **הפניות**: כל רשימה מכילה `peopleIds: string[]` - רק מזהים
 - **הסתרה מהירה**: שדה `isPeopleSectionVisible` ברמת הרשימה (נשמר!)
 
 **ממשק Person:**
+
 ```typescript
 interface Person {
   id: string;
@@ -2933,6 +3244,7 @@ interface Person {
 ```
 
 **קבצים חדשים:**
+
 - `src/lib/stores/peopleStore.svelte.ts` - Store מלא לניהול מאגר האנשים (CRUD + ניקוי הפניות)
 - `src/lib/components/PersonForm.svelte` - טופס **משותף** להוספה/עריכת איש (נעשה שימוש חוזר בשני מקומות!)
 - `src/lib/components/PeoplePicker.svelte` - בחירת אנשים מהמאגר + אפשרות להוסיף חדש inline
@@ -2940,6 +3252,7 @@ interface Person {
 - `src/routes/settings/people/+page.svelte` - דף ייעודי לניהול מאגר האנשים
 
 **קבצים שהשתנו:**
+
 - `src/lib/types.ts` - ממשק `Person` חדש + שדות ב-`List`: `peopleIds`, `isPeopleSectionVisible` + שדה ב-`AppState`: `people`
 - `src/routes/+page.svelte` - אינטגרציה של `PeopleDisplay` (תחת `ListHeader` אם יש)
 - `src/routes/settings/+layout.svelte` - לשונית חדשה "אנשים" בניווט ההגדרות
@@ -2950,6 +3263,7 @@ interface Person {
 - `src/lib/data/defaults.ts` - עדכון `INITIAL_STATE.version` ל-9, אתחול `people: []`
 
 **תכונות מיוחדות:**
+
 - **קומפוננטה משותפת**: `PersonForm` משמשת גם בדף ניהול האנשים (`/settings/people`) וגם ב-`PeoplePicker` (inline) להוספה מהירה
 - **מחיקה בטוחה**: בעת מחיקת איש מהמאגר, `peopleStore` מנקה אוטומטית את המזהה שלו מכל הרשימות
 - **הצגה ויזואלית**: אווטארים עגולים 80px עם שמות מתחת, כפתור הסתרה/הצגה שנשמר ברמת הרשימה
@@ -2961,9 +3275,11 @@ interface Person {
 רפקטורינג של מודאל עריכת/יצירת רשימה לקומפוננטה משותפת, והוספת פאנל פעולות מעוצב במסך הראשי עם 5 לחצנים צבעוניים.
 
 **קובץ חדש:**
+
 - `src/lib/components/ListEditModal.svelte` - קומפוננטה משותפת עם כל שדות הטופס (name, greeting, title, description, logo, people)
 
 **שימוש חוזר:**
+
 - מסך ראשי (`+page.svelte`) - פתיחת מודאל לעריכה/יצירה ישירות מהלוח
 - הגדרות רשימות (`settings/lists/+page.svelte`) - החלפת המודאל הישן בקומפוננטה
 
@@ -2978,11 +3294,13 @@ interface Person {
 5. **🔄 אפס משימות** (צהוב) - איפוס כל המשימות לסטטוס "לא בוצע"
 
 **עיצוב הפאנל:**
+
 - Widget מסודר עם כותרת "📋 ניהול רשימה"
 - כל כפתור הוא כרטיס (`action-card`) עם בורדר צבעוני ואפקט hover
 - Grid responsive: `repeat(auto-fit, minmax(90px, 1fr))`
 
 **קבצים שהשתנו:**
+
 - `src/routes/+page.svelte` - פאנל מעוצב, state למודאל (`isListEditModalOpen`, `editingListForModal`), לוגיקת `handleSaveList`
 - `src/routes/settings/lists/+page.svelte` - החלפת המודאל הישן בשימוש ב-`ListEditModal`
 
@@ -2991,16 +3309,19 @@ interface Person {
 **4. שיפורי UX**
 
 **Header sticky (דביק):**
+
 - `src/routes/layout.css` - שינוי גלובלי: `html, body { height: 100vh; overflow: hidden; }`
 - `src/routes/+page.svelte` - ה-`<header>` מקבל `position: sticky; top: 0; z-index: 100;`
 - תוצאה: כפתורי הניווט וההגדרות תמיד נראים בחלק העליון, גם בזמן גלילה
 
 **תיקון scrollbar במודאל:**
+
 - בעיה: ה-scrollbar היה שובר את הפינות המעוגלות (`border-radius: 24px`)
 - פתרון: עטיפת התוכן ב-`div.modal-content` נפרד שמקבל את `overflow-y: auto`, בעוד `.modal-card` החיצוני מקבל `overflow: hidden`
 - קובץ: `src/lib/components/ListEditModal.svelte`
 
 **הקטנת כפתורים בפאנל:**
+
 - עיצוב מחדש של כפתורי הפעולות עם **אייקון דומיננטי**:
   - אייקון: `font-size: 1.8rem` (גדול ובולט)
   - טקסט: `font-size: 0.7rem`, `font-weight: 500` (קטן ומשני)
@@ -3010,6 +3331,7 @@ interface Person {
 - קובץ: `src/routes/+page.svelte` - CSS של `.action-card`, `.action-icon`, `.action-label`
 
 **ריכוז טקסטים:**
+
 - רפקטורינג: העברת כל הטקסטים מ-`language.ts` לקובץ נפרד
 - קבצים:
   - `src/lib/data/texts.ts` - קובץ **חדש** עם כל הטקסטים (100+ מחרוזות)
@@ -3020,51 +3342,55 @@ interface Person {
 #### קבצים חדשים שנוצרו (10 קבצים)
 
 **קומפוננטות:**
+
 1. `src/lib/components/ListHeader.svelte` - כותרת רשימה עם לוגו
 2. `src/lib/components/ListEditModal.svelte` - מודאל עריכה משותף
 3. `src/lib/components/PersonForm.svelte` - טופס איש (משותף)
 4. `src/lib/components/PeoplePicker.svelte` - בחירת אנשים + הוספה inline
 5. `src/lib/components/PeopleDisplay.svelte` - הצגה ויזואלית במסך הראשי
 
-**Stores:**
-6. `src/lib/stores/peopleStore.svelte.ts` - ניהול מאגר אנשים
+**Stores:** 6. `src/lib/stores/peopleStore.svelte.ts` - ניהול מאגר אנשים
 
-**Routes:**
-7. `src/routes/settings/people/+page.svelte` - דף ניהול אנשים
+**Routes:** 7. `src/routes/settings/people/+page.svelte` - דף ניהול אנשים
 
-**Data:**
-8. `src/lib/data/texts.ts` - ריכוז כל הטקסטים
+**Data:** 8. `src/lib/data/texts.ts` - ריכוז כל הטקסטים
 
 ---
 
 #### החלטות ארכיטקטורה
 
 **כותרת לרשימה:**
+
 - **אופציונליות מלאה**: אם לא מוגדר `title` או `description` - לא מוצג כלום
 - **לוגו גדול**: 200×200px (לעומת 64px בממשק הרגיל) - מתאים לאירועים מיוחדים
 - **מיקום**: ממש בראש הדף, מעל רשימת המשימות (אחרי `ListSwitcher`)
 
 **מערכת אנשים:**
+
 - **Normalization**: איש מוגדר פעם אחת במאגר הגלובלי `AppState.people`, רשימות מפנות רק למזהים
 - **קומפוננטה משותפת**: `PersonForm` נבנתה כקומפוננטה גנרית שמשמשת גם בדף ההגדרות וגם inline ב-`PeoplePicker`
 - **מחיקה בטוחה**: `peopleStore.deletePerson()` מנקה אוטומטית את המזהה מכל הרשימות (מונע orphaned references)
 - **הסתרה נשמרת**: `isPeopleSectionVisible` נשמר ברמת הרשימה (לא גלובלי!) - כל רשימה זוכרת את ההעדפה שלה
 
 **מודאל משותף:**
+
 - **שימוש חוזר מלא**: קומפוננטה אחת משמשת את המסך הראשי ואת הגדרות הרשימות
 - **Props מוגדרות היטב**: `isOpen`, `editingList`, `userId`, `onclose`, `onsave` - ממשק נקי
 - **State מנוהל בחוץ**: הקומפוננטה stateless ביחס לנתוני האפליקציה - מקבלת הכל כ-props
 
 **פאנל פעולות:**
+
 - **עיצוב כארטיסים**: כל פעולה היא כרטיס נפרד עם בורדר צבעוני - קל לזיהוי
 - **אייקון דומיננטי**: המשתמשים (תלמידי חינוך מיוחד) מזהים אייקונים מהר יותר מטקסט
 - **Grid responsive**: התאמה אוטומטית למספר עמודות לפי רוחב המסך
 
 **Header sticky:**
+
 - **overflow hierarchy**: `html/body` עם `overflow: hidden`, `.task-list-container` עם `overflow-y: auto`
 - **z-index**: header ב-`z-index: 100` כדי להישאר מעל כל האלמנטים
 
 **Scrollbar במודאל:**
+
 - **עטיפה כפולה**: קונטיינר חיצוני (`overflow: hidden`) + קונטיינר פנימי (`overflow-y: auto`)
 - למה לא להסתיר? נגישות - המשתמש רואה שיש תוכן נוסף
 
@@ -3073,10 +3399,12 @@ interface Person {
 #### מיגרציות
 
 **גרסה 8** (`migration.ts`):
+
 - הוספת שדות `title?: string` ו-`description?: string` לכל רשימה קיימת
 - ערך ברירת מחדל: `undefined` (אופציונלי)
 
 **גרסה 9** (`migration.ts`):
+
 - אתחול `people: []` ב-`AppState`
 - הוספת שדות לכל רשימה קיימת:
   - `peopleIds?: string[]` - ערך ברירת מחדל: `undefined`
@@ -3102,6 +3430,7 @@ interface Person {
 - **טיפול במקרי קצה**: וידוא שהחלון תמיד נמצא בתוך גבולות המסך
 
 **קובץ חדש**:
+
 - `src/lib/services/floatingBoardState.ts` - Service מלא עם ולידציה, טיפול ב-SSR ומקרי קצה
 
 **2. אינטגרציה ב-FloatingIframe**
@@ -3114,6 +3443,7 @@ interface Person {
 - **עדכון סטייל**: המיקום והגודל משוקפים דינמית ב-style
 
 **קובץ שעודכן**:
+
 - `src/lib/components/FloatingIframe.svelte` - אינטגרציה מלאה עם ה-Service
 
 **3. שיפורי UX**
@@ -3168,6 +3498,7 @@ interface Person {
 - **ניהול state ב-Controller**: `iframeBoardUrl`, `iframeBoardVisible`, `openCommunicationBoard()`
 
 **קבצים שונו**:
+
 - `src/lib/types.ts` - הוספת `communicationBoardUrl` ל-Task
 - `src/lib/components/AddModal.svelte` - שדה קלט לקישור
 - `src/lib/components/TaskRow.svelte` - לחצן פתיחה
@@ -3189,6 +3520,7 @@ interface Person {
 - **toggle + dropdown** ב-AddModal לבחירת סוג השינוי
 
 **קבצים שונו**:
+
 - `src/lib/types.ts` - הוספת `TaskChangeType`
 - `src/lib/components/AddModal.svelte` - UI לסימון שינוי
 - `src/lib/components/TaskRow.svelte` - תצוגת תגי שינוי ועיצוב אדום
@@ -3283,9 +3615,9 @@ interface Person {
 ```typescript
 // src/lib/types.ts
 interface ImageCropData {
-  x: number;      // מיקום X באחוזים (0-100)
-  y: number;      // מיקום Y באחוזים (0-100)
-  scale: number;  // זום יחסי (1.0 = minScale, 2.0 = פי 2)
+  x: number; // מיקום X באחוזים (0-100)
+  y: number; // מיקום Y באחוזים (0-100)
+  scale: number; // זום יחסי (1.0 = minScale, 2.0 = פי 2)
 }
 
 interface ImageMetadata {
@@ -3306,6 +3638,7 @@ interface AppState {
 **ארכיטקטורה - הפרדת נתונים:**
 
 במקום לשמור `ImageData` ישירות בתוך `Task`, `UserProfile` ו-`List`, עברנו לארכיטקטורה מנורמלת:
+
 - `Task.imageSrc`, `UserProfile.avatar`, `List.logo` - מחזיקים רק `string` (ID של התמונה)
 - `AppState.images` - מחזיק את כל המטאדאטה (כולל נתוני crop) במקום מרכזי
 - יתרונות: הפחתת כפילויות, ניהול קל יותר, גמישות בהוספת שדות עתידיים
@@ -3317,6 +3650,7 @@ interface AppState {
 **החלפת כל תצוגות התמונות ב-`ImageDisplay`:**
 
 קומפוננטות שעודכנו:
+
 - ✅ `TaskRow.svelte` - תמונות משימות
 - ✅ `UserSelector.svelte` - אווטרים של משתמשים
 - ✅ `ListSwitcher.svelte` - לוגו של רשימות
@@ -3345,6 +3679,7 @@ interface AppState {
 **הבעיה שהתגלתה:**
 
 תמונות עם חיתוך נראו **שונות לחלוטין** בכל מקום:
+
 - עורך החיתוך (400px) - הציג את התמונה המלאה ✓
 - ImageUploader במודאל (150px) - הציג חלק אחר (עורף) ✗
 - רשימת המשימות (120px) - הציג חלק שלישי ✗
@@ -3369,6 +3704,7 @@ interface AppState {
 **התיקונים שבוצעו:**
 
 **`ImageCropEditor.svelte`:**
+
 ```typescript
 // לפני - scale מוחלט
 crop = { x: 50, y: 50, scale: minScale }; // ← minScale משתנה לפי קונטיינר!
@@ -3377,10 +3713,11 @@ crop = { x: 50, y: 50, scale: minScale }; // ← minScale משתנה לפי קו
 crop = { x: 50, y: 50, scale: 1.0 }; // ← 1.0 = minScale, 2.0 = פי 2
 
 // שימוש בתצוגה:
-style:transform="translate(-50%, -50%) scale({minScale * crop.scale})"
+style: transform = "translate(-50%, -50%) scale({minScale * crop.scale})";
 ```
 
 **`ImageDisplay.svelte`:**
+
 ```typescript
 // לפני - $derived לא עובד!
 let minScale = $derived.by(() => {
@@ -3395,7 +3732,8 @@ let minScale = $derived.by(() => {
 let minScale = $state(1);
 
 function handleLoad() {
-  if (imageRef && containerRef) {  // ← הסרת תנאי cropData!
+  if (imageRef && containerRef) {
+    // ← הסרת תנאי cropData!
     const containerSize = containerRef.offsetWidth;
     const scaleByWidth = containerSize / imageRef.naturalWidth;
     const scaleByHeight = containerSize / imageRef.naturalHeight;
@@ -3408,10 +3746,22 @@ function handleLoad() {
 
 ```css
 /* לפני - גדלים קבועים */
-.size-small { width: 60px; height: 60px; }
-.size-medium { width: 120px; height: 120px; }
-.size-large { width: 200px; height: 200px; }
-.size-full { width: 100%; aspect-ratio: 1; }
+.size-small {
+  width: 60px;
+  height: 60px;
+}
+.size-medium {
+  width: 120px;
+  height: 120px;
+}
+.size-large {
+  width: 200px;
+  height: 200px;
+}
+.size-full {
+  width: 100%;
+  aspect-ratio: 1;
+}
 
 /* אחרי - גנרי לחלוטין */
 .image-display {
@@ -3435,6 +3785,7 @@ function handleLoad() {
 **`ImageUploader.svelte` - Dog-fooding:**
 
 הקומפוננטה עברה רפקטור להשתמש ב-`ImageDisplay` לתצוגה מקדימה (במקום לוגיקה משלה):
+
 ```svelte
 <!-- לפני - לוגיקה כפולה -->
 <div class="preview-image-cropped">
@@ -3443,7 +3794,7 @@ function handleLoad() {
 
 <!-- אחרי - שימוש ב-ImageDisplay -->
 <div class="preview-wrapper">
-  <ImageDisplay 
+  <ImageDisplay
     imageSrc={currentImageSrc}
     alt={alt}
     className="preview-image-display"
@@ -3491,6 +3842,7 @@ function handleLoad() {
 #### בדיקות מקיפות בדפדפן
 
 לאחר כל תיקון, בוצעו בדיקות יסודיות:
+
 - ✅ רענון דפדפן והמתנה לטעינה מלאה
 - ✅ כניסה למצב עריכה
 - ✅ פתיחת מודאל עריכת משימה
@@ -3508,6 +3860,7 @@ function handleLoad() {
 #### סיכום התוצאות
 
 **לפני:**
+
 - ❌ תמונות עם חיתוך נראות שונות בכל מקום
 - ❌ תמונות ללא חיתוך בגודל שגוי
 - ❌ ImageUploader מתמוטט ל-0px
@@ -3516,6 +3869,7 @@ function handleLoad() {
 - ❌ תמונות במודאל חגיגה רחבות ולא מרובעות
 
 **אחרי:**
+
 - ✅ **עקביות מלאה** - כל התמונות נראות זהות בכל המקומות
 - ✅ חיתוך עובד בצורה זהה בכל גודל קונטיינר
 - ✅ ImageUploader עם גודל קבוע (150px × 150px)
@@ -3528,6 +3882,7 @@ function handleLoad() {
 #### קבצים שנוצרו/שונו
 
 **קבצים חדשים:**
+
 ```
 sveltekit-version/
 ├── src/lib/components/
@@ -3543,6 +3898,7 @@ sveltekit-version/
 ```
 
 **קבצים ששונו:**
+
 ```
 sveltekit-version/
 ├── src/lib/
@@ -3576,12 +3932,12 @@ sveltekit-version/
 
 #### החלטות עיצוב ואדריכליות
 
-1. **שמירה על גנריות `ImageDisplay`**: 
+1. **שמירה על גנריות `ImageDisplay`**:
    - לא הוספנו `border-radius` ישירות לקומפוננטה
    - העיצוב מוגדר ב-parent containers
    - מאפשר גמישות ושימוש חוזר
 
-2. **גובה קבוע במקום גמיש**: 
+2. **גובה קבוע במקום גמיש**:
    - שינוי מ-`max-height` + `min-height` ל-`height` קבוע
    - מבטיח עקביות ויזואלית מלאה
 
@@ -3627,7 +3983,6 @@ sveltekit-version/
 ### שינויים שבוצעו
 
 - **מדיניות פרטיות (Privacy Policy)**:
-
   - הוספת דף `/privacy` סטטי ומותאם לדרישות האימות של גוגל (Google Verification).
   - הדף מצהיר כי בסיס הנתונים הוא לוקאלי/פרטי בלבד ואינו נאסף ע"י המפתח.
   - נוסף קובץ `package.json` מעודכן עם סקריפט `deploy` מקוצר.
@@ -3645,7 +4000,6 @@ sveltekit-version/
 ### שינויים שבוצעו
 
 - **שינוי ארכיטקטורת ניווט**:
-
   - מעבר מדף יחיד (`settings/+page.svelte`) המנהל טאבים בתנאי (`if/else`), למבנה מבוסס נתיבים (Routing).
   - **Layout**: יצירת `settings/+layout.svelte` המרכז את הכותרת והניווט העליון.
   - **Pages**: פיצול התוכן ל-3 דפים נפרדים: `users`, `lists`, `general`.
@@ -3669,18 +4023,15 @@ sveltekit-version/
 ### שינויים שבוצעו
 
 - **ניהול גרסאות נתונים (`lastModified`)**:
-
   - הוספת שדה `lastModified` ל-`AppState` ולכל הממשקים הרלוונטיים.
   - עדכון `persistence.ts` לעדכון החותמת בכל שמירה.
   - עדכון מיגרציות ונתוני ברירת מחדל (`defaults.ts`) לתמיכה בשדה החדש.
 
 - **זיהוי קונפליקטים (`BackupController`)**:
-
   - פיתוח לוגיקה המשווה את חותמת הזמן של הגיבוי בענן מול המידע המקומי בעת התחברות.
   - זיהוי "גיבוי חדש יותר" (Remote Newer) בפער של מעל 5 שניות.
 
 - **ממשק פתרון קונפליקטים**:
-
   - שדרוג `GoogleDriveBackup.svelte` עם מודאל אזהרה ייעודי.
   - הצגת השוואה ברורה בין הגרסה המקומית לגרסת הענן (תאריך ושעה).
   - כפתורי בחירה: "עדכן מהענן" (Discards Local) או "השאר מקומי" (Overwrites Cloud next backup).
@@ -3699,19 +4050,16 @@ sveltekit-version/
 ### שינויים שבוצעו
 
 - **שירות ליבה (`googleDriveService`)**:
-
   - פיתוח מעטפת (Wrapper) מודרנית ל-Google Identity Services (GIS) ול-Drive API v3.
   - תמיכה מלאה בתהליך OAuth2 בצד הלקוח (Implicit Flow), כולל טיפול בטעינת סקריפטים.
   - פונקציות לגיבוי (Create/Update), שחזור (Get media), ורשימת קבצים.
 
 - **בקר לוגי (`BackupController`)**:
-
   - ניהול לוגיקת הגיבוי האוטומטי: מאזין לשינויים ב-Store ומבצע גיבוי לאחר השהייה (Debounce) של 5 שניות.
   - ניהול State: מחובר/מנותק, זמן גיבוי אחרון, פרטי משתמש.
   - תמיכה ב-Client ID מותאם אישית דרך ממשק ההגדרות.
 
 - **ממשק משתמש (`GoogleDriveBackup`)**:
-
   - רכיב חדש בהגדרות המציג את סטטוס החיבור, תמונת המשתמש, וכפתורי פעולה.
   - אפשרות לגיבוי ידני מיידי.
   - מודאל בחירת קובץ לשחזור (במקרה של מעבר מכשיר).
@@ -3741,12 +4089,10 @@ sveltekit-version/
 ### שינויים שבוצעו
 
 - **עיצוב גרפי (לוגו)**:
-
   - עוצב לוגו חדש בפורמט SVG (`src/lib/assets/logo.svg`) תחת הקונספט "סדר יום מובנה". הלוגו מציג 3 כרטיסיות מדורגות, המייצגות רצף וסדר, עם צבעוניות של "צי מלוכה" (Navy) ו"קורל" (Coral) ליצירת מראה מקצועי, נקי אך חם.
   - הלוגו הוגדר גם כ-favicon של האתר.
 
 - **דף כניסה (UserSelector)**:
-
   - שדרוג העיצוב: הלוגו מופיע כעת לצד שם האפליקציה ("סדר יום ויזואלי") בכותרת העליונה.
   - שיפור היררכיה: הפרדה ברורה בין המיתוג (Header) לבין ההנחיה למשתמש ("מי משתמש בלוח היום?").
 
@@ -3762,13 +4108,11 @@ sveltekit-version/
 ### שינויים שבוצעו
 
 - **ממשק חגיגה (Celebration Modal)**:
-
   - שדרוג `CelebrationModal.svelte` לתמיכה במצבי "משימה" ו"כללי".
   - המודאל כעת מציג באופן ויזואלי את המשימה שהושלמה, מחמאה מודגשת, ואת המשימה הבאה בתור (עם תצוגה מקדימה).
   - אינטגרציה מלאה עם נתוני המשתמש (שם, תמונה) והמגדר.
 
 - **לוגיקת משוב (Feedback Logic)**:
-
   - עדכון `tasksBoard.svelte.ts` לשימוש ב-`boostService` וב-`audioSequencer`.
   - הוספת המתנה (`await`) לסיום ניגון רצף האודיו המלא לפני סגירה אוטומטית של המודאל.
   - טיפול במקרי קצה: סיום כל המשימות, או חגיגה כללית (גיבוי/פעולה אחרת) ללא הקשר משימה.
@@ -3791,12 +4135,10 @@ sveltekit-version/
 ### שינויים שבוצעו
 
 - **ארכיטקטורה וניווט**:
-
   - **הפרדת נתיב**: מסך בחירת המשתמש (`UserSelector`) הועבר משילוב בדף הבית לנתיב ייעודי ועצמאי: `/login`.
   - **ניהול הפניות**: הדף הראשי (`/`) כעת בודק את סטטוס הטעינה והחיבור. משתמש לא מחובר מופנה ל-`/login` (לאחר טעינה), ומשתמש מחובר נשאר בלוח.
 
 - **חוויית טעינה (UX)**:
-
   - **Splash Screen**: יצירת רכיב `src/lib/components/SplashScreen.svelte` המציג אנימציית טעינה נקייה וממותגת. רכיב זה מוצג בזמן שהאפליקציה מבצעת "Hydration" וטוענת נתונים, כדי למנוע הבהובים של תוכן לא רלוונטי ("Flash of Unstyled Content" או תצוגת לוגין רגעית).
 
 - **קוד**:

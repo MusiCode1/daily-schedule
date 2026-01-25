@@ -415,8 +415,59 @@ $: doubled = count * 2;
 #### כללים טכניים:
 
 1. **@import חובה**: `settings.css` צריך `@import '../layout.css';` בראש
-2. **@reference רק עם @apply**: הוסף `@reference "tailwindcss";` ב-`<style>` רק אם יש `@apply`
+2. **@reference חובה**: הוסף `@reference "tailwindcss";` ב-`<style>` כשיש `@apply`
 3. **לא צריך CDN**: אין צורך ב-Tailwind CDN script ב-`+layout.svelte`
+4. **PostCSS Setup**: הפרויקט משתמש ב-`@tailwindcss/postcss` (לא Vite plugin)
+
+#### ירושה עם @utility:
+
+**עקרון:** להגדיר utilities מותאמות אישית ב-`components.css` ולהשתמש בהן דרך `@apply`:
+
+```css
+/* components.css */
+@layer utilities {
+  @utility card-base {
+    @apply bg-white border border-slate-200 rounded-2xl p-6 
+           flex flex-col items-center gap-4
+           transition-all duration-300 ease-in-out shadow-md;
+  }
+}
+```
+
+**שימוש בקומפוננטה:**
+
+```svelte
+<style>
+  @reference "tailwindcss";
+  
+  /* .user-card יורש מ-card-base */
+  .user-card {
+    @apply card-base;  /* ירושה - בשורה נפרדת! */
+    @apply max-w-[280px];  /* override מקומי */
+  }
+</style>
+```
+
+#### כלל קריטי - ירושה בשורה נפרדת
+
+**חובה!** ירושה מ-utility מותאם אישית תמיד בשורה נפרדת:
+
+```css
+/* ✅ נכון - ירושה בשורה נפרדת */
+.user-actions {
+  @apply btn-icon;  /* ירושה מותאמת - בולטת! */
+  @apply flex gap-3 mt-2 w-full justify-center;  /* Tailwind רגיל */
+}
+
+/* ❌ לא נכון - מעורבב */
+.user-actions {
+  @apply btn-icon flex gap-3 mt-2;
+}
+```
+
+**למה?** כדי להבדיל בין:
+- utilities מותאמות שלנו (`card-base`, `btn-icon`)
+- Tailwind built-in (`flex`, `gap-3`, `rounded-xl`)
 
 #### כלל קריטי - HTML vs `<style>`:
 
@@ -503,12 +554,22 @@ $: doubled = count * 2;
   }
 </style>
 
-<!-- ✅ נכון - עם @reference -->
+<!-- ❌ לא נכון - ירושה וTailwind מעורבבים -->
 <style>
   @reference "tailwindcss";
   
   .my-class {
-    @apply flex gap-2;
+    @apply card-base flex gap-2; /* card-base וגם Tailwind בשורה אחת! */
+  }
+</style>
+
+<!-- ✅ נכון - ירושה בשורה נפרדת -->
+<style>
+  @reference "tailwindcss";
+  
+  .my-class {
+    @apply card-base;  /* ירושה */
+    @apply flex gap-2;  /* Tailwind */
   }
 </style>
 ```

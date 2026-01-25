@@ -1,11 +1,22 @@
+<div dir="rtl">
+
 # מדריך ארכיטקטורת CSS - CSS Layers והגישות המקובלות
 
 > תיעוד מקיף של גישות ארגון CSS, CSS @layer, והמלצות ליישום בפרויקט
 
-תאריך: 2026-01-20  
+
+תאריך: 2026-01-20
+
 נוצר לפרויקט: סדר יום ויזואלי
 
+
+</div>
 ---
+
+
+
+---
+
 
 ## 📑 תוכן עניינים
 
@@ -46,12 +57,14 @@ button {
 ```
 
 **הבעיה:**
+
 - התוצאה תלויה ב-**Specificity** (ספציפיות) וב-**Order** (סדר טעינה)
 - `button` = 1 נקודה
 - `.btn` = 10 נקודות
 - `.bg-green` = 10 נקודות
-- כשהספציפיות שווה → **האחרון מנצח**
+- כשהספציפיות שווה →**האחרון מנצח**
 - זה לא יציב ותלוי בסדר הייבוא!
+
 
 ---
 
@@ -83,6 +96,7 @@ button {
 ```
 
 **התוצאה:**
+
 ```html
 <button class="btn bg-green">לחץ</button>
 <!-- תמיד ירוק! גם אם utilities מוגדר ראשון בקוד -->
@@ -94,6 +108,7 @@ button {
 Layers מאוחרים תמיד מנצחים layers מוקדמים,
 ללא קשר לספציפיות או לסדר בקוד!
 ```
+
 
 ---
 
@@ -164,6 +179,7 @@ Layers מאוחרים תמיד מנצחים layers מוקדמים,
 /* Hierarchy: custom > framework.components > framework.base */
 ```
 
+
 ---
 
 ## @apply Best Practices
@@ -196,7 +212,8 @@ Layers מאוחרים תמיד מנצחים layers מוקדמים,
 ```
 
 **מתאים ל:**
-- `.btn`, `.card`, `.avatar`, `.badge`, `.modal`
+
+- `.btn`,`.card`,`.avatar`,`.badge`,`.modal`
 - רכיבים עם לוגיקה מורכבת (hover, focus, active states)
 - קומפוננטים שחוזרים 5+ פעמים במערכת
 
@@ -217,21 +234,24 @@ Layers מאוחרים תמיד מנצחים layers מוקדמים,
 ```
 
 **אל תשתמש ב-@apply עבור:**
-- `.flex`, `.grid`, `.gap-2`, `.mt-4`
+
+- `.flex`,`.grid`,`.gap-2`,`.mt-4`
 - classes שמופיעים 1-2 פעמים בלבד
 - utilities פשוטים שקל יותר לכתוב ישירות
 
 ### למה Tailwind לא אוהבים את @apply?
 
 **טיעוני Tailwind נגד @apply:**
+
 1. **חוזרים למצב הישן** - חוזרים לכתיבת CSS מסורתי
 2. **Bundle Size** - עלול להגדיל קלות את הקובץ
 3. **פילוסופיה** - שובר את גישת Utility-First
 
 **למה זה בסדר בפרויקט שלנו:**
+
 1. **Design System** - אנחנו בונים מערכת עיצוב, לא אתר marketing
 2. **קומפוננטות לשימוש חוזר** - יש לנו רכיבים שחוזרים הרבה
-3. **עקביות** - מבטיח שכל `.btn` נראה זהה
+3. **עקביות** - מבטיח שכל`.btn` נראה זהה
 4. **תחזוקה** - שינוי במקום אחד משפיע על כל המערכת
 
 ### כלל האצבע
@@ -265,6 +285,241 @@ Layers מאוחרים תמיד מנצחים layers מוקדמים,
 
 **שילוב מושלם:** component class (`.btn`) + utilities ישירות (`flex items-center gap-2`)
 
+
+---
+
+## Component Inheritance with @utility
+
+### מהי @utility?
+
+`@utility` היא דירקטיבה של Tailwind CSS v4 שמאפשרת ליצור utilities מותאמות אישית שניתן לרשת דרך `@apply`. זה מאפשר לנו ליצור קומפוננטים בסיסיים שניתן להרחיב בקומפוננטות ספציפיות.
+
+### ⚠️ כללים קריטיים ל-@utility (Tailwind v4)
+
+**חשוב מאוד!** שני כללים שחייבים לדעת כדי ש-`@utility` יעבוד:
+
+#### 1. @utility חייב להיות מחוץ ל-@layer
+
+```css
+/* ❌ לא עובד - @utility בתוך @layer */
+@layer utilities {
+  @utility card-base {
+    @apply bg-white border border-slate-200;
+  }
+}
+
+/* ✅ עובד - @utility ברמה העליונה */
+@utility card-base {
+  @apply bg-white border border-slate-200 rounded-2xl p-6 
+         flex flex-col items-center gap-4
+         transition-all duration-300 ease-in-out shadow-md;
+}
+```
+
+**למה?** Tailwind v4 מצפה ש-`@utility` יהיה ברמה העליונה של הקובץ, לא מקונן בתוך `@layer` או בלוק אחר.
+
+#### 2. קומפוננטות צריכות @reference "../../layout.css"
+
+```svelte
+<style>
+  /* ❌ לא עובד - @reference "tailwindcss" בלבד */
+  @reference "tailwindcss";
+  
+  .list-card {
+    @apply card-base;  /* לא ימצא! */
+  }
+</style>
+
+<style>
+  /* ✅ עובד - @reference ל-layout.css */
+  @reference "../../layout.css";
+  
+  .list-card {
+    @apply card-base;  /* מצוין! */
+    @apply border-2 p-5 gap-3;
+  }
+</style>
+```
+
+**למה?** כדי ש-`@apply card-base` יעבוד בקומפוננטות, Tailwind צריך לדעת איפה למצוא את ה-utility. `@reference "../../layout.css"` אומר ל-Tailwind לחפש ב-`layout.css` שבו הגדרנו את `@utility card-base`.
+
+### הגדרת Utilities מותאמות (התחביר הנכון)
+
+```css
+/* layout.css - ברמה העליונה, מחוץ ל-@layer */
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+
+:root {
+  /* ... design tokens ... */
+}
+
+/* @utility חייב להיות כאן - מחוץ לכל @layer! */
+@utility card-base {
+  @apply bg-white border border-slate-200 rounded-2xl p-6 
+         flex flex-col items-center gap-4
+         transition-all duration-300 ease-in-out shadow-md;
+}
+
+@utility btn-icon {
+  @apply w-10 h-10 p-0 border border-slate-200 rounded-lg
+         flex items-center justify-center bg-slate-50;
+}
+```
+
+### שימוש בקומפוננטות
+
+**כלל קריטי #1:** ירושה מ-utility מותאם חייבת להיות בשורה נפרדת!
+
+**כלל קריטי #2:** חייבים `@reference` ל-layout.css (לא רק "tailwindcss")!
+
+```svelte
+<style>
+  /* ✅ נכון - @reference ל-layout.css */
+  @reference "../../layout.css";
+  
+  /* ✅ נכון - ירושה בשורה נפרדת */
+  .list-card {
+    @apply card-base;  /* ירושה - בולטת ונפרדת! */
+    @apply border-2 p-5 gap-3 max-w-[250px];  /* Tailwind רגיל */
+  }
+  
+  /* ❌ לא נכון - מעורבב */
+  .list-card {
+    @apply card-base border-2 p-5 gap-3;
+  }
+  
+  /* ❌ לא נכון - @reference "tailwindcss" בלבד */
+  @reference "tailwindcss";
+  
+  .list-card {
+    @apply card-base;  /* לא ימצא! */
+  }
+</style>
+```
+
+**למה שורה נפרדת?** כדי להבדיל בין:
+
+- utilities מותאמות שלנו (`card-base`,`btn-icon`)
+- Tailwind built-in (`flex`,`gap-3`,`rounded-xl`)
+
+**למה @reference "../../layout.css"?** כדי ש-Tailwind ידע איפה למצוא את `@utility card-base` שהגדרנו.
+
+### דוגמה מלאה
+
+```svelte
+<script>
+  const lists = [...];
+</script>
+
+<style>
+  /* חשוב! @reference ל-layout.css, לא ל-"tailwindcss" */
+  @reference "../../layout.css";
+  
+  .list-card {
+    @apply card-base;  /* ירושה */
+    @apply border-2 p-5 gap-3 duration-200 max-w-[250px] relative;  /* Tailwind */
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  }
+  
+  .list-card:hover {
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.15);
+  }
+  
+  .list-card-active {
+    @apply bg-indigo-50;
+    border-color: #818cf8;
+  }
+</style>
+
+{#each lists as list}
+  <div class="list-card" class:list-card-active={list.isActive}>
+    <h3>{list.name}</h3>
+  </div>
+{/each}
+```
+
+**יתרונות:**
+
+- ✅ אין שכפול קוד
+- ✅ עדכון במקום אחד משפיע על כולם
+- ✅ ברור מה בסיסי ומה ספציפי
+- ✅ תמיכה מלאה של Tailwind v4
+
+### איך לארגן את הקבצים?
+
+**מיקום ה-utilities:**
+
+```
+layout.css (root level)
+├── @import 'tailwindcss'
+├── :root { design tokens }
+├── @utility card-base { ... }  ← כאן!
+├── @utility btn-icon { ... }
+└── html, body { ... }
+```
+
+**שימוש בקומפוננטות:**
+
+```
+settings/lists/+page.svelte
+└── <style>
+    @reference "../../layout.css"  ← מצביע ל-layout.css
+    .list-card { @apply card-base; }
+    </style>
+```
+
+### טעויות נפוצות וכיצד להימנע מהן
+
+#### ❌ טעות 1: @utility בתוך @layer
+
+```css
+/* לא עובד! */
+@layer utilities {
+  @utility card-base { ... }
+}
+```
+
+**פתרון:** העבר את `@utility` לרמה העליונה של `layout.css`.
+
+#### ❌ טעות 2: @reference "tailwindcss" בלבד
+
+```svelte
+<style>
+  @reference "tailwindcss";  /* לא מספיק! */
+  .my-card { @apply card-base; }  /* לא ימצא */
+</style>
+```
+
+**פתרון:** השתמש ב-`@reference "../../layout.css"` (נתיב יחסי ל-layout.css).
+
+#### ❌ טעות 3: ירושה מעורבבת עם Tailwind
+
+```css
+.list-card {
+  @apply card-base border-2 p-5;  /* מבלבל */
+}
+```
+
+**פתרון:** הפרד לשתי שורות:
+
+```css
+.list-card {
+  @apply card-base;  /* ירושה */
+  @apply border-2 p-5;  /* Tailwind */
+}
+```
+
+### סיכום - Checklist מהיר
+
+- [ ]`@utility` מוגדר ב-`layout.css` (לא בתוך`@layer`)
+- [ ] בקומפוננטה:`@reference "../../layout.css"`
+- [ ] ירושה בשורה נפרדת:`@apply card-base;` ואז`@apply border-2...`
+- [ ] הנתיב היחסי נכון (`../../` עבור`settings/lists/+page.svelte`)
+
+
 ---
 
 ## CSS Nesting Best Practices
@@ -283,7 +538,7 @@ CSS Nesting היא תכונה רשמית של CSS (2023) שמאפשרת לכתו
   .theme-playful {
     .btn {
       @apply shadow-lg;
-      
+    
       &:hover {
         @apply shadow-xl;
       }
@@ -311,16 +566,16 @@ CSS Nesting היא תכונה רשמית של CSS (2023) שמאפשרת לכתו
 @layer components {
   .btn {
     @apply px-6 py-3;
-    
+  
     /* ✅ נכון - & מייצג את ההורה */
     &:hover {
       @apply brightness-110;
     }
-    
+  
     &:active {
       @apply scale-95;
     }
-    
+  
     &.btn-large {
       @apply text-xl px-8 py-4;
     }
@@ -339,11 +594,11 @@ CSS Nesting היא תכונה רשמית של CSS (2023) שמאפשרת לכתו
       &:hover { @apply shadow-xl; }
       &:active { @apply shadow-none; }
     }
-    
+  
     .card {
       @apply border-b-[6px] border-gray-300;
     }
-    
+  
     .avatar {
       @apply ring-4 ring-orange-200;
     }
@@ -365,7 +620,7 @@ CSS Nesting היא תכונה רשמית של CSS (2023) שמאפשרת לכתו
 1. **ארגון לוגי** - כל theme בבלוק אחד
 2. **קריאות** - רואים מיד מה שייך לאיזה theme
 3. **תחזוקה** - קל להוסיף/לשנות theme
-4. **פחות חזרה** - לא צריך לכתוב `.theme-playful` 20 פעם
+4. **פחות חזרה** - לא צריך לכתוב`.theme-playful` 20 פעם
 
 ### דוגמה מלאה
 
@@ -375,26 +630,26 @@ CSS Nesting היא תכונה רשמית של CSS (2023) שמאפשרת לכתו
     /* כל האפקטים המיוחדים של playful */
     .btn {
       @apply shadow-lg transform translate-y-0;
-      
+    
       &:hover {
         @apply -translate-y-0.5 shadow-xl;
       }
-      
+    
       &:active {
         @apply translate-y-1;
         box-shadow: 0 0 0 0;
       }
-      
+    
       /* ניתן גם לקנן modifiers */
       &.btn-large {
         @apply text-xl;
         box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.2);
       }
     }
-    
+  
     .card {
       @apply border-b-[6px] border-gray-300;
-      
+    
       &.card-active {
         @apply border-b-[8px] border-orange-400;
       }
@@ -406,11 +661,13 @@ CSS Nesting היא תכונה רשמית של CSS (2023) שמאפשרת לכתו
 ### תמיכה בדפדפנים
 
 CSS Nesting נתמך ב:
+
 - ✅ Chrome/Edge 112+
 - ✅ Safari 16.5+
 - ✅ Firefox 117+
 
 **אבל:** Vite/PostCSS ממילא ידהר את זה לתמיכה מלאה!
+
 
 ---
 
@@ -452,13 +709,16 @@ src/styles/
 **מי משתמש:** Vercel, GitHub, Shopify, OpenAI
 
 **יתרונות:**
+
 - ✅ פשוט (3 שכבות)
 - ✅ משתלב מצוין עם Tailwind
 - ✅ סדר טעינה אוטומטי
 
 **חסרונות:**
+
 - ❌ פחות מסודר לפרויקטים גדולים
 - ❌ אין הפרדה בין tokens למבנה
+
 
 ---
 
@@ -526,14 +786,17 @@ src/styles/
 ```
 
 **יתרונות:**
+
 - ✅ מאוד מסודר ושיטתי
 - ✅ ספציפיות עולה מ-1 ל-7
 - ✅ מתאים לפרויקטים ענקיים
 
 **חסרונות:**
+
 - ❌ מורכב למתחילים
 - ❌ הרבה קבצים
 - ❌ overkill לפרויקטים קטנים
+
 
 ---
 
@@ -555,9 +818,11 @@ import styles from './Button.module.css'
 **מי משתמש:** Facebook, Microsoft, Airbnb
 
 **יתרונות:**
+
 - ✅ Scoped CSS (אין קונפליקטים)
 - ✅ TypeScript support
 - ✅ קל לתחזק
+
 
 ---
 
@@ -573,12 +838,15 @@ const Button = styled.button`
 **מי משתמש:** Atlassian, Coinbase, Reddit
 
 **יתרונות:**
+
 - ✅ JavaScript בתוך CSS
 - ✅ Dynamic theming
 
 **חסרונות:**
+
 - ❌ Runtime overhead
 - ❌ Bundle size גדול
+
 
 ---
 
@@ -597,12 +865,15 @@ design-system/
 **מי משתמש:** Google (Material), Microsoft (Fluent), Adobe (Spectrum)
 
 **יתרונות:**
+
 - ✅ עקביות מוחלטת
 - ✅ קל לשתף בין פלטפורמות
 
 **חסרונות:**
+
 - ❌ Setup מורכב
 - ❌ דורש תחזוקה כבדה
+
 
 ---
 
@@ -617,6 +888,7 @@ design-system/
 ```
 
 *(מקור: State of CSS 2024)*
+
 
 ---
 
@@ -637,8 +909,11 @@ Design Tokens + Tailwind @layer (@apply) + Nested CSS + Theme Overrides
 
 ### המבנה המלא - 3 Layers + 2 Sections:
 
-**הבהרה חשובה:** Design Tokens ו-Theme Variations הם **משתנים בלבד** (CSS Variables), לא layers!  
+
+**הבהרה חשובה:** Design Tokens ו-Theme Variations הם **משתנים בלבד** (CSS Variables), לא layers!
+
 רק המבנה הלוגי (Base, Components, Theme Overrides) נמצא ב-`@layer`.
+
 
 ```css
 /* ============================================
@@ -778,7 +1053,7 @@ Design Tokens + Tailwind @layer (@apply) + Nested CSS + Theme Overrides
     background-color: var(--primary);
     border-radius: var(--border-radius);
     border: none;
-    
+  
     &:hover {
       @apply brightness-110;
     }
@@ -867,18 +1142,18 @@ Design Tokens + Tailwind @layer (@apply) + Nested CSS + Theme Overrides
     .btn {
       @apply shadow-lg transform translate-y-0;
       box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.2);
-      
+    
       &:hover {
         @apply -translate-y-0.5;
         box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.2);
       }
-      
+    
       &:active {
         @apply translate-y-1;
         box-shadow: 0 0 0 0;
       }
     }
-    
+  
     .card {
       @apply border-b-[6px] border-gray-300;
     }
@@ -899,13 +1174,14 @@ Design Tokens + Tailwind @layer (@apply) + Nested CSS + Theme Overrides
     .avatar {
       @apply border-2 border-white;
     }
-    
+  
     .btn-primary {
       @apply text-black;
     }
   }
 }
 ```
+
 
 ---
 
@@ -937,8 +1213,9 @@ sveltekit-version/src/styles/
 1. **`tokens/`** - Design Tokens (משתנים CSS בלבד, לא layers)
 2. **`themes/`** - Theme Variations (עקיפות משתנים, לא layers)
 3. **`layers/`** - 3 ה-Layers האמיתיים:
+
    - `base.css` - מבנה בסיסי + resets
-   - `components.css` - רכיבים עם `@apply`
+   - `components.css` - רכיבים עם`@apply`
    - `theme-overrides.css` - כל ה-theme overrides עם nested CSS
 
 ### main.css:
@@ -980,7 +1257,7 @@ sveltekit-version/src/styles/
     @apply px-6 py-3 font-bold transition-all;
     background: var(--primary);
     border-radius: var(--border-radius);
-    
+  
     &:hover {
       @apply brightness-110;
     }
@@ -1010,7 +1287,7 @@ sveltekit-version/src/styles/
       &:hover { @apply shadow-xl; }
       &:active { @apply shadow-none; }
     }
-    
+  
     .card {
       @apply border-b-[6px] border-gray-300;
     }
@@ -1032,6 +1309,7 @@ sveltekit-version/src/styles/
 }
 ```
 
+
 ---
 
 ## דוגמאות מעשיות
@@ -1048,11 +1326,11 @@ sveltekit-version/src/styles/
     @apply px-6 py-3 font-bold transition-all cursor-pointer;
     background: var(--primary);
     border-radius: var(--border-radius);
-    
+  
     &:hover {
       @apply brightness-110;
     }
-    
+  
     &:active {
       @apply scale-95;
     }
@@ -1090,6 +1368,7 @@ sveltekit-version/src/styles/
 
 **הערה:** שילוב `.btn` (component מ-`@apply`) + `flex items-center gap-2` (utilities ישירות) זה המתכון המושלם!
 
+
 ---
 
 ### דוגמה 2: Theme Override עם Nested CSS
@@ -1104,18 +1383,18 @@ sveltekit-version/src/styles/
     .btn {
       @apply shadow-lg transform translate-y-0;
       box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.2);
-      
+    
       &:hover {
         @apply -translate-y-0.5;
         box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.2);
       }
-      
+    
       &:active {
         @apply translate-y-1;
         box-shadow: 0 0 0 0;
       }
     }
-    
+  
     .card {
       @apply border-b-[6px] border-gray-300;
     }
@@ -1138,6 +1417,7 @@ sveltekit-version/src/styles/
 ```
 
 **יתרון:** כל ה-overrides של playful במקום אחד, מקוננים בצורה קריאה!
+
 
 ---
 
@@ -1188,6 +1468,7 @@ sveltekit-version/src/styles/
 </div>
 ```
 
+
 ---
 
 ### דוגמה 4: Theme Switching (Svelte)
@@ -1229,6 +1510,7 @@ sveltekit-version/src/styles/
 
 **קסם:** שינוי class אחד (`theme-focus` → `theme-playful`) ו-**כל** הקומפוננטים מתעדכנים!
 
+
 ---
 
 ### דוגמה 5: שילוב מושלם - Component + Utilities
@@ -1245,11 +1527,13 @@ sveltekit-version/src/styles/
 ```
 
 **למה זה מושלם?**
+
 - `.btn` - עיצוב בסיסי עקבי (מ-`@apply`)
 - `flex items-center gap-2` - layout ספציפי (Tailwind ישירות)
-- `group` + `group-hover:` - אפקטים אינטראקטיביים
+- `group` +`group-hover:` - אפקטים אינטראקטיביים
 
 **זה בדיוק הפילוסופיה שלנו:** component classes לבסיס, utilities לגמישות!
+
 
 ---
 
@@ -1342,6 +1626,7 @@ sveltekit-version/src/styles/
 4. **Interface Segregation** - קטנים ממוקדים עדיף מגדולים כלליים
 5. **Dependency Inversion** - תלוי במשתנים, לא בערכים קבועים
 
+
 ---
 
 ## סיכום והמלצות
@@ -1405,21 +1690,29 @@ sveltekit-version/src/styles/
 
 ### תוכנית היישום
 
-**שלב 1:** ארגון מחדש של `design_demo.html` לפי המבנה החדש  
-**שלב 2:** בדיקה ויזואלית של כל 4 ה-themes  
-**שלב 3:** העברה לפרויקט (src/styles/)  
-**שלב 4:** רפקטור הדרגתי של קומפוננטות קיימות  
-**שלב 5:** תיעוד ב-Storybook (אופציונלי)
+
+**שלב 1:** ארגון מחדש של `design_demo.html` לפי המבנה החדש
+
+****שלב 2:** בדיקה ויזואלית של כל 4 ה-themes
+
+******שלב 3:** העברה לפרויקט (src/styles/)
+
+******שלב 4:** רפקטור הדרגתי של קומפוננטות קיימות
+
+******שלב 5:** תיעוד ב-Storybook (אופציונלי)
+
+**
 
 ### Checklist לפני יישום
 
 - [ ] קראתי והבנתי את כללי @layer
 - [ ] הבנתי מתי להשתמש ב-@apply (רק לקומפוננטים שחוזרים!)
 - [ ] הבנתי את כללי ה-nesting (מקסימום 3 רמות)
-- [ ] Design Tokens ו-Theme Variations **לא** layers
+- [ ] Design Tokens ו-Theme Variations**לא** layers
 - [ ] סדר ה-layers: base → components → theme-overrides
 - [ ] Theme overrides תמיד ב-nested CSS
-- [ ] שילוב component classes + utilities ישירות  
+- [ ] שילוב component classes + utilities ישירות
+
 
 ---
 
@@ -1439,13 +1732,22 @@ sveltekit-version/src/styles/
 - "Refactoring UI" by Adam Wathan & Steve Schoger
 - "Every Layout" by Heydon Pickering & Andy Bell
 
+
 ---
 
 ## סיום
 
-מסמך זה מהווה מקור אמת למערכת העיצוב של הפרויקט. 
+
+מסמך זה מהווה מקור אמת למערכת העיצוב של הפרויקט.
+
 כל שינוי בגישה או בארכיטקטורה צריך להתעדכן כאן.
 
-**תאריך עדכון אחרון:** 2026-01-20  
-**גרסה:** 2.0 (עדכון מבנה: 3 Layers + @apply + Nested CSS)  
-**מחבר:** AI Assistant + Tzahar Halev
+
+
+**תאריך עדכון אחרון:** 2026-01-20
+
+****גרסה:** 2.0 (עדכון מבנה: 3 Layers + @apply + Nested CSS)
+
+******מחבר:** AI Assistant + Tzahar Halev
+
+**
