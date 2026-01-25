@@ -34,20 +34,23 @@
 </script>
 
 {#if isOpen}
-	<div class="modal-overlay" onclick={onclose} onkeydown={(e) => e.key === 'Escape' && onclose()} role="button" tabindex="-1">
-		<div class="modal-card" onclick={(e) => e.stopPropagation()} onkeydown={(e) => e.stopPropagation()} role="dialog" aria-modal="true" tabindex="0">
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div class="modal-overlay" onclick={onclose}>
+		<div class="modal-content" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" tabindex="0">
 			<h2>{TEXTS.COPY_LIST_TO_USER}</h2>
 
 			<div class="users-grid">
 				{#each otherUsers as user}
 					<label
-						class="user-option {selectedUserId === user.id ? 'selected' : ''}"
+						class="selection-card {selectedUserId === user.id ? 'selected' : ''}"
 					>
-						<input type="radio" name="targetUser" value={user.id} bind:group={selectedUserId} />
-						<div class="user-avatar-wrapper">
+						<input type="radio" name="targetUser" value={user.id} bind:group={selectedUserId} class="hidden" />
+						<!-- svelte-ignore a11y_img_redundant_alt -->
+						<div class="selection-card-img avatar-wrapper">
 							<ImageDisplay imageSrc={user.avatar} alt={user.name} />
 						</div>
-						<span>{user.name}</span>
+						<span class="selection-card-label">{user.name}</span>
 					</label>
 				{/each}
 			</div>
@@ -58,8 +61,8 @@
 			</label>
 
 			<div class="modal-actions">
-				<button class="btn-cancel" onclick={onclose}>{TEXTS.CANCEL}</button>
-				<button class="btn-save" onclick={handleSubmit} disabled={!selectedUserId}>
+				<button class="btn btn-secondary" onclick={onclose}>{TEXTS.CANCEL}</button>
+				<button class="btn" onclick={handleSubmit} disabled={!selectedUserId}>
 					{shouldMove ? TEXTS.MOVE : TEXTS.COPY}
 				</button>
 			</div>
@@ -68,33 +71,7 @@
 {/if}
 
 <style>
-	.modal-overlay {
-		position: fixed;
-		inset: 0;
-		background: rgba(0, 0, 0, 0.5);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		z-index: 1000;
-		backdrop-filter: blur(4px);
-	}
-
-	.modal-card {
-		background: white;
-		border-radius: 24px;
-		padding: 2rem;
-		max-width: 500px;
-		width: 90%;
-		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-	}
-
-	h2 {
-		font-size: 1.5rem;
-		font-weight: 700;
-		color: #1e293b;
-		margin: 0 0 1.5rem 0;
-		text-align: center;
-	}
+	/* Using global classes from components.css for most things */
 
 	.users-grid {
 		display: grid;
@@ -103,47 +80,16 @@
 		margin: 1.5rem 0;
 	}
 
-	.user-option {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 0.5rem;
-		padding: 1rem;
-		border: 2px solid #e2e8f0;
-		border-radius: 12px;
-		cursor: pointer;
-		transition: all 0.2s;
-		background: white;
-	}
-
-	.user-option:hover {
-		border-color: #cbd5e1;
-		transform: translateY(-2px);
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-	}
-
-	.user-option input[type='radio'] {
-		display: none;
-	}
-
-	.user-option.selected {
-		border-color: #6366f1;
-		background: #f5f7ff;
-		box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-	}
-
-	.user-avatar-wrapper {
-		width: 60px;
-		height: 60px;
+	/* Specific override for avatar in selection card */
+	.avatar-wrapper {
 		border-radius: 50%;
 		overflow: hidden;
 		border: 2px solid #e2e8f0;
+		padding: 0; /* Override default padding if any */
 	}
 
-	.user-option span {
-		font-weight: 600;
-		color: #334155;
-		text-align: center;
+	.hidden {
+		display: none;
 	}
 
 	.move-checkbox {
@@ -175,46 +121,9 @@
 		font-size: 0.9rem;
 	}
 
-	.modal-actions {
-		display: flex;
-		gap: 1rem;
-		justify-content: flex-end;
-	}
-
-	.btn-cancel,
-	.btn-save {
-		padding: 0.75rem 1.5rem;
-		border-radius: 12px;
-		font-weight: 600;
-		cursor: pointer;
-		transition: all 0.2s;
-		border: none;
-		font-size: 1rem;
-	}
-
-	.btn-cancel {
-		background: #f1f5f9;
-		color: #64748b;
-	}
-
-	.btn-cancel:hover {
-		background: #e2e8f0;
-	}
-
-	.btn-save {
-		background: #6366f1;
-		color: white;
-		box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-	}
-
-	.btn-save:hover:not(:disabled) {
-		background: #4f46e5;
-		transform: translateY(-1px);
-		box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4);
-	}
-
-	.btn-save:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
+	h2 {
+		font-size: 1.5rem;
+		font-weight: 700;
+		margin: 0 0 1.5rem 0;
 	}
 </style>

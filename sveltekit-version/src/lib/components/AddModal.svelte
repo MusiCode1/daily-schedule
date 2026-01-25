@@ -92,13 +92,12 @@
         {#each ACTIVITIES as activity}
           <button 
             type="button"
-            class="activity-card {selectedActivityId === activity.id ? 'selected' : ''}"
+            class="selection-card {selectedActivityId === activity.id ? 'selected' : ''}"
             onclick={() => handleActivitySelect(activity)}
           >
-            <div class="image-wrapper">
-              <img src="/images/activities/{activity.image}" alt={activity.name} loading="lazy" />
-            </div>
-            <span class="activity-name">{activity.name}</span>
+            <!-- svelte-ignore a11y_img_redundant_alt -->
+            <img class="selection-card-img" src="/images/activities/{activity.image}" alt={activity.name} loading="lazy" />
+            <span class="selection-card-label">{activity.name}</span>
           </button>
         {/each}
       </div>
@@ -110,7 +109,7 @@
             id="taskName"
             type="text"
             bind:value={taskName}
-            class="form-input"
+            class="input"
             placeholder={TEXTS.CHOOSE_OR_TYPE}
             required
           />
@@ -135,7 +134,7 @@
             id="boardUrl"
             type="url"
             bind:value={communicationBoardUrl}
-            class="form-input"
+            class="input"
             placeholder={TEXTS.COMMUNICATION_BOARD_PLACEHOLDER}
           />
         </div>
@@ -179,6 +178,8 @@
 {/if}
 
 <style>
+  @reference "tailwindcss";
+
   .modal-overlay {
     position: fixed;
     top: 0;
@@ -212,7 +213,7 @@
   }
 
   .modal-header {
-    padding: 1.5rem 1.5rem 1rem; /* padding רק לכותרת */
+    @apply px-6 pt-6 pb-4; /* Tailwind padding */
     flex-shrink: 0; /* הכותרת לא תתכווץ */
     display: flex;
     align-items: center;
@@ -271,7 +272,7 @@
     transition: max-height 0.3s ease-in-out;
     overflow-y: auto; /* גלילה כשמורחב */
     max-height: 400px; /* גובה מקסימלי כשמורחב */
-    padding-left: 0.5rem; /* מקום לפס גלילה */
+    @apply px-6; /* PADDING ADDED HERE via Tailwind utility */
   }
 
   .activities-grid.collapsed {
@@ -295,52 +296,6 @@
     background: #94a3b8;
   }
 
-  .activity-card {
-    background: #f8fafc;
-    border: 2px solid transparent;
-    border-radius: 12px;
-    padding: 0.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-  }
-
-  .activity-card:hover {
-    background: #f1f5f9;
-    transform: translateY(-2px);
-  }
-
-  .activity-card.selected {
-    border-color: var(--primary-accent, #6366f1);
-    background: #eef2ff;
-    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.1);
-  }
-
-  .image-wrapper {
-    width: 100%;
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 0.5rem;
-  }
-
-  .image-wrapper img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    filter: drop-shadow(0 4px 3px rgba(0,0,0,0.07));
-  }
-
-  .activity-name {
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: #475569;
-    line-height: 1.2;
-  }
 
   .form-group {
     margin-bottom: 1rem;
@@ -353,20 +308,6 @@
     color: #1e293b;
   }
 
-  .form-input {
-    width: 100%;
-    padding: 0.8rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: all 0.2s;
-  }
-
-  .form-input:focus {
-    outline: none;
-    border-color: var(--primary-accent, #6366f1);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-  }
 
   .custom-image-section {
     display: flex;

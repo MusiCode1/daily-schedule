@@ -1,5 +1,78 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-01-25 21:57
+
+### 🎨 ארגון סדר CSS Properties
+
+סידרנו את כל המאפיינים ב-`components.css` לפי הסדר המוגדר במסמך הארכיטקטורה, כדי להקל על הקריאה והתחזוקה.
+
+---
+
+#### מה בוצע?
+
+**1. ארגון מחדש של `components.css`**
+
+עברנו על כל הבלוקים בקובץ (`.btn`, `.card`, `.input` וכו') וסידרנו את ה-properties לפי הקבוצות הבאות:
+
+1.  **Positioning** (מיקום, flex/grid)
+2.  **Box Model** (גודל, ריווח, גבולות)
+3.  **Typography** (גופנים, טקסט)
+4.  **Visual** (צבעים, רקע)
+5.  **Effects** (מעברים, אנימציות, סמן)
+
+**קבצים ששונו**:
+
+- `sveltekit-version/src/routes/components.css`
+
+---
+
+## 2026-01-25 19:55
+
+### 🎨 איחוד וניקוי קומפוננטות CSS
+
+ביצענו רפרקטורינג לקומפוננטות CSS כדי למנוע כפילות קוד וליצור אחידות במודאלים של בחירה (משימות, משתמשים).
+
+---
+
+#### מה בוצע?
+
+**1. יצירת `.selection-card` ב-components.css**
+
+- שינינו את שמו של `.activity-card` הקיים ל-`.selection-card` (שם כללי יותר).
+- וידאנו שהוא תומך בבחירה (`.selected`), מצב hover, ותצוגה אחידה של תמונה + טקסט.
+
+**2. עדכון המודאלים להשתמש בקומפוננטות הגלובליות**
+
+- **AddModal.svelte**:
+  - החלפת `.activity-card` המקומי ב-`.selection-card` הגלובלי.
+  - החלפת `.form-input` ב-`.input` הגלובלי.
+  - ניקוי כ-150 שורות של CSS מקומי משוכפל.
+
+- **UserPickerModal.svelte**:
+  - החלפת `.user-option` המקומי ב-`.selection-card` הגלובלי.
+  - שימוש ב-`.users-grid` שמבוסס על הגריד הכללי (עם override קטן ל-avatar).
+  - ניקוי כ-80 שורות של CSS מקומי.
+
+- **ListEditModal.svelte**:
+  - ניקוי CSS מקומי כפול של טפסים וכפתורים.
+  - שימוש ב-`.input`, `.btn`, `.modal-overlay`, `.modal-content` מ-`components.css`.
+
+**קבצים ששונו**:
+
+- `sveltekit-version/src/routes/components.css`
+- `sveltekit-version/src/lib/components/AddModal.svelte`
+- `sveltekit-version/src/lib/components/UserPickerModal.svelte`
+- `sveltekit-version/src/lib/components/ListEditModal.svelte`
+
+---
+
+#### החלטות ארכיטקטורה
+
+- **שינוי שם `.activity-card`**: השם היה ספציפי מדי. `.selection-card` מתאים גם לבחירת משתמשים, רשימות, וסמלים.
+- **ניקוי Local Styles**: העדפנו להשתמש ב-Classes גלובליים (כמו `.input`) גם אם זה דורש שינויים קלים ב-HTML, כדי לשמור על קוד נקי ותחזוקתי.
+
+---
+
 ## 2026-01-25 18:05
 
 ### 🛠️ תחזוקה ועדכון קונפיגורציה

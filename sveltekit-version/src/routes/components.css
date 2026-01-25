@@ -20,70 +20,70 @@
    (לא layer! רק משתנים)
    ============================================ */
 :root {
-  /* Background & Cards */
-  --bg-main: linear-gradient(to bottom right, #f8fafc, #eef2ff);
-  --bg-card: linear-gradient(145deg, #ffffff 0%, #e0e7ff 100%);
-  
-  /* Text */
-  --text-main: #334155;
-  --text-muted: #64748b;
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 2rem;
-  
-  /* Colors */
-  --primary: #6366f1;
-  --primary-bg: #e0e7ff;
-  --secondary: #8b5cf6;
-  --success: #10b981;
-  --success-bg: linear-gradient(145deg, #ecfdf5 0%, #a7f3d0 100%);
-  --danger: #ef4444;
-  --warning: #eab308;
-  --edit: #8b5cf6;
-  --info: #3b82f6;
-  
-  /* State-specific Colors */
-  --cancelled: #fef2f2;
-  --cancelled-border: #fca5a5;
-  --added: #fefce8;
-  --added-border: #fef08a;
-  
-  /* Spacing */
-  --space-xs: 0.25rem;
-  --space-sm: 0.5rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2rem;
-  
-  /* Borders & Shadows */
-  --border-radius: 16px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
-  --radius-full: 9999px;
-  
-  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
-  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.25);
-  
-  /* Typography */
-  --font-heading: "Heebo", sans-serif;
-  
-  /* Effects */
-  --ring-width: 0px;
-  
-  /* Modal Specific */
-  --modal-bg: #ffffff;
-  --modal-text: #334155;
-  --modal-border: transparent;
-  --modal-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+	/* Background & Cards */
+	--bg-main: linear-gradient(to bottom right, #f8fafc, #eef2ff);
+	--bg-card: linear-gradient(145deg, #ffffff 0%, #e0e7ff 100%);
+
+	/* Text */
+	--text-main: #334155;
+	--text-muted: #64748b;
+	--text-xs: 0.75rem;
+	--text-sm: 0.875rem;
+	--text-base: 1rem;
+	--text-lg: 1.25rem;
+	--text-xl: 1.5rem;
+	--text-2xl: 2rem;
+
+	/* Colors */
+	--primary: #6366f1;
+	--primary-bg: #e0e7ff;
+	--secondary: #8b5cf6;
+	--success: #10b981;
+	--success-bg: linear-gradient(145deg, #ecfdf5 0%, #a7f3d0 100%);
+	--danger: #ef4444;
+	--warning: #eab308;
+	--edit: #8b5cf6;
+	--info: #3b82f6;
+
+	/* State-specific Colors */
+	--cancelled: #fef2f2;
+	--cancelled-border: #fca5a5;
+	--added: #fefce8;
+	--added-border: #fef08a;
+
+	/* Spacing */
+	--space-xs: 0.25rem;
+	--space-sm: 0.5rem;
+	--space-md: 1rem;
+	--space-lg: 1.5rem;
+	--space-xl: 2rem;
+
+	/* Borders & Shadows */
+	--border-radius: 16px;
+	--radius-sm: 8px;
+	--radius-md: 12px;
+	--radius-lg: 16px;
+	--radius-xl: 20px;
+	--radius-2xl: 24px;
+	--radius-full: 9999px;
+
+	--shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+	--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+	--shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+	--shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.25);
+
+	/* Typography */
+	--font-heading: 'Heebo', sans-serif;
+
+	/* Effects */
+	--ring-width: 0px;
+
+	/* Modal Specific */
+	--modal-bg: #ffffff;
+	--modal-text: #334155;
+	--modal-border: transparent;
+	--modal-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
 /* ============================================
@@ -92,74 +92,277 @@
    (לא layer! רק עקיפת משתנים)
    ============================================ */
 .theme-focus {
-  /* Background & Cards */
-  --bg-main: linear-gradient(to bottom right, #f8fafc, #eef2ff);
-  --bg-card: linear-gradient(145deg, #ffffff 0%, #e0e7ff 100%);
-  
-  /* Text */
-  --text-main: #334155;
-  --text-muted: #64748b;
-  
-  /* Colors */
-  --primary: #6366f1;
-  --primary-bg: #e0e7ff;
-  --secondary: #8b5cf6;
-  --success: #10b981;
-  --success-bg: linear-gradient(145deg, #ecfdf5 0%, #a7f3d0 100%);
-  --danger: #ef4444;
-  --warning: #eab308;
-  --edit: #8b5cf6;
-  --info: #3b82f6;
-  
-  /* State-specific Colors */
-  --cancelled: #fef2f2;
-  --cancelled-border: #fca5a5;
-  --added: #fefce8;
-  --added-border: #fef08a;
-  
-  /* Borders & Shadows */
-  --border-radius: 16px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
-  --radius-2xl: 24px;
-  --radius-full: 9999px;
-  
-  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
-  --shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.25);
-  
-  /* Modal Specific */
-  --modal-bg: #ffffff;
-  --modal-text: #334155;
-  --modal-border: transparent;
-  --modal-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+	/* Background & Cards */
+	--bg-main: linear-gradient(to bottom right, #f8fafc, #eef2ff);
+	--bg-card: linear-gradient(145deg, #ffffff 0%, #e0e7ff 100%);
+
+	/* Text */
+	--text-main: #334155;
+	--text-muted: #64748b;
+
+	/* Colors */
+	--primary: #6366f1;
+	--primary-bg: #e0e7ff;
+	--secondary: #8b5cf6;
+	--success: #10b981;
+	--success-bg: linear-gradient(145deg, #ecfdf5 0%, #a7f3d0 100%);
+	--danger: #ef4444;
+	--warning: #eab308;
+	--edit: #8b5cf6;
+	--info: #3b82f6;
+
+	/* State-specific Colors */
+	--cancelled: #fef2f2;
+	--cancelled-border: #fca5a5;
+	--added: #fefce8;
+	--added-border: #fef08a;
+
+	/* Borders & Shadows */
+	--border-radius: 16px;
+	--radius-sm: 8px;
+	--radius-md: 12px;
+	--radius-lg: 16px;
+	--radius-xl: 20px;
+	--radius-2xl: 24px;
+	--radius-full: 9999px;
+
+	--shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+	--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+	--shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+	--shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.25);
+
+	/* Modal Specific */
+	--modal-bg: #ffffff;
+	--modal-text: #334155;
+	--modal-border: transparent;
+	--modal-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 }
 
 /* ============================================
    הגדרת סדר Layers - חייב להיות לפני השימוש!
    ============================================ */
-@layer base, components;
+@layer base, components, theme-overrides;
+
+/* ============================================
+   THEME VARIATIONS (CSS Variables)
+   ============================================ */
+
+/* --- THEME: CLEAR & CALM (FOCUS) --- */
+.theme-focus {
+	/* Background & Cards */
+	--bg-main: linear-gradient(to bottom right, #f8fafc, #eef2ff);
+	--bg-card: linear-gradient(145deg, #ffffff 0%, #e0e7ff 100%);
+
+	/* Text */
+	--text-main: #334155;
+	--text-muted: #64748b;
+
+	/* Colors */
+	--primary: #6366f1;
+	--primary-bg: #e0e7ff;
+	--secondary: #8b5cf6;
+	--success: #10b981;
+	--success-bg: linear-gradient(145deg, #ecfdf5 0%, #a7f3d0 100%);
+	--danger: #ef4444;
+	--warning: #eab308;
+	--edit: #8b5cf6;
+	--info: #3b82f6;
+
+	/* State-specific Colors */
+	--cancelled: #fef2f2;
+	--cancelled-border: #fca5a5;
+	--added: #fefce8;
+	--added-border: #fef08a;
+
+	/* Typography */
+	--font-heading: 'Heebo', sans-serif;
+
+	/* Borders & Shadows */
+	--border-radius: 16px;
+	--radius-sm: 8px;
+	--radius-md: 12px;
+	--radius-lg: 16px;
+	--radius-xl: 20px;
+	--radius-2xl: 24px;
+	--radius-full: 9999px;
+
+	--shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+	--shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+	--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+	--shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.15);
+	--shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+/* --- THEME: PLAYFUL (KIDS) --- */
+.theme-playful {
+	/* Background & Cards */
+	--bg-main: #fff7ed;
+	--bg-card: #ffffff;
+
+	/* Text */
+	--text-main: #1f2937;
+	--text-muted: #6b7280;
+
+	/* Colors */
+	--primary: #f59e0b;
+	--primary-bg: #fef3c7;
+	--secondary: #f97316;
+	--success: #22c55e;
+	--success-bg: #dcfce7;
+	--danger: #f43f5e;
+	--warning: #eab308;
+	--edit: #a855f7;
+	--info: #3b82f6;
+
+	/* State-specific Colors */
+	--cancelled: #ffe4e6;
+	--cancelled-border: #fda4af;
+	--added: #fef9c3;
+	--added-border: #fde047;
+
+	/* Typography */
+	--font-heading: 'Varela Round', sans-serif;
+
+	/* Borders & Shadows */
+	--border-radius: 24px;
+	--radius-sm: 12px;
+	--radius-md: 16px;
+	--radius-lg: 20px;
+	--radius-xl: 24px;
+	--radius-2xl: 28px;
+	--radius-full: 9999px;
+
+	--shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+	--shadow-sm: 0 4px 8px rgba(0, 0, 0, 0.1);
+	--shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+	--shadow-lg: 0 15px 30px rgba(0, 0, 0, 0.2);
+	--shadow-xl: 0 25px 50px rgba(0, 0, 0, 0.3);
+
+	background-image: radial-gradient(#fbbf24 2px, transparent 2px);
+	background-size: 32px 32px;
+}
+
+/* --- THEME: GRADIENT (DREAMY) --- */
+.theme-gradient {
+	/* Background & Cards */
+	--bg-main: linear-gradient(135deg, #8ec5fc 0%, #e0c3fc 100%);
+	--bg-card: rgba(255, 255, 255, 0.85);
+
+	/* Text */
+	--text-main: #2d3436;
+	--text-muted: #636e72;
+
+	/* Colors */
+	--primary: #6c5ce7;
+	--primary-bg: #e0dafd;
+	--secondary: #a29bfe;
+	--success: #00b894;
+	--success-bg: rgba(0, 184, 148, 0.15);
+	--danger: #ff7675;
+	--warning: #fdcb6e;
+	--edit: #a29bfe;
+	--info: #74b9ff;
+
+	/* State-specific Colors */
+	--cancelled: rgba(255, 118, 117, 0.1);
+	--cancelled-border: #ff7675;
+	--added: rgba(253, 203, 110, 0.15);
+	--added-border: #fdcb6e;
+
+	/* Typography */
+	--font-heading: 'Varela Round', sans-serif;
+
+	/* Borders & Shadows */
+	--border-radius: 2rem;
+	--radius-sm: 1rem;
+	--radius-md: 1.5rem;
+	--radius-lg: 2rem;
+	--radius-xl: 2.5rem;
+	--radius-2xl: 3rem;
+	--radius-full: 9999px;
+
+	--shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.2);
+	--shadow-sm: 0 5px 15px rgba(0, 0, 0, 0.1);
+	--shadow-md: 0 10px 40px -10px rgba(0, 0, 0, 0.2);
+	--shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.25);
+	--shadow-xl: 0 30px 80px rgba(0, 0, 0, 0.35);
+}
+
+/* --- THEME: HIGH CONTRAST (ACCESSIBILITY) --- */
+.theme-contrast {
+	/* Background & Cards */
+	--bg-main: #000000;
+	--bg-card: #1a1a1a;
+
+	/* Text */
+	--text-main: #ffffff;
+	--text-muted: #d4d4d4;
+
+	/* Colors */
+	--primary: #fbbf24;
+	--primary-bg: #451a03;
+	--secondary: #fde047;
+	--success: #4ade80;
+	--success-bg: #14532d;
+	--danger: #ff0000;
+	--warning: #fbbf24;
+	--edit: #a78bfa;
+	--info: #60a5fa;
+
+	/* State-specific Colors */
+	--cancelled: #450a0a;
+	--cancelled-border: #ff0000;
+	--added: #422006;
+	--added-border: #fbbf24;
+
+	/* Typography */
+	--font-heading: 'Heebo', sans-serif;
+
+	/* Borders & Shadows */
+	--border-radius: 4px;
+	--radius-sm: 4px;
+	--radius-md: 8px;
+	--radius-lg: 12px;
+	--radius-xl: 16px;
+	--radius-2xl: 20px;
+	--radius-full: 9999px;
+
+	--shadow: none;
+	--shadow-sm: none;
+	--shadow-md: none;
+	--shadow-lg: none;
+	--shadow-xl: none;
+}
+
+:root {
+	/* ברירת מחדל (זהה ל-Focus) כדי למנוע הבהוב */
+	--bg-main: linear-gradient(to bottom right, #f8fafc, #eef2ff);
+	--bg-card: linear-gradient(145deg, #ffffff 0%, #e0e7ff 100%);
+	--primary: #6366f1;
+	/* ... שאר המשתנים מ-Focus ... */
+}
 
 /* ============================================
    SECTION 3: @layer base
    מבנה בסיסי + Typography
    ============================================ */
 @layer base {
-  body {
-    font-family: "Heebo", sans-serif;
-    background: var(--bg-main);
-    background-attachment: fixed;
-    color: var(--text-main);
-    transition: background-color 0.3s, color 0.3s;
-  }
-  
-  h1, h2, h3 {
-    font-family: var(--font-heading);
-  }
+	body {
+		font-family: 'Heebo', sans-serif;
+		background: var(--bg-main);
+		background-attachment: fixed;
+		color: var(--text-main);
+		transition:
+			background-color 0.3s,
+			color 0.3s;
+	}
+
+	h1,
+	h2,
+	h3 {
+		font-family: var(--font-heading);
+	}
 }
 
 /* ============================================
@@ -167,634 +370,751 @@
    רכיבי UI עם @apply
    ============================================ */
 @layer components {
-  /* ==================== BUTTONS ==================== */
-  
-  /* Base Button - כפתור בסיס */
-  .btn {
-    padding: 0.75rem 1.5rem;
-    font-weight: bold;
-    transition: all 0.2s;
-    cursor: pointer;
-    background-color: var(--primary);
-    color: white;
-    border-radius: var(--border-radius);
-    border: none;
-  }
-  
-  .btn:hover {
-    filter: brightness(1.1);
-  }
-  
-  /* Button Variants - וריאציות כפתורים */
-  .btn-secondary {
-    background-color: #f3f4f6;
-    color: #374151;
-  }
-  
-  .btn-secondary:hover {
-    background-color: #e5e7eb;
-    filter: brightness(1);
-  }
-  
-  .btn-danger {
-    background-color: var(--danger);
-    color: white;
-  }
-  
-  .btn-edit {
-    background-color: var(--edit);
-    color: white;
-  }
-  
-  .btn-warning {
-    background-color: var(--warning);
-    color: white;
-  }
-  
-  /* Button Sizes - גדלים */
-  .btn-sm {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-  }
-  
-  .btn-xs {
-    padding: 0.25rem 0.75rem;
-    font-size: 0.875rem;
-  }
-  
-  /* Icon Button - כפתור אייקון */
-  .btn-icon {
-    width: 2.5rem;
-    height: 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.5rem;
-    transition: colors 0.2s;
-    cursor: pointer;
-    border: none;
-    background: transparent;
-    color: #64748b;
-  }
-  
-  .btn-icon:hover {
-    background-color: #f3f4f6;
-    color: var(--primary);
-  }
-  
-  /* Icon Button Danger Variant */
-  .btn-icon-danger:hover {
-    color: var(--danger);
-    background-color: #fef2f2;
-  }
-  
-  /* FAB (Floating Action Button) */
-  .btn-fab {
-    width: 3.5rem;
-    height: 3.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 9999px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s;
-    cursor: pointer;
-    background-color: var(--primary);
-    color: white;
-    border: none;
-  }
-  
-  .btn-fab:hover {
-    transform: scale(1.1);
-    filter: brightness(1.1);
-  }
-  
-  /* Button Outline - רקע שקוף */
-  .btn-outline {
-    /* Positioning: (none) */
-    
-    /* Box Model */
-    padding: 0.5rem 1rem;
-    border: 2px solid;
-    border-color: var(--primary);
-    border-radius: var(--radius-md);
-    
-    /* Typography */
-    font-weight: 600;
-    
-    /* Visual */
-    @apply bg-transparent;
-    color: var(--primary);
-    
-    /* Effects */
-    cursor: pointer;
-    @apply transition-all;
-  }
-  
-  .btn-outline:hover {
-    background-color: var(--primary);
-    color: white;
-  }
-  
-  /* Button Text - טקסט בלבד */
-  .btn-text {
-    /* Positioning: (none) */
-    
-    /* Box Model */
-    padding: 0.5rem 1rem;
-    @apply border-none;
-    
-    /* Typography */
-    font-size: 0.9rem;
-    font-weight: 500;
-    @apply underline;
-    
-    /* Visual */
-    @apply bg-transparent;
-    color: var(--primary);
-    
-    /* Effects */
-    cursor: pointer;
-    @apply transition-colors;
-  }
-  
-  .btn-text:hover {
-    @apply no-underline;
-    color: var(--secondary);
-  }
-  
-  .btn-text:disabled {
-    @apply opacity-70 cursor-not-allowed;
-  }
-  
-  /* Button Primary - כפתור ראשי */
-  .btn-primary {
-    /* Positioning: (none) */
-    
-    /* Box Model */
-    padding: 0.6rem 1.2rem;
-    border: none;
-    border-radius: 10px;
-    
-    /* Typography */
-    @apply font-semibold;
-    
-    /* Visual */
-    background: #6366f1;
-    color: white;
-    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
-    
-    /* Effects */
-    cursor: pointer;
-    @apply transition-all;
-  }
-  
-  .btn-primary:hover {
-    background: #4f46e5;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 8px -1px rgba(99, 102, 241, 0.4);
-  }
-  
-  /* ==================== ACTION BUTTONS ==================== */
-  
-  /* Action Button - כפתורי פעולה קטנים */
-  .action-btn {
-    /* Positioning: (none) */
-    
-    /* Box Model */
-    @apply w-10 h-10;
-    padding: 0;
-    border: 1px solid;
-    @apply border-slate-200 rounded-lg;
-    @apply flex items-center justify-center;
-    
-    /* Typography: (none - icons only) */
-    
-    /* Visual */
-    @apply bg-slate-50;
-    color: #64748b;
-    
-    /* Effects */
-    cursor: pointer;
-    @apply transition-all;
-  }
-  
-  .action-btn:hover {
-    transform: translateY(-1px);
-    @apply bg-white border-indigo-500;
-    color: var(--primary);
-  }
-  
-  .action-btn-danger:hover {
-    @apply bg-red-50 border-red-500;
-    color: var(--danger);
-  }
-  
-  /* ==================== CARDS ==================== */
-  
-  /* Task Card - כרטיס משימה */
-  .task-card {
-    position: relative;
-    overflow: hidden;
-    background: var(--bg-card);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow);
-  }
-  
-  /* ==================== INPUTS ==================== */
-  
-  /* Text Input & Textarea - שדה קלט טקסט */
-  .input,
-  textarea.input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    transition: all 0.2s;
-    border: 2px solid #e5e7eb;
-    border-radius: var(--radius-md);
-  }
-  
-  .input:focus,
-  textarea.input:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
-  }
-  
-  textarea.input {
-    resize: vertical;
-  }
-  
-  /* Select Input - תיבת בחירה מעוצבת */
-  select.input {
-    @apply w-full px-4 py-3 border-2 border-slate-200 rounded-xl
-           transition-all cursor-pointer appearance-none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: left 0.75rem center;
-    background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
-    padding-left: 2.5rem;
-  }
-  
-  select.input:focus {
-    @apply outline-none border-indigo-500 ring-4 ring-indigo-100;
-  }
-  
-  /* ==================== BADGES ==================== */
-  
-  /* Badge Base */
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.875rem;
-    font-weight: bold;
-    border-radius: 9999px;
-    background-color: #f1f5f9;
-    color: #64748b;
-  }
-  
-  .badge-success {
-    background-color: var(--success-bg);
-    color: var(--success);
-  }
-  
-  .badge-danger {
-    background-color: var(--cancelled);
-    border: 2px solid var(--cancelled-border);
-    color: var(--danger);
-  }
-  
-  .badge-warning {
-    background-color: var(--added);
-    border: 2px solid var(--added-border);
-    color: var(--warning);
-  }
-  
-  /* ==================== INDICATORS ==================== */
-  
-  /* Now Indicator - מחוון "עכשיו" */
-  .now-indicator {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-weight: 900;
-    color: white;
-    border-radius: 9999px;
-    background: var(--danger);
-    padding: 0.5rem 1.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-    animation: pulse-border 2s infinite;
-  }
-  
-  /* ==================== AVATARS ==================== */
-  
-  /* Avatar Base */
-  .avatar {
-    border-radius: 9999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border-color: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: #e2e8f0;
-  }
-  
-  /* Avatar Sizes */
-  .avatar-sm {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-width: 2px;
-  }
-  
-  .avatar-md {
-    width: 5rem;
-    height: 5rem;
-    border-width: 4px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  }
-  
-  .avatar-lg {
-    border-width: 4px;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    width: 120px;
-    height: 120px;
-  }
-  
-  /* ==================== TASK CARD STATES ==================== */
-  
-  /* Task Card Base כבר מוגדר למעלה */
-  
-  /* Task Card - Waiting State */
-  .task-card-waiting {
-    opacity: 0.7;
-    transition: opacity 0.2s, box-shadow 0.2s;
-  }
-  
-  .task-card-waiting:hover {
-    opacity: 1;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Task Card - Active State */
-  .task-card-active {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    transform: scale(1.05);
-    ring-offset: 4px;
-  }
-  
-  /* Task Card - Done State */
-  .task-card-done {
-    transition: all 0.3s;
-    opacity: 0.9;
-    background: var(--success-bg);
-    border: 2px solid var(--success);
-  }
-  
-  /* Task Card - Cancelled State */
-  .task-card-cancelled {
-    opacity: 0.8;
-    background: var(--cancelled);
-    border: 2px solid var(--cancelled-border);
-  }
-  
-  /* Task Card - Added State */
-  .task-card-added {
-    opacity: 0.9;
-    background: var(--added);
-    border: 2px solid var(--added-border);
-  }
-  
-  /* ==================== STATUS INDICATORS ==================== */
-  
-  /* Status Indicator Base - העיגול עם סטטוס */
-  .status-indicator {
-    border-radius: 9999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .status-indicator-empty {
-    width: 3rem;
-    height: 3rem;
-    border: 4px solid #e5e7eb;
-  }
-  
-  .status-indicator-active {
-    width: 4rem;
-    height: 4rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    color: white;
-    background: var(--primary);
-    border: 4px solid white;
-  }
-  
-  .status-indicator-done {
-    width: 3rem;
-    height: 3rem;
-    color: white;
-    font-size: 1.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: var(--success);
-  }
-  
-  /* ==================== ACTIVITY CARDS ==================== */
-  
-  /* Activity Card - כרטיס פעילות בגריד */
-  .activity-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem;
-    border-radius: 0.75rem;
-    background-color: #f9fafb;
-    border: 2px solid transparent;
-    transition: all 0.2s;
-    cursor: pointer;
-  }
-  
-  .activity-card:hover {
-    background-color: #f3f4f6;
-    border-color: var(--primary);
-  }
-  
-  .activity-card-img {
-    width: 4rem;
-    height: 4rem;
-    border-radius: 0.5rem;
-    object-fit: cover;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .activity-card-label {
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-align: center;
-    line-height: 1.25;
-  }
-  
-  /* ==================== MODALS ==================== */
-  
-  /* Modal Overlay */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    transition: opacity 0.3s;
-    background-color: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(4px);
-  }
-  
-  /* Modal Content Base */
-  .modal-content {
-    position: relative;
-    width: 100%;
-    max-width: 32rem;
-    border-radius: 1.5rem;
-    padding: 2rem;
-    text-align: center;
-    transform: scale(1);
-    transition: transform 0.3s;
-    background-color: var(--modal-bg);
-    color: var(--modal-text);
-    border: var(--modal-border, none);
-    box-shadow: var(--modal-shadow);
-  }
-  
-  /* ==================== SECTION HEADERS ==================== */
-  
-  /* Section Title */
-  .section-title {
-    font-size: 1.875rem;
-    font-weight: 900;
-    margin-bottom: 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid #e5e7eb;
-  }
-  
-  /* Section Description */
-  .section-description {
-    margin-bottom: 1.5rem;
-    color: var(--text-muted);
-  }
-  
-  /* ==================== PAGE COMPONENTS ==================== */
-  
-  /* Page Header - כותרת דף */
-  .page-header {
-    @apply text-2xl font-bold text-slate-700 m-0;
-  }
-  
-  .header-row {
-    @apply flex justify-between items-center mb-8 border-b border-slate-100 pb-6 flex-wrap gap-4;
-  }
-  
-  /* ==================== CARD COMPONENT ==================== */
-  
-  /* Card - כרטיס כללי */
-  .card {
-    @apply bg-white border border-slate-200 rounded-2xl p-6 
-           flex flex-col items-center gap-4
-           transition-all duration-300 ease-in-out
-           shadow-md;
-  }
-  
-  .card:hover {
-    @apply -translate-y-1 shadow-2xl border-slate-300;
-  }
-  
-  /* List Icon - אייקון רשימה */
-  .list-icon {
-    /* Positioning: (none) */
-    
-    /* Box Model */
-    @apply w-16 h-16 rounded-xl;
-    @apply border-2 border-slate-200;
-    @apply flex items-center justify-center;
-    @apply overflow-hidden shrink-0;
-    
-    /* Typography */
-    font-size: 2rem;
-    
-    /* Visual */
-    @apply bg-slate-50;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
-    
-    /* Effects: (none) */
-  }
-  
-  .list-icon :global(.image-display) {
-    @apply w-full h-full rounded-none;
-  }
-  
-  /* ==================== FORM COMPONENTS ==================== */
-  
-  /* Form Group - קבוצת שדות */
-  .form-group {
-    @apply mb-6;
-  }
-  
-  .form-group label {
-    @apply block mb-2 font-semibold text-slate-600 text-[0.95rem];
-  }
-  
-  /* Modal Actions - כפתורי מודאל */
-  .modal-actions {
-    @apply flex gap-4 justify-end mt-6;
-  }
-  
-  /* ==================== EMPTY STATE ==================== */
-  
-  /* Empty State - מסך ריק */
-  .empty-state {
-    @apply text-center py-12 px-4 text-slate-500;
-  }
-  
-  .empty-state p {
-    @apply text-lg my-2;
-  }
-  
-  .empty-state .subtitle {
-    @apply text-[0.95rem] text-slate-400;
-  }
-  
-  /* ==================== AVATAR INITIAL ==================== */
-  
-  /* Avatar Initial - אות ראשונה באווטאר */
-  .avatar-initial {
-    @apply text-4xl text-slate-400 font-extrabold;
-  }
-  
-  /* ==================== USERS PAGE SPECIFIC ==================== */
-  
-  /* Users Grid - רשת משתמשים */
-  .users-grid {
-    @apply grid gap-6 w-full;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  }
-  
-  /* ==================== MISC ==================== */
-  
-  /* Palette Swatch - תצוגת צבעים */
-  .swatch {
-    width: 3rem;
-    height: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    font-weight: bold;
-    border-radius: 0.5rem;
-    border: 2px solid rgba(0, 0, 0, 0.1);
-  }
+	/* ==================== BUTTONS ==================== */
+
+	/* Base Button - כפתור בסיס */
+	.btn {
+		/* Positioning */
+		/* (none) */
+
+		/* Box Model */
+		padding: 0.75rem 1.5rem;
+		border: none;
+		border-radius: var(--border-radius);
+
+		/* Typography */
+		font-weight: bold;
+
+		/* Visual */
+		background-color: var(--primary);
+		color: white;
+
+		/* Effects */
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.btn:hover {
+		filter: brightness(1.1);
+	}
+
+	/* Button Variants - וריאציות כפתורים */
+	.btn-secondary {
+		background-color: #f3f4f6;
+		color: #374151;
+	}
+
+	.btn-secondary:hover {
+		background-color: #e5e7eb;
+		filter: brightness(1);
+	}
+
+	.btn-danger {
+		background-color: var(--danger);
+		color: white;
+	}
+
+	.btn-edit {
+		background-color: var(--edit);
+		color: white;
+	}
+
+	.btn-warning {
+		background-color: var(--warning);
+		color: white;
+	}
+
+	/* Button Sizes - גדלים */
+	.btn-sm {
+		padding: 0.5rem 1rem;
+		font-size: 0.875rem;
+	}
+
+	.btn-xs {
+		padding: 0.25rem 0.75rem;
+		font-size: 0.875rem;
+	}
+
+	/* Icon Button - כפתור אייקון */
+	.btn-icon {
+		/* Positioning */
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		/* Box Model */
+		width: 2.5rem;
+		height: 2.5rem;
+		border: none;
+		border-radius: 0.5rem;
+
+		/* Typography */
+		/* (none) */
+
+		/* Visual */
+		background: transparent;
+		color: #64748b;
+
+		/* Effects */
+		cursor: pointer;
+		transition: colors 0.2s;
+	}
+
+	.btn-icon:hover {
+		background-color: #f3f4f6;
+		color: var(--primary);
+	}
+
+	/* Icon Button Danger Variant */
+	.btn-icon-danger:hover {
+		color: var(--danger);
+		background-color: #fef2f2;
+	}
+
+	/* FAB (Floating Action Button) */
+	.btn-fab {
+		/* Positioning */
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		/* Box Model */
+		width: 3.5rem;
+		height: 3.5rem;
+		border: none;
+		border-radius: 9999px;
+
+		/* Typography */
+		/* (none) */
+
+		/* Visual */
+		background-color: var(--primary);
+		color: white;
+		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+		/* Effects */
+		cursor: pointer;
+		transition: transform 0.2s;
+	}
+
+	.btn-fab:hover {
+		transform: scale(1.1);
+		filter: brightness(1.1);
+	}
+
+	/* Button Outline - רקע שקוף */
+	.btn-outline {
+		/* Positioning: (none) */
+
+		/* Box Model */
+		padding: 0.5rem 1rem;
+		border: 2px solid;
+		border-color: var(--primary);
+		border-radius: var(--radius-md);
+
+		/* Typography */
+		font-weight: 600;
+
+		/* Visual */
+		@apply bg-transparent;
+		color: var(--primary);
+
+		/* Effects */
+		cursor: pointer;
+		@apply transition-all;
+	}
+
+	.btn-outline:hover {
+		background-color: var(--primary);
+		color: white;
+	}
+
+	/* Button Text - טקסט בלבד */
+	.btn-text {
+		/* Positioning: (none) */
+
+		/* Box Model */
+		padding: 0.5rem 1rem;
+		@apply border-none;
+
+		/* Typography */
+		font-size: 0.9rem;
+		font-weight: 500;
+		@apply underline;
+
+		/* Visual */
+		@apply bg-transparent;
+		color: var(--primary);
+
+		/* Effects */
+		cursor: pointer;
+		@apply transition-colors;
+	}
+
+	.btn-text:hover {
+		@apply no-underline;
+		color: var(--secondary);
+	}
+
+	.btn-text:disabled {
+		@apply cursor-not-allowed opacity-70;
+	}
+
+	/* Button Primary - כפתור ראשי */
+	.btn-primary {
+		/* Positioning: (none) */
+
+		/* Box Model */
+		padding: 0.6rem 1.2rem;
+		border: none;
+		border-radius: 10px;
+
+		/* Typography */
+		@apply font-semibold;
+
+		/* Visual */
+		background: #6366f1;
+		color: white;
+		box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+
+		/* Effects */
+		cursor: pointer;
+		@apply transition-all;
+	}
+
+	.btn-primary:hover {
+		background: #4f46e5;
+		transform: translateY(-1px);
+		box-shadow: 0 6px 8px -1px rgba(99, 102, 241, 0.4);
+	}
+
+	/* ==================== ACTION BUTTONS ==================== */
+
+	/* Action Button - כפתורי פעולה קטנים */
+	.action-btn {
+		/* Positioning */
+		@apply flex items-center justify-center;
+
+		/* Box Model */
+		@apply h-10 w-10;
+		padding: 0;
+		border: 1px solid;
+		@apply rounded-lg border-slate-200;
+
+		/* Typography */
+		/* (none - icons only) */
+
+		/* Visual */
+		@apply bg-slate-50;
+		color: #64748b;
+
+		/* Effects */
+		cursor: pointer;
+		@apply transition-all;
+	}
+
+	.action-btn:hover {
+		transform: translateY(-1px);
+		@apply border-indigo-500 bg-white;
+		color: var(--primary);
+	}
+
+	.action-btn-danger:hover {
+		@apply border-red-500 bg-red-50;
+		color: var(--danger);
+	}
+
+	/* ==================== CARDS ==================== */
+
+	/* Task Card - כרטיס משימה */
+	.task-card {
+		/* Positioning */
+		position: relative;
+
+		/* Box Model */
+		overflow: hidden;
+		border-radius: var(--border-radius);
+
+		/* Typography */
+		/* (none) */
+
+		/* Visual */
+		background: var(--bg-card);
+		box-shadow: var(--shadow);
+
+		/* Effects */
+		/* (none) */
+	}
+
+	/* ==================== INPUTS ==================== */
+
+	/* Text Input & Textarea - שדה קלט טקסט */
+	.input,
+	textarea.input {
+		/* Positioning */
+		/* (none) */
+
+		/* Box Model */
+		width: 100%;
+		padding: 0.75rem 1rem;
+		border: 2px solid #e5e7eb;
+		border-radius: var(--radius-md);
+
+		/* Typography */
+		/* (none) */
+
+		/* Visual */
+		/* (none) */
+
+		/* Effects */
+		transition: all 0.2s;
+	}
+
+	.input:focus,
+	textarea.input:focus {
+		outline: none;
+		border-color: var(--primary);
+		box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+	}
+
+	textarea.input {
+		resize: vertical;
+	}
+
+	/* Select Input - תיבת בחירה מעוצבת */
+	select.input {
+		@apply w-full cursor-pointer appearance-none rounded-xl border-2 border-slate-200 px-4 py-3 transition-all;
+		background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+		background-position: left 0.75rem center;
+		background-repeat: no-repeat;
+		background-size: 1.5em 1.5em;
+		padding-left: 2.5rem;
+	}
+
+	select.input:focus {
+		@apply border-indigo-500 ring-4 ring-indigo-100 outline-none;
+	}
+
+	/* ==================== BADGES ==================== */
+
+	/* Badge Base */
+	.badge {
+		/* Positioning */
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+
+		/* Box Model */
+		padding: 0.25rem 0.75rem;
+		border-radius: 9999px;
+
+		/* Typography */
+		font-size: 0.875rem;
+		font-weight: bold;
+
+		/* Visual */
+		background-color: #f1f5f9;
+		color: #64748b;
+
+		/* Effects */
+		/* (none) */
+	}
+
+	.badge-success {
+		background-color: var(--success-bg);
+		color: var(--success);
+	}
+
+	.badge-danger {
+		background-color: var(--cancelled);
+		border: 2px solid var(--cancelled-border);
+		color: var(--danger);
+	}
+
+	.badge-warning {
+		background-color: var(--added);
+		border: 2px solid var(--added-border);
+		color: var(--warning);
+	}
+
+	/* ==================== INDICATORS ==================== */
+
+	/* Now Indicator - מחוון "עכשיו" */
+	.now-indicator {
+		/* Positioning */
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+
+		/* Box Model */
+		padding: 0.5rem 1.5rem;
+		border-radius: 9999px;
+
+		/* Typography */
+		font-weight: 900;
+
+		/* Visual */
+		color: white;
+		background: var(--danger);
+		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+
+		/* Effects */
+		animation: pulse-border 2s infinite;
+	}
+
+	/* ==================== AVATARS ==================== */
+
+	/* Avatar Base */
+	.avatar {
+		/* Positioning */
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		/* Box Model */
+		overflow: hidden;
+		border-radius: 9999px;
+
+		/* Typography */
+		/* (none) */
+
+		/* Visual */
+		border-color: white;
+		background-color: #e2e8f0;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+		/* Effects */
+		/* (none) */
+	}
+
+	/* Avatar Sizes */
+	.avatar-sm {
+		width: 2.5rem;
+		height: 2.5rem;
+		border-width: 2px;
+	}
+
+	.avatar-md {
+		width: 5rem;
+		height: 5rem;
+		border-width: 4px;
+		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+	}
+
+	.avatar-lg {
+		border-width: 4px;
+		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+		width: 120px;
+		height: 120px;
+	}
+
+	/* ==================== TASK CARD STATES ==================== */
+
+	/* Task Card Base כבר מוגדר למעלה */
+
+	/* Task Card - Waiting State */
+	.task-card-waiting {
+		opacity: 0.7;
+		transition:
+			opacity 0.2s,
+			box-shadow 0.2s;
+	}
+
+	.task-card-waiting:hover {
+		opacity: 1;
+		box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+	}
+
+	/* Task Card - Active State */
+	.task-card-active {
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+		transform: scale(1.05);
+		ring-offset: 4px;
+	}
+
+	/* Task Card - Done State */
+	.task-card-done {
+		transition: all 0.3s;
+		opacity: 0.9;
+		background: var(--success-bg);
+		border: 2px solid var(--success);
+	}
+
+	/* Task Card - Cancelled State */
+	.task-card-cancelled {
+		opacity: 0.8;
+		background: var(--cancelled);
+		border: 2px solid var(--cancelled-border);
+	}
+
+	/* Task Card - Added State */
+	.task-card-added {
+		opacity: 0.9;
+		background: var(--added);
+		border: 2px solid var(--added-border);
+	}
+
+	/* ==================== STATUS INDICATORS ==================== */
+
+	/* Status Indicator Base - העיגול עם סטטוס */
+	.status-indicator {
+		border-radius: 9999px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.status-indicator-empty {
+		width: 3rem;
+		height: 3rem;
+		border: 4px solid #e5e7eb;
+	}
+
+	.status-indicator-active {
+		width: 4rem;
+		height: 4rem;
+		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+		animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+		color: white;
+		background: var(--primary);
+		border: 4px solid white;
+	}
+
+	.status-indicator-done {
+		width: 3rem;
+		height: 3rem;
+		color: white;
+		font-size: 1.5rem;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		background-color: var(--success);
+	}
+
+	/* ==================== ACTIVITY CARDS ==================== */
+
+	/* Selection Card - כרטיס בחירה גנרי (שימש בעבר כ-activity-card) */
+	.selection-card {
+		/* Positioning */
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+
+		/* Box Model */
+		padding: 0.75rem;
+		border: 2px solid transparent;
+		border-radius: 0.75rem;
+
+		/* Typography */
+		/* (none) */
+
+		/* Visual */
+		background-color: #f9fafb;
+
+		/* Effects */
+		cursor: pointer;
+		transition: all 0.2s;
+	}
+
+	.selection-card:hover {
+		background-color: #f3f4f6;
+		border-color: var(--primary);
+	}
+
+	.selection-card.selected {
+		border-color: var(--primary);
+		background-color: #eef2ff;
+		box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.1);
+	}
+
+	.selection-card-img {
+		width: 4rem;
+		height: 4rem;
+		border-radius: 0.5rem;
+		object-fit: cover;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	}
+
+	.selection-card-label {
+		font-size: 0.75rem;
+		font-weight: 500;
+		text-align: center;
+		line-height: 1.25;
+	}
+
+	/* ==================== MODALS ==================== */
+
+	/* Modal Overlay */
+	.modal-overlay {
+		/* Positioning */
+		position: fixed;
+		inset: 0;
+		z-index: 100;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+
+		/* Box Model */
+		padding: 1rem;
+
+		/* Typography */
+		/* (none) */
+
+		/* Visual */
+		background-color: rgba(0, 0, 0, 0.8);
+		backdrop-filter: blur(4px);
+
+		/* Effects */
+		transition: opacity 0.3s;
+	}
+
+	/* Modal Content Base */
+	.modal-content {
+		/* Positioning */
+		position: relative;
+
+		/* Box Model */
+		width: 100%;
+		max-width: 32rem;
+		padding: 2rem;
+		border: var(--modal-border, none);
+		border-radius: 1.5rem;
+
+		/* Typography */
+		text-align: center;
+		color: var(--modal-text);
+
+		/* Visual */
+		background-color: var(--modal-bg);
+		box-shadow: var(--modal-shadow);
+
+		/* Effects */
+		transform: scale(1);
+		transition: transform 0.3s;
+	}
+
+	/* ==================== SECTION HEADERS ==================== */
+
+	/* Section Title */
+	.section-title {
+		font-size: 1.875rem;
+		font-weight: 900;
+		margin-bottom: 1.5rem;
+		padding-bottom: 0.75rem;
+		border-bottom: 2px solid #e5e7eb;
+	}
+
+	/* Section Description */
+	.section-description {
+		margin-bottom: 1.5rem;
+		color: var(--text-muted);
+	}
+
+	/* ==================== PAGE COMPONENTS ==================== */
+
+	/* Page Header - כותרת דף */
+	.page-header {
+		@apply m-0 text-2xl font-bold text-slate-700;
+	}
+
+	.header-row {
+		@apply mb-8 flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 pb-6;
+	}
+
+	/* ==================== CARD COMPONENT ==================== */
+
+	/* Card - כרטיס כללי */
+	.card {
+		@apply flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-md transition-all duration-300 ease-in-out;
+	}
+
+	.card:hover {
+		@apply -translate-y-1 border-slate-300 shadow-2xl;
+	}
+
+	/* List Icon - אייקון רשימה */
+	.list-icon {
+		/* Positioning: (none) */
+
+		/* Box Model */
+		@apply h-16 w-16 rounded-xl;
+		@apply border-2 border-slate-200;
+		@apply flex items-center justify-center;
+		@apply shrink-0 overflow-hidden;
+
+		/* Typography */
+		font-size: 2rem;
+
+		/* Visual */
+		@apply bg-slate-50;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+
+		/* Effects: (none) */
+	}
+
+	.list-icon :global(.image-display) {
+		@apply h-full w-full rounded-none;
+	}
+
+	/* ==================== FORM COMPONENTS ==================== */
+
+	/* Form Group - קבוצת שדות */
+	.form-group {
+		@apply mb-6;
+	}
+
+	.form-group label {
+		@apply mb-2 block text-[0.95rem] font-semibold text-slate-600;
+	}
+
+	/* Modal Actions - כפתורי מודאל */
+	.modal-actions {
+		@apply mt-6 flex justify-end gap-4;
+	}
+
+	/* ==================== EMPTY STATE ==================== */
+
+	/* Empty State - מסך ריק */
+	.empty-state {
+		@apply px-4 py-12 text-center text-slate-500;
+	}
+
+	.empty-state p {
+		@apply my-2 text-lg;
+	}
+
+	.empty-state .subtitle {
+		@apply text-[0.95rem] text-slate-400;
+	}
+
+	/* ==================== AVATAR INITIAL ==================== */
+
+	/* Avatar Initial - אות ראשונה באווטאר */
+	.avatar-initial {
+		@apply text-4xl font-extrabold text-slate-400;
+	}
+
+	/* ==================== USERS PAGE SPECIFIC ==================== */
+
+	/* Users Grid - רשת משתמשים */
+	.users-grid {
+		@apply grid w-full gap-6;
+		grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+	}
+
+	/* ==================== MISC ==================== */
+
+	/* Palette Swatch - תצוגת צבעים */
+	.swatch {
+		width: 3rem;
+		height: 3rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 0.75rem;
+		font-weight: bold;
+		border-radius: 0.5rem;
+		border: 2px solid rgba(0, 0, 0, 0.1);
+	}
 }
 
 /* ============================================
@@ -804,23 +1124,91 @@
 
 /* Pulse Border - למחוון "עכשיו" */
 @keyframes pulse-border {
-  0% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-  }
+	0% {
+		box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+	}
+	70% {
+		box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+	}
+	100% {
+		box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+	}
 }
 
 /* Pulse - לאנימציה כללית */
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: .5;
-  }
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.5;
+	}
+}
+
+/* ============================================
+   SECTION 5: @layer theme-overrides
+   דריסות ספציפיות לערכת עיצוב (עם nested CSS)
+   ============================================ */
+@layer theme-overrides {
+	/* Playful - אפקטים משחקיים */
+	.theme-playful {
+		.task-card {
+			@apply translate-y-0 transform border-b-[6px] border-gray-300 transition-transform;
+
+			&:hover {
+				@apply -translate-y-1;
+			}
+		}
+
+		.btn,
+		button[class*='bg-'] {
+			@apply translate-y-0 transform shadow-lg;
+			box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.2);
+
+			&:hover {
+				@apply -translate-y-0.5;
+				box-shadow: 0 6px 0 0 rgba(0, 0, 0, 0.2);
+			}
+
+			&:active {
+				@apply translate-y-1;
+				box-shadow: 0 0 0 0;
+			}
+		}
+	}
+
+	/* Gradient - אפקטי blur */
+	.theme-gradient {
+		.task-card {
+			@apply backdrop-blur-md;
+			-webkit-backdrop-filter: blur(12px);
+		}
+	}
+
+	/* Contrast - borders */
+	.theme-contrast {
+		.task-card,
+		.btn,
+		img,
+		.modal-content {
+			@apply border-2 border-white;
+		}
+
+		.now-indicator {
+			@apply border-2 border-white;
+		}
+
+		.modal-content {
+			border: var(--modal-border) !important;
+		}
+
+		.swatch {
+			@apply border border-white text-black;
+		}
+
+		.btn {
+			@apply text-black;
+		}
+	}
 }
