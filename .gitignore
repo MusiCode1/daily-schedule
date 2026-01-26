@@ -28,9 +28,11 @@ docs\private-docs\**
 
 static-assets
 static-assets\**
+resources_playground/**
 
 temp
 temp/**
+.agent
 
 # Data / DB
 *.db

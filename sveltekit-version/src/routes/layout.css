@@ -2,6 +2,54 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
+@theme {
+	/* Colors */
+	--color-bg-main: var(--bg-main);
+	--color-bg-card: var(--bg-card);
+
+	--color-primary: var(--primary);
+	--color-primary-bg: var(--primary-bg);
+	--color-secondary: var(--secondary);
+
+	--color-success: var(--success);
+	--color-success-bg: var(--success-bg);
+	--color-danger: var(--danger);
+	--color-warning: var(--warning);
+	--color-edit: var(--edit);
+	--color-info: var(--info);
+
+	--color-cancelled: var(--cancelled);
+	--color-cancelled-border: var(--cancelled-border);
+	--color-added: var(--added);
+	--color-added-border: var(--added-border);
+
+	/* Text */
+	--color-text-main: var(--text-main);
+	--color-text-muted: var(--text-muted);
+
+	/* Typography */
+	--font-heading: var(--font-heading);
+	--text-xs: var(--text-xs);
+	--text-sm: var(--text-sm);
+	--text-base: var(--text-base);
+	--text-lg: var(--text-lg);
+	--text-xl: var(--text-xl);
+	--text-2xl: var(--text-2xl);
+
+	/* Borders & Shadows */
+	--radius-sm: var(--radius-sm);
+	--radius-md: var(--radius-md);
+	--radius-lg: var(--radius-lg);
+	--radius-xl: var(--radius-xl);
+	--radius-2xl: var(--radius-2xl);
+	--radius-full: var(--radius-full);
+
+	--shadow-sm: var(--shadow-sm);
+	--shadow-md: var(--shadow-md);
+	--shadow-lg: var(--shadow-lg);
+	--shadow-xl: var(--shadow-xl);
+}
+
 :root {
 	--bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 	--bg-card: #ffffff;
@@ -16,20 +64,21 @@
 	--radius-lg: 16px;
 }
 
-html, body {
-  font-family: "Heebo", sans-serif;
-  background: var(--bg-gradient);
-  color: var(--text-main);
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  width: 100%;
-  overflow: hidden;
+html,
+body {
+	font-family: 'Heebo', sans-serif;
+	background: var(--bg-main);
+	color: var(--text-main);
+	margin: 0;
+	padding: 0;
+	height: 100vh;
+	width: 100%;
+	overflow: hidden;
 }
 
 body {
-  display: flex;
-  flex-direction: column;
+	display: flex;
+	flex-direction: column;
 }
 
 /* Ensure header and other elements inherit font */

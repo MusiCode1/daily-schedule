@@ -52,18 +52,26 @@ export interface Person {
 
 export type Gender = 'boy' | 'girl';
 
+export type ThemeType =
+	| 'theme-focus'
+	| 'theme-playful'
+	| 'theme-gradient'
+	| 'theme-contrast'
+	| 'default';
+
 export interface UserProfile {
 	id: string;
 	name: string;
 	gender: Gender;
 	avatar: string; // רק מזהה תמונה
 	themeColor: string; // Hex color for borders/backgrounds
+	theme?: ThemeType;
 }
 
 export interface AppState {
 	version: number;
 	users: UserProfile[];
-	
+
 	lists: { [userId: string]: List[] };
 
 	// מאגר מטאדטה של תמונות (מפתח = מזהה תמונה)
