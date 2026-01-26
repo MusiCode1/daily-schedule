@@ -45,7 +45,8 @@ export const DEFAULT_LIST_DEFINITIONS = [
 			{ activityId: 'breakfast', order: 4 },
 			{ activityId: 'going_to_car', order: 5 }
 		],
-		greeting: 'בוקר טוב'
+		greeting: 'בוקר טוב',
+		peopleIds: ['p_father', 'p_mother'] // בוקר: אבא ואמא
 	},
 	{
 		id: 'afternoon_routine',
@@ -59,7 +60,8 @@ export const DEFAULT_LIST_DEFINITIONS = [
 			{ activityId: 'shower', order: 5 },
 			{ activityId: 'sleep_time', order: 6 }
 		],
-		greeting: 'אחרי צהריים טובים'
+		greeting: 'אחרי צהריים טובים',
+		peopleIds: ['p_mother'] // ערב: אמא
 	},
 	{
 		id: 'visit_grandparents',
@@ -78,7 +80,8 @@ export const DEFAULT_LIST_DEFINITIONS = [
 			{ activityId: 'shower', order: 9 },
 			{ activityId: 'sleep_time', order: 10 }
 		],
-		greeting: 'נסיעה טובה'
+		greeting: 'נסיעה טובה',
+		peopleIds: ['p_grandfather', 'p_grandmother']
 	},
 	{
 		id: 'guests_visit',
@@ -94,7 +97,8 @@ export const DEFAULT_LIST_DEFINITIONS = [
 			{ activityId: 'shower', order: 6 },
 			{ activityId: 'sleep_time', order: 7 }
 		],
-		greeting: 'ברוכים הבאים'
+		greeting: 'ברוכים הבאים',
+		peopleIds: ['p_uncle', 'p_aunt']
 	}
 ];
 
@@ -105,6 +109,8 @@ export function createDefaultLists(): List[] {
 		name: def.name,
 		logo: def.logo,
 		greeting: (def as any).greeting,
+		title: (def as any).title,
+		peopleIds: (def as any).peopleIds, // מיפוי אנשים
 		tasks: def.items
 			.map((item) => {
 				const activity = ACTIVITIES.find((a) => a.id === item.activityId);
@@ -124,7 +130,7 @@ export function createDefaultLists(): List[] {
 }
 
 export const INITIAL_STATE: AppState = {
-	version: 13,
+	version: 14,
 	users: [
 		{
 			id: 'u_ezra',

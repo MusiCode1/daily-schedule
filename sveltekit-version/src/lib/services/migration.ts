@@ -358,6 +358,31 @@ export const migrationService = {
 			parsed.version = 13;
 		}
 
+		if (parsed.version < 14) {
+			console.log('Migrating to version 14: Updating peopleIds for preparation lists...');
+
+			const users = Object.keys(parsed.lists || {});
+
+			users.forEach((userId) => {
+				const userLists = parsed.lists[userId] || [];
+
+				userLists.forEach((list: any) => {
+					// עדכון עבור רשימות ספציפיות
+					if (list.id === 'morning_routine') {
+						list.peopleIds = ['p_father', 'p_mother']; // בוקר: אבא ואמא
+					} else if (list.id === 'afternoon_routine') {
+						list.peopleIds = ['p_mother']; // ערב: אמא
+					} else if (list.id === 'visit_grandparents') {
+						list.peopleIds = ['p_grandfather', 'p_grandmother']; // סבא וסבתא בנסיעה
+					} else if (list.id === 'guests_visit') {
+						list.peopleIds = ['p_uncle', 'p_aunt']; // דוד ודודה באירוח
+					}
+				});
+			});
+
+			parsed.version = 14;
+		}
+
 		return { ...INITIAL_STATE, ...parsed };
 	},
 
