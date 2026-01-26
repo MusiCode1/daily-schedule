@@ -93,4 +93,28 @@ Template:
 ## אחרי הצהריים
 
 **Filename:** `list_afternoon_sunset.png`
-16:9 wide image, 3d render, cute icon style, clay material, soft flat lighting, solid pure white background #FFFFFF, no shadows, no drop shadow, no gradient, isolated subject, minimalist, high quality, reddish sunset sun over a blue and red sea, clay style
+
+## נוסעים באוטו / נוסעים ל...
+
+**Filename:** `activity_travel_car.png`
+Square image, 3d render, cute icon style, clay material, soft flat lighting, solid pure white background #FFFFFF, no shadows, no drop shadow, no gradient, isolated subject, minimalist, high quality. Subject: Cute clay-style blue family car, side view, toy-like proportions. Tiny clay figures visible inside (hint of a father with kippah).
+
+## הבית של סבא וסבתא / ביקור
+
+**Filename:** `activity_visit_building.png`
+Square image, 3d render, cute icon style, clay material, soft flat lighting, solid pure white background #FFFFFF, no shadows, no drop shadow, no gradient, isolated subject, minimalist, high quality. Subject: Cute minimal urban apartment building facade, white stone texture, small entrance door, small green bush. Playful toy-house proportions.
+
+## אורחים באים (קבלת פנים)
+
+**Filename:** `activity_guests_arrive.png`
+Square image, 3d render, cute icon style, clay material, soft flat lighting, solid pure white background #FFFFFF, no shadows, no drop shadow, no gradient, isolated subject, minimalist, high quality. Subject: Open door frame with two cute clay figures standing there (man with knitted kippah, woman with colorful hat). They are waving hello. Welcoming gesture.
+
+## אורחים עוזבים (פרידה)
+
+**Filename:** `activity_guests_leave.png`
+Square image, 3d render, cute icon style, clay material, soft flat lighting, solid pure white background #FFFFFF, no shadows, no drop shadow, no gradient, isolated subject, minimalist, high quality. Subject: Two cute clay figures (man with kippah, woman with hat) viewed from the back, walking away, one waving goodbye. Minimalist clay style.
+
+## חזרנו הביתה
+
+**Filename:** `activity_back_home.png`
+Square image, 3d render, cute icon style, clay material, soft flat lighting, solid pure white background #FFFFFF, no shadows, no drop shadow, no gradient, isolated subject, minimalist, high quality. Subject: Cute colorful front door of a house with a small welcome mat. Inviting entrance, closed door. Clay style.

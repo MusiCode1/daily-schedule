@@ -19,7 +19,11 @@ export const migrationService = {
 
 			for (const list of lists) {
 				for (const task of list.tasks) {
-					if (task.imageSrc && typeof task.imageSrc === 'string' && task.imageSrc.startsWith('data:image')) {
+					if (
+						task.imageSrc &&
+						typeof task.imageSrc === 'string' &&
+						task.imageSrc.startsWith('data:image')
+					) {
 						try {
 							console.log(`Migrating image for task ${task.name}...`);
 							const blob = await dataURLToBlob(task.imageSrc);
@@ -119,7 +123,7 @@ export const migrationService = {
 
 		if (parsed.version < 6) {
 			console.log('Migrating to version 6: Separating image metadata...');
-			
+
 			// אתחול images אם לא קיים
 			if (!parsed.images) {
 				parsed.images = {};
@@ -129,7 +133,7 @@ export const migrationService = {
 			const users = Object.keys(parsed.lists || {});
 			users.forEach((userId) => {
 				const userLists: List[] = parsed.lists[userId];
-				
+
 				userLists.forEach((list) => {
 					// טיפול ב-logo של רשימה
 					if (list.logo && typeof list.logo === 'object' && 'src' in list.logo) {
@@ -172,7 +176,7 @@ export const migrationService = {
 
 		if (parsed.version < 7) {
 			console.log('Migrating to version 7: Adding communication board URLs and change types...');
-			
+
 			// הוספת שדות חדשים למשימות קיימות (אופציונליים - אין צורך באתחול)
 			const users = Object.keys(parsed.lists || {});
 			users.forEach((userId) => {
@@ -195,7 +199,7 @@ export const migrationService = {
 
 		if (parsed.version < 8) {
 			console.log('Migrating to version 8: Adding list title and description...');
-			
+
 			// הוספת שדות כותרת ותיאור לרשימות (אופציונליים)
 			const users = Object.keys(parsed.lists || {});
 			users.forEach((userId) => {
@@ -215,7 +219,7 @@ export const migrationService = {
 
 		if (parsed.version < 9) {
 			console.log('Migrating to version 9: Adding people (team/family members)...');
-			
+
 			// אתחול מאגר האנשים אם לא קיים
 			if (!parsed.people) {
 				parsed.people = [];
@@ -240,7 +244,7 @@ export const migrationService = {
 
 		if (parsed.version < 10) {
 			console.log('Migrating to version 10: Adding isLocked to lists...');
-			
+
 			// הוספת שדה isLocked לכל הרשימות
 			const users = Object.keys(parsed.lists || {});
 			users.forEach((userId) => {
@@ -253,6 +257,105 @@ export const migrationService = {
 			});
 
 			parsed.version = 10;
+		}
+
+		if (parsed.version < 11) {
+			console.log('Migrating to version 11: Populating example family members...');
+
+			// אכלוס רשימת האנשים בברירת המחדל אם היא ריקה
+			if (!parsed.people || parsed.people.length === 0) {
+				// אנו מעתיקים מ-INITIAL_STATE שכבר מכיל את האנשים החדשים (כי עדכנו את defaults.ts)
+				// הערה: בגלל שה-merge בסוף הפונקציה דורס את INITIAL_STATE עם parsed,
+				// אנחנו חייבים לעדכן את parsed.people כאן.
+				parsed.people = INITIAL_STATE.people;
+			}
+
+			parsed.version = 11;
+		}
+
+		if (parsed.version < 12) {
+			console.log(
+				'Migrating to version 12: Updating defaults to Family Members (Ezra, Tzofia, Adam)...'
+			);
+
+			// אנו דורסים את המשתמשים ואת ה-lists שלהם כדי להתאים למשפחה החדשה
+			// שים לב: זה מהלך אגרסיבי, אבל מתבקש מכיוון שזו "משפחה לדוגמא"
+			// משתמשים אמיתיים (ששינו את המשתמשים) לא ייפגעו אם נבדוק אם אלו משתמשי ברירת המחדל הישנים
+
+			const oldDefaultIds = ['u1', 'u2', 'u3'];
+			const currentUsers = parsed.users || [];
+			const isDefaultSetup =
+				currentUsers.length === 3 && currentUsers.every((u: any) => oldDefaultIds.includes(u.id));
+
+			// רק אם זה עדיין הסטאפ הדיפולטיבי הישן (או ריק), נחליף לחדש
+			if (isDefaultSetup || currentUsers.length === 0) {
+				parsed.users = INITIAL_STATE.users;
+				parsed.lists = INITIAL_STATE.lists;
+				parsed.activeListId = INITIAL_STATE.activeListId;
+				// עדכון רשימת האנשים (הסרת הילדים ממנה)
+				parsed.people = INITIAL_STATE.people;
+			} else {
+				// אם המשתמש כבר ערך שינויים, רק נעדכן את רשימת האנשים (people) שתתאים לחדש
+				// כלומר נסיר את הילדים אם הם בטעות שם (בגלל מיגרציה 11)
+				if (parsed.people) {
+					parsed.people = parsed.people.filter(
+						(p: any) => !['p_ezra', 'p_tzofia', 'p_adam'].includes(p.id)
+					);
+				}
+			}
+
+			parsed.version = 12;
+		}
+
+		if (parsed.version < 13) {
+			console.log(
+				'Migrating to version 13: Adding new preparation lists (Grandparents, Guests)...'
+			);
+
+			// אנו צריכים להוסיף את הרשימות החדשות לכל המשתמשים
+			// אבל רק אם הן לא קיימות כבר (למניעת כפילות למרות שזה מערך חדש של ברירת מחדל)
+
+			const users = Object.keys(parsed.lists || {});
+
+			users.forEach((userId) => {
+				const userLists = parsed.lists[userId] || [];
+
+				// יצירת הרשימות החדשות מתוך ההגדרות (רק ה-2 החדשות)
+				const newListsDefs = DEFAULT_LIST_DEFINITIONS.filter((def) =>
+					['visit_grandparents', 'guests_visit'].includes(def.id)
+				);
+
+				const listsToAdd = newListsDefs.map((def) => {
+					// יצירת אובייקט List חדש (לוגיקה מועתקת מ-createDefaultLists)
+					return {
+						id: def.id,
+						name: def.name,
+						logo: def.logo,
+						greeting: (def as any).greeting,
+						title: (def as any).title,
+						tasks: def.items
+							.map((item: any) => {
+								const activity = ACTIVITIES.find((a) => a.id === item.activityId);
+								return {
+									id: crypto.randomUUID(),
+									name: activity ? activity.name : 'Unknown', // Fallback
+									imageSrc: activity ? `/images/activities/${activity.image}` : null,
+									isDone: false
+								};
+							})
+							.filter((t: any) => t.name !== 'Unknown') // סינון פעילויות שלא נמצאו
+					};
+				});
+
+				// הוספה לרשימות המשתמש (רק אם לא קיים כבר ID כזה)
+				listsToAdd.forEach((newList: any) => {
+					if (!userLists.find((l: any) => l.id === newList.id)) {
+						userLists.push(newList);
+					}
+				});
+			});
+
+			parsed.version = 13;
 		}
 
 		return { ...INITIAL_STATE, ...parsed };
