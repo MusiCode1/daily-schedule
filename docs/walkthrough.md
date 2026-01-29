@@ -1,6 +1,43 @@
 # יומן פיתוח (Walkthrough)
 
-## 2026-01-29 12:50
+## 2026-01-30 00:03
+
+### שיפור יציבות סנכרון ו-Google Auth
+
+פתרנו בעיות קריטיות בלולאת סנכרון אינסופית, שיפרנו את חווית המשתמש בזמן הגיבוי/שחזור, וחיזקנו את מנגנון ההתחברות לגוגל.
+
+#### מה בוצע?
+
+**1. תיקון לולאת סנכרון אינסופית (Infinite Sync Loop)**
+
+- **Sanitization**: גילינו שגוגל דרייב דורש שכל הערכים ב-`appProperties` יהיו מחרוזות. שליחת מספרים (כמו `lastModified`) גרמה לכישלון שקט בעדכון המטא-דאטה, מה שהוביל לזיהוי שגוי של קונפליקטים בלתי פוסקים. הוספנו פונקציית `sanitizeAppProperties` שממירה הכל למחרוזות לפני השליחה.
+- **Self-Healing**: הוספנו מנגנון שמתקן את המטא-דאטה בשרת ("Self-Healing") מיד לאחר שחזור מוצלח, כדי להבטיח שהשרת והלקוח מסונכרנים על אותו `writeId`.
+
+**2. שיפורי UI/UX בסנכרון**
+
+- **Progress Bar**: תיקנו באג שבו ההורדה נתקעה על 0% ע"י שליפה מוקדמת של גודל הקובץ (`files.get` עם `fields=size`).
+- **Sync Overlay**: הוספנו מסך חוסם (Overlay) בזמן סנכרון כדי למנוע פעולות משתמש במקביל.
+- **Conflict Modal**: שיפרנו את הדיוק של הודעת הקונפליקט. כעת המערכת משווה תאריכים אמיתיים (ולא "עכשיו" מול הענן) וממליצה על הגרסה החדשה יותר באמת דינמית.
+
+**3. רפרקטור לאחסון Google Auth**
+
+- **Unified Storage**: איחדנו את `gdrive_token`, `gdrive_expiry` וכו' לאובייקט אחד מסודר `google_auth_storage` ב-LocalStorage.
+- **Auto-Refresh**: הוספנו מנגנון חידוש טוקן שקט (Silent Refresh) שרצים ברקע לפני התפוגה.
+- **Smart Retry**: הוספנו מנגנון "חכם" שמזהה אם הריענון נחסם ע"י הדפדפן (Blocked Popup) וממתין לאינטראקציה ראשונה של המשתמש (קליק/מקלדת) כדי לנסות שוב בהצלחה.
+
+**קבצים ששונו**:
+
+- `sveltekit-version/src/lib/services/googleDriveService.ts`
+- `sveltekit-version/src/lib/logic/backupController.svelte.ts`
+- `sveltekit-version/src/lib/components/GoogleDriveBackup.svelte`
+- `sveltekit-version/src/lib/data/texts.ts`
+- `sveltekit-version/src/lib/services/migration.ts`
+
+#### החלטות ארכיטקטורה
+
+- **Self-Healing Metadata**: החלטנו לבצע עדכון מטא-דאטה יזום (`updateFileMetadata`) מיד אחרי `restore`. למרות שזה מוסיף קריאת API, זה קריטי למניעת מצבי קצה שבהם הקובץ ירד אבל המטא-דאטה בשרת נשאר "ישן" מבחינת האפליקציה.
+
+---
 
 ### שיפורים במערכת הגיבוי והשחזור
 

@@ -4,6 +4,7 @@ import { db } from '../services/db';
 import { globalState } from '../stores/globalState.svelte'; // For listening to changes?
 // Or maybe we just rely on manual trigger + auto-trigger hook
 import { GOOGLE_CLIENT_ID } from '../config';
+import { setSyncStatus, resetSyncStatus } from '../stores/syncStore';
 import type { AppState, List, Task, UserProfile } from '../types';
 
 export class BackupController {
@@ -16,6 +17,11 @@ export class BackupController {
 	errorMessage = $state('');
 	userInfo: { displayName?: string; emailAddress?: string; photoLink?: string } | null =
 		$state(null);
+
+	// Sync State
+	deviceId = $state('');
+	deviceName = $state('');
+	lastKnownWriteId: string | null = $state(null);
 
 	// Config
 	customClientId = $state('');
@@ -33,6 +39,7 @@ export class BackupController {
 		remoteTime: Date | null;
 		localTime: Date | null;
 		remoteFileId: string | null;
+		remoteDeviceId?: string;
 	} = $state({
 		isConflict: false,
 		remoteTime: null,
@@ -68,6 +75,38 @@ export class BackupController {
 
 			const savedAuto = localStorage.getItem('auto_backup_enabled');
 			if (savedAuto !== null) this.isAutoBackupEnabled = savedAuto === 'true';
+
+			// Load Sync State
+			let dId = localStorage.getItem('device_id');
+			if (!dId) {
+				dId = crypto.randomUUID();
+				localStorage.setItem('device_id', dId);
+			}
+			this.deviceId = dId;
+
+			let dName = localStorage.getItem('device_name');
+			if (!dName) {
+				// Generate basic name from User Agent
+				const ua = navigator.userAgent;
+				let browser = 'Browser';
+				if (ua.includes('Chrome')) browser = 'Chrome';
+				else if (ua.includes('Firefox')) browser = 'Firefox';
+				else if (ua.includes('Safari')) browser = 'Safari';
+				else if (ua.includes('Edge')) browser = 'Edge';
+
+				let os = 'OS';
+				if (ua.includes('Windows')) os = 'Windows';
+				else if (ua.includes('Mac')) os = 'MacOS';
+				else if (ua.includes('Linux')) os = 'Linux';
+				else if (ua.includes('Android')) os = 'Android';
+				else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+
+				dName = `${browser} on ${os}`;
+				localStorage.setItem('device_name', dName);
+			}
+			this.deviceName = dName;
+
+			this.lastKnownWriteId = localStorage.getItem('last_known_write_id');
 		}
 	}
 
@@ -116,51 +155,70 @@ export class BackupController {
 	async checkForRemoteUpdates() {
 		try {
 			const files = await googleDriveService.listBackups();
-			if (files.length === 0) return; // אין גיבוי, הכל טוב
+			if (files.length === 0) return;
 
 			const latestBackup = files[0];
-			if (!latestBackup.modifiedTime) return;
-			const remoteTime = new Date(latestBackup.modifiedTime);
+			// If we have appProperties, use strictly that for conflict detection
+			if (latestBackup.appProperties && latestBackup.appProperties.writeId) {
+				const remoteWriteId = latestBackup.appProperties.writeId;
+				console.log('Checking Sync:', {
+					remoteWriteId,
+					localWriteId: this.lastKnownWriteId,
+					match: remoteWriteId === this.lastKnownWriteId
+				});
 
-			// קריאת מצב מקומי
-			const rawState = localStorage.getItem('daily-schedule-data');
-			let localTime = new Date(0); // ברירת מחדל: ישן מאוד
+				if (remoteWriteId !== this.lastKnownWriteId) {
+					// Conflict driven by UUID mismatch
+					const remoteTime = latestBackup.appProperties.lastModified
+						? new Date(Number(latestBackup.appProperties.lastModified))
+						: new Date(latestBackup.modifiedTime || 0);
 
-			if (rawState) {
-				try {
-					const state = JSON.parse(rawState);
-					if (state.lastModified) {
-						localTime = new Date(state.lastModified);
-					} else {
-						// אם אין חותמת זמן, ננסה להעריך או שנניח שזה קונפליקט אם יש גיבוי
-						// אבל כדי לא להציק למשתמשים קיימים שרק עדכנו, נניח שהמקומי הוא העדכני?
-						// לא, עדיף להציע שחזור אם הגיבוי קיים.
-						// נשתמש בזמן הגיבוי האחרון הידוע של המכשיר הזה?
-						// אם lastBackupTime קיים, זה הזמן שידוע לנו.
-						// אם localTime יהיה 0, הגיבוי ינצח.
+					// Try to get local time from parentTimestamp or just file stats
+					console.log('Remote writeId mismatch', { remoteWriteId, local: this.lastKnownWriteId });
+
+					// שליפת זמן שינוי מקומי אמיתי
+					let realLocalTime = new Date();
+					try {
+						const rawState = localStorage.getItem('daily-schedule-data');
+						if (rawState) {
+							const state = JSON.parse(rawState);
+							if (state.lastModified) {
+								realLocalTime = new Date(state.lastModified);
+							}
+						}
+					} catch (e) {
+						console.warn('Failed to read local time', e);
 					}
-				} catch (e) {
-					console.error('Failed to parse local state for comparison', e);
+
+					this.conflictState = {
+						isConflict: true,
+						remoteTime,
+						localTime: realLocalTime,
+						remoteFileId: latestBackup.id || null,
+						remoteDeviceId: latestBackup.appProperties.lastModifiedByDeviceId
+					};
+					return;
 				}
-			} else {
-				// אין מצב מקומי (התקנה חדשה) - שחזור אוטומטי
-				console.log('No local state found, auto-restoring from backup...');
-				if (latestBackup.id) {
-					await this.restoreFromFile(latestBackup.id);
-				}
-				return;
 			}
 
-			// בדיקת קונפליקט: אם הגיבוי בענן חדש יותר מהמקומי (בהפרש סביר של 5 שניות)
-			if (remoteTime.getTime() > localTime.getTime() + 5000) {
-				console.log('Remote is newer', { remoteTime, localTime });
-
-				this.conflictState = {
-					isConflict: true,
-					remoteTime,
-					localTime,
-					remoteFileId: latestBackup.id || null
-				};
+			// Fallback to old timestamp logic if no appProperties (migration phase)
+			if (!latestBackup.appProperties && latestBackup.modifiedTime) {
+				// ... (existing timestamp logic can stay as fallback or be removed? Let's keep it minimal)
+				const remoteTime = new Date(latestBackup.modifiedTime);
+				const rawState = localStorage.getItem('daily-schedule-data');
+				let localTime = new Date(0);
+				if (rawState) {
+					const state = JSON.parse(rawState);
+					if (state.lastModified) localTime = new Date(state.lastModified);
+				}
+				if (remoteTime.getTime() > localTime.getTime() + 10000) {
+					this.conflictState = {
+						isConflict: true,
+						remoteTime,
+						localTime,
+						remoteFileId: latestBackup.id || null
+					};
+				}
 			}
 		} catch (e) {
 			console.error('Failed to check for remote updates', e);
@@ -174,7 +232,7 @@ export class BackupController {
 			// בחירה במקומי: פשוט מנקים את הקונפליקט, והגיבוי הבא ידרוס את הענן (כי יהיה חדש יותר)
 			// או שאנחנו יוזמים גיבוי מיד?
 			// כדאי ליזום גיבוי כדי לעדכן את הענן בגרסה "המנצחת"
-			await this.performBackup(false);
+			await this.performBackup(false, true); // force=true
 		}
 
 		this.conflictState = {
@@ -185,11 +243,11 @@ export class BackupController {
 		};
 	}
 
-	async performBackup(isAuto = false) {
+	async performBackup(isAuto = false, force = false) {
 		if (!this.isConnected) return;
 
 		// מניעת גיבוי אם יש קונפליקט פתוח (לא רוצים לדרוס את הענן בטעות לפני שהמשתמש החליט)
-		if (this.conflictState.isConflict) {
+		if (this.conflictState.isConflict && !force) {
 			console.log('Skipping backup due to unresolved conflict');
 			return;
 		}
@@ -198,16 +256,59 @@ export class BackupController {
 		this.errorMessage = '';
 
 		try {
+			// Check-Then-Act (Only if not forced)
+			if (!force) {
+				const files = await googleDriveService.listBackups();
+				if (files.length > 0 && files[0].appProperties && files[0].appProperties.writeId) {
+					if (files[0].appProperties.writeId !== this.lastKnownWriteId) {
+						// Double check conflict!
+						console.warn('Conflict detected mid-action!');
+						await this.checkForRemoteUpdates(); // Will verify and open modal
+						this.status = 'idle';
+						return;
+					}
+				}
+			}
+
 			this.statusMessage = 'מכין נתונים לגיבוי...';
 			// הכנת הנתונים לגיבוי כולל תמונות
-			const backupData = await this.prepareBackupData();
+			const backupDataStr = await this.prepareBackupData();
+
+			// Extract the new WriteID that was generated inside prepareBackupData?
+			// Actually prepareBackupData just stringifies. We should insert metadata there.
+			// Let's modify prepareBackupData to handle logic or do it here.
+			// Better to do it here where we control the flow.
+
+			const state = JSON.parse(backupDataStr);
+			const newWriteId = crypto.randomUUID();
+			state.syncMetadata = {
+				lastModified: Date.now(),
+				lastModifiedByDeviceId: this.deviceId,
+				lastModifiedByDeviceName: this.deviceName,
+				writeId: newWriteId,
+				parentWriteId: this.lastKnownWriteId || undefined
+			};
+			const finalData = JSON.stringify(state);
 
 			this.statusMessage = 'מעלה ל-Google Drive...';
-			await googleDriveService.backup(backupData, 'DailyScheduleBackup'); // שם התיקייה
+			setSyncStatus('uploading', 'מעלה גיבוי ל-Google Drive...', 0);
+
+			await googleDriveService.backup(finalData, 'DailyScheduleBackup', (progress) => {
+				setSyncStatus('uploading', 'מעלה גיבוי ל-Google Drive...', progress);
+			});
+
+			// Update local state on success
+			this.lastKnownWriteId = newWriteId;
+			localStorage.setItem('last_known_write_id', newWriteId);
 
 			this.statusMessage = '';
 			this.status = 'success';
 			this.lastBackupTime = new Date();
+
+			// השהיה קצרה להראות 100% ואז לסגור
+			setTimeout(() => {
+				resetSyncStatus();
+			}, 1000);
 
 			if (!isAuto) {
 				setTimeout(() => (this.status = 'idle'), 3000);
@@ -219,6 +320,7 @@ export class BackupController {
 			this.status = 'error';
 			this.errorMessage = e.message || 'Backup failed';
 			this.statusMessage = '';
+			resetSyncStatus();
 		}
 	}
 
@@ -443,7 +545,10 @@ export class BackupController {
 		this.statusMessage = 'מתחיל תהליך שחזור...';
 		try {
 			this.statusMessage = 'מוריד קובץ גיבוי...';
-			const data = await googleDriveService.restore(fileId);
+			setSyncStatus('downloading', 'מוריד נתונים מהענן...', 0);
+			const data = await googleDriveService.restore(fileId, (progress) => {
+				setSyncStatus('downloading', 'מוריד נתונים מהענן...', progress);
+			});
 			// בדיקת תקינות בסיסית
 			if (!data || !data.users) throw new Error('Invalid backup file');
 
@@ -456,13 +561,39 @@ export class BackupController {
 			this.statusMessage = 'שומר נתונים ומרענן...';
 			localStorage.setItem('daily-schedule-data', JSON.stringify(cleanData));
 
+			console.log('Restored data metadata:', cleanData.syncMetadata);
+
+			// עדכון ה-WriteID הידוע לנו מהגיבוי ששחזרנו
+			if (cleanData.syncMetadata && cleanData.syncMetadata.writeId) {
+				console.log('Updating lastKnownWriteId from backup to:', cleanData.syncMetadata.writeId);
+				this.lastKnownWriteId = cleanData.syncMetadata.writeId;
+				localStorage.setItem('last_known_write_id', this.lastKnownWriteId!);
+
+				// HEAL: Ensure server metadata matches the content we just accepted
+				try {
+					console.log('Self-healing server metadata to match content...');
+					await googleDriveService.updateFileMetadata(fileId, {
+						appProperties: cleanData.syncMetadata
+					});
+				} catch (metaErr) {
+					console.warn('Failed to self-heal metadata', metaErr);
+				}
+			} else {
+				// Backward compatibility: If no writeId, maybe generate one or nullify?
+				// Let's reset it so next backup creates a new chain
+				this.lastKnownWriteId = null;
+				localStorage.removeItem('last_known_write_id');
+			}
+
 			// טעינה מחדש של הדף כדי שה-Storms יתעדכנו
+			resetSyncStatus(); // ליתר ביטחון, למרות שהריפרש ינקה
 			window.location.reload();
 		} catch (e: any) {
 			console.error('Restore failed', e);
 			this.status = 'error';
 			this.errorMessage = 'Restore failed';
 			this.statusMessage = '';
+			resetSyncStatus();
 		}
 	}
 }

@@ -3,6 +3,7 @@
 /// <reference types="gapi.auth2" />
 
 import { GOOGLE_CLIENT_ID, GOOGLE_SCOPES, BACKUP_FILE_NAME, BACKUP_FOLDER_NAME } from '../config';
+import { migrationService, type GoogleAuthStorage } from './migration';
 
 // שימוש בטיפוסים הרשמיים
 type GFile = gapi.client.drive.File;
@@ -27,6 +28,7 @@ class GoogleDriveService {
 	private accessToken: string | null = null;
 	private gapiInited = false;
 	private gisInited = false;
+	private refreshTimer: any = null; // Timer for auto-refresh
 
 	// מאזינים לשינויי סטטוס (Observer pattern פשוט)
 	private statusListeners: ((status: DriveStatus) => void)[] = [];
@@ -79,6 +81,11 @@ class GoogleDriveService {
 					} else {
 						this.status = 'unauthenticated';
 					}
+				},
+				error_callback: (error: any) => {
+					console.error('Google Auth Error:', error);
+					// במקום לנתק מיד, מפעילים Smart Retry
+					this.handleRefreshFailure();
 				}
 			});
 
@@ -96,45 +103,181 @@ class GoogleDriveService {
 
 	private setSession(tokenResponse: any) {
 		this.accessToken = tokenResponse.access_token;
+		this.isTokenExpired = false; // איפוס דגל תפוגה
 		const expiresIn = tokenResponse.expires_in || 3599;
 		const expiryTime = Date.now() + expiresIn * 1000;
 
-		if (this.accessToken) {
-			localStorage.setItem('gdrive_token', this.accessToken);
-			localStorage.setItem('gdrive_expiry', expiryTime.toString());
+		// בניית אובייקט האחסון החדש
+		const storageData: GoogleAuthStorage = {
+			accessToken: this.accessToken!,
+			expiresAt: expiryTime,
+			issuedAt: Date.now()
+			// User info will be prioritized from existing storage or fetched separately if needed
+			// For now, we store what we have. If we have a user object in memory, we could persist it.
+		};
+
+		// נסיון לשמר מידע משתמש קיים אם יש
+		const existing = localStorage.getItem('google_auth_storage');
+		if (existing) {
+			try {
+				const oldData = JSON.parse(existing) as GoogleAuthStorage;
+				if (oldData.user) {
+					storageData.user = oldData.user;
+				}
+			} catch (e) {
+				/* ignore */
+			}
 		}
 
-		// חשוב: הגדרת הטוקן עבור gapi.client כדי שקריאות ל-API יכללו את ההרשאה
-		// חשוב: הגדרת הטוקן עבור gapi.client כדי שקריאות ל-API יכללו את ההרשאה
+		if (this.accessToken) {
+			localStorage.setItem('google_auth_storage', JSON.stringify(storageData));
+			// localStorage.setItem('gdrive_token', this.accessToken); // Deprecated
+			// localStorage.setItem('gdrive_expiry', expiryTime.toString()); // Deprecated
+		}
+
 		if (window.gapi && window.gapi.client && this.accessToken) {
 			window.gapi.client.setToken({ access_token: this.accessToken });
 		}
 
+		// בקשת פרטי משתמש (כולל permissionId) אם חסרים
+		if (!storageData.user) {
+			this.getUserInfo().then((user) => {
+				if (user && this.accessToken) {
+					// לוודא שלא התנתקנו בינתיים
+					// עדכון האחסון עם פרטי המשתמש
+					const currentStore = localStorage.getItem('google_auth_storage');
+					if (currentStore) {
+						const data = JSON.parse(currentStore) as GoogleAuthStorage;
+						data.user = {
+							id: user.permissionId || '',
+							displayName: user.displayName || '',
+							email: user.emailAddress || '',
+							photoLink: user.photoLink || ''
+						};
+						localStorage.setItem('google_auth_storage', JSON.stringify(data));
+					}
+				}
+			});
+		}
+
+		this.scheduleTokenRefresh(expiresIn);
 		this.status = 'authenticated';
 	}
 
 	private restoreSession() {
-		const token = localStorage.getItem('gdrive_token');
-		const expiry = localStorage.getItem('gdrive_expiry');
+		// ניסיון קריאה מהפורמט החדש
+		const storageJson = localStorage.getItem('google_auth_storage');
 
-		if (token && expiry) {
-			if (Date.now() < parseInt(expiry)) {
-				this.accessToken = token;
+		// ניסיון קריאה מהפורמט הישן (לצורך מיגרציה)
+		const legacyToken = localStorage.getItem('gdrive_token');
+		const legacyExpiry = localStorage.getItem('gdrive_expiry');
+
+		let storage: GoogleAuthStorage | null = null;
+
+		if (storageJson) {
+			try {
+				storage = JSON.parse(storageJson);
+			} catch (e) {
+				console.error('Failed to parse auth storage', e);
+			}
+		} else if (legacyToken) {
+			// ביצוע מיגרציה
+			storage = migrationService.migrateAuthStorage(legacyToken, legacyExpiry);
+			if (storage) {
+				console.log('Migration successful, saving new storage format.');
+				localStorage.setItem('google_auth_storage', JSON.stringify(storage));
+				// ניקוי מפתחות ישנים
+				localStorage.removeItem('gdrive_token');
+				localStorage.removeItem('gdrive_expiry');
+			}
+		}
+
+		if (storage && storage.accessToken) {
+			if (Date.now() < storage.expiresAt) {
+				this.accessToken = storage.accessToken;
 
 				// שחזור הטוקן ל-gapi
 				if (window.gapi && window.gapi.client) {
 					window.gapi.client.setToken({ access_token: this.accessToken });
 				}
 
+				// חישוב זמן שנותר לחידוש
+				const remainingSeconds = (storage.expiresAt - Date.now()) / 1000;
+				this.scheduleTokenRefresh(remainingSeconds);
+
 				this.status = 'authenticated';
 			} else {
-				this.clearSession();
+				console.log('Token expired in storage, attempting silent refresh...');
+				// לא מנקים מיד! מנסים לחדש
+				this.refreshTokenSilently();
 			}
 		}
 	}
 
+	private isTokenExpired = false;
+
+	private scheduleTokenRefresh(expiresInSeconds: number) {
+		if (this.refreshTimer) {
+			clearTimeout(this.refreshTimer);
+		}
+
+		// חידוש 5 דקות לפני הזמן (או מיד אם נשאר פחות מ-5 דקות)
+		const refreshTime = (expiresInSeconds - 300) * 1000;
+
+		if (refreshTime <= 0) {
+			console.log('Token expiring soon, refreshing now...');
+			this.refreshTokenSilently();
+		} else {
+			console.log(`Scheduling token refresh in ${Math.round(refreshTime / 1000)} seconds.`);
+			this.refreshTimer = setTimeout(() => {
+				this.refreshTokenSilently();
+			}, refreshTime);
+		}
+	}
+
+	private refreshTokenSilently() {
+		if (!this.tokenClient) return;
+
+		console.log('Attempting silent token refresh...');
+		// prompt: '' מנסה לחדש ללא אינטראקציה
+		try {
+			this.tokenClient.requestAccessToken({ prompt: '' });
+		} catch (e) {
+			console.error('Silent refresh failed synchronously:', e);
+			this.handleRefreshFailure();
+		}
+	}
+
+	private handleRefreshFailure() {
+		console.warn('Silent refresh failed (likely blocked). Setting up Smart Retry.');
+		this.isTokenExpired = true;
+		this.setupSmartRetry();
+	}
+
+	private setupSmartRetry() {
+		const retryHandler = () => {
+			console.log('User interaction detected! Retrying token refresh...');
+			// הסרת המאזינים כדי שזה יקרה רק פעם אחת
+			document.removeEventListener('click', retryHandler);
+			document.removeEventListener('keydown', retryHandler);
+			document.removeEventListener('touchstart', retryHandler);
+
+			// ניסיון חוזר - הפעם זה נחשב User Gesture
+			this.refreshTokenSilently();
+		};
+
+		// האזנה לאירועים גלובליים
+		document.addEventListener('click', retryHandler);
+		document.addEventListener('keydown', retryHandler);
+		document.addEventListener('touchstart', retryHandler);
+	}
+
 	private clearSession() {
 		this.accessToken = null;
+		this.isTokenExpired = false;
+		if (this.refreshTimer) clearTimeout(this.refreshTimer);
+
+		localStorage.removeItem('google_auth_storage');
 		localStorage.removeItem('gdrive_token');
 		localStorage.removeItem('gdrive_expiry');
 
@@ -251,7 +394,7 @@ class GoogleDriveService {
 		try {
 			const response = await window.gapi.client.drive.files.list({
 				q: q,
-				fields: 'files(id, name, createdTime, modifiedTime)',
+				fields: 'files(id, name, createdTime, modifiedTime, appProperties)',
 				spaces: 'drive'
 			});
 			return response.result.files || [];
@@ -262,7 +405,11 @@ class GoogleDriveService {
 	}
 
 	// יצירה או עדכון של גיבוי
-	async backup(data: string, folderName = 'DailyScheduleBackup'): Promise<void> {
+	async backup(
+		data: string,
+		folderName = 'DailyScheduleBackup',
+		onProgress?: (p: number) => void
+	): Promise<void> {
 		if (!this.accessToken) throw new Error('Not authenticated');
 
 		// קבלת מזהה התיקייה
@@ -280,17 +427,25 @@ class GoogleDriveService {
 			// עדכון קובץ קיים (לוקחים את הראשון)
 			const fileId = files[0].id;
 			if (fileId) {
-				await this.updateFile(fileId, data);
+				await this.updateFile(fileId, data, onProgress);
+				const meta = JSON.parse(data).syncMetadata;
+				await this.updateFileMetadata(fileId, { appProperties: this.sanitizeAppProperties(meta) });
 			}
 		} else {
 			// יצירת קובץ חדש בתיקייה
 			metadata.parents = [folderId];
-			await this.createFile(metadata, data);
+			const meta = JSON.parse(data).syncMetadata;
+			metadata.appProperties = this.sanitizeAppProperties(meta); // Initialize appProperties on creation
+			await this.createFile(metadata, data, onProgress);
 		}
 	}
 
 	// פעולה 1: יצירת הקובץ (Metadata בלבד) ע"י שימוש ב-SDK הרשמי
-	private async createFile(metadata: any, data: string): Promise<void> {
+	private async createFile(
+		metadata: any,
+		data: string,
+		onProgress?: (p: number) => void
+	): Promise<void> {
 		// שלב 1: יצירת הקובץ עם המידע המתאר (Metadata)
 		const createRes = await window.gapi.client.drive.files.create({
 			resource: metadata,
@@ -301,38 +456,92 @@ class GoogleDriveService {
 		if (!fileId) throw new Error('Failed to create file ID');
 
 		// שלב 2: העלאת התוכן
-		await this.updateFile(fileId, data);
+		await this.updateFile(fileId, data, onProgress);
 	}
 
-	// פעולה 2: עדכון תוכן הקובץ
-	private async updateFile(fileId: string, data: string): Promise<void> {
-		// שימוש ב-gapi.client.request כדי לבצע uploadType=media (שהוא הדרך היעילה להעלאת תוכן)
-		// הספרייה הרשמית gapi.client.drive.files.update מתמקדת לרוב ב-Metadata,
-		// ולכן שימוש ב-request הישיר הוא הדרך ה"רשמית" להעלאת מדיה בדפדפן.
+	// פעולה 2: עדכון תוכן הקובץ (XHR for Progress)
+	private updateFile(
+		fileId: string,
+		data: string,
+		onProgress?: (p: number) => void
+	): Promise<void> {
+		return new Promise((resolve, reject) => {
+			const xhr = new XMLHttpRequest();
+			xhr.open(
+				'PATCH',
+				`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`
+			);
+			xhr.setRequestHeader('Authorization', `Bearer ${this.accessToken}`);
+			xhr.setRequestHeader('Content-Type', 'application/json');
 
-		await window.gapi.client.request({
-			path: `/upload/drive/v3/files/${fileId}`,
-			method: 'PATCH',
-			params: {
-				uploadType: 'media'
-			},
-			headers: {
-				'Content-Type': 'application/json'
-			},
-			body: data
+			// Progress Event
+			xhr.upload.onprogress = (e) => {
+				if (e.lengthComputable && onProgress) {
+					const percent = Math.round((e.loaded / e.total) * 100);
+					onProgress(percent);
+				}
+			};
+
+			xhr.onload = () => {
+				if (xhr.status >= 200 && xhr.status < 300) {
+					resolve();
+				} else {
+					reject(new Error(`Upload failed: ${xhr.status} ${xhr.statusText}`));
+				}
+			};
+
+			xhr.onerror = () => reject(new Error('Network error during upload'));
+			xhr.send(data);
 		});
 	}
 
-	// שחזור (הורדת תוכן)
-	async restore(fileId: string): Promise<any> {
+	// שחזור (הורדת תוכן) - XHR for Progress
+	async restore(fileId: string, onProgress?: (p: number) => void): Promise<any> {
 		if (!this.accessToken) throw new Error('Not authenticated');
 
-		const response = await window.gapi.client.drive.files.get({
-			fileId: fileId,
-			alt: 'media'
-		});
+		// שליפת גודל הקובץ תחילה כדי לאפשר חישוב אחוזים
+		let fileSize = 0;
+		try {
+			const meta = await window.gapi.client.drive.files.get({
+				fileId: fileId,
+				fields: 'size'
+			});
+			if (meta.result.size) {
+				fileSize = Number(meta.result.size);
+			}
+		} catch (e) {
+			console.warn('Failed to get file size for progress', e);
+		}
 
-		return response.result;
+		return new Promise((resolve, reject) => {
+			const xhr = new XMLHttpRequest();
+			xhr.open('GET', `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`);
+			xhr.setRequestHeader('Authorization', `Bearer ${this.accessToken}`);
+
+			// Progress Event
+			xhr.onprogress = (e) => {
+				const total = e.lengthComputable ? e.total : fileSize;
+				if (total > 0 && onProgress) {
+					const percent = Math.round((e.loaded / total) * 100);
+					onProgress(percent);
+				}
+			};
+
+			xhr.onload = () => {
+				if (xhr.status >= 200 && xhr.status < 300) {
+					try {
+						resolve(JSON.parse(xhr.responseText));
+					} catch (e) {
+						reject(new Error('Failed to parse downloaded JSON'));
+					}
+				} else {
+					reject(new Error(`Download failed: ${xhr.status} ${xhr.statusText}`));
+				}
+			};
+
+			xhr.onerror = () => reject(new Error('Network error during download'));
+			xhr.send();
+		});
 	}
 
 	async getUserInfo() {
@@ -340,13 +549,48 @@ class GoogleDriveService {
 		// נסיון שליפת פרטי משתמש בסיסיים דרך about
 		try {
 			const res = await window.gapi.client.drive.about.get({
-				fields: 'user(displayName, emailAddress, photoLink)'
+				fields: 'user(displayName, emailAddress, photoLink, permissionId)'
 			});
 			return res.result.user;
 		} catch (e) {
 			console.warn('Could not get user info', e);
 			return null;
 		}
+	}
+
+	// עדכון מטאדטה (כולל appProperties)
+	public async updateFileMetadata(fileId: string, metadata: any): Promise<void> {
+		if (metadata.appProperties) {
+			metadata.appProperties = this.sanitizeAppProperties(metadata.appProperties);
+		}
+		await window.gapi.client.drive.files.update({
+			fileId: fileId,
+			resource: metadata
+		});
+	}
+
+	// שליפת מטאדטה בלבד (עבור בדיקת קונפליקטים)
+	async getFileMetadata(fileId: string): Promise<gapi.client.drive.File> {
+		if (!this.accessToken) throw new Error('Not authenticated');
+
+		const response = await window.gapi.client.drive.files.get({
+			fileId: fileId,
+			fields: 'id, name, modifiedTime, appProperties'
+		});
+
+		return response.result;
+	}
+
+	// המרת כל הערכים ב-appProperties למחרוזות (חובה לפי ה-API)
+	private sanitizeAppProperties(props: any): any {
+		if (!props) return null;
+		const sanitized: any = {};
+		for (const key in props) {
+			if (props[key] !== undefined && props[key] !== null) {
+				sanitized[key] = String(props[key]);
+			}
+		}
+		return sanitized;
 	}
 }
 

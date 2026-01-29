@@ -5,10 +5,9 @@ import { TEXTS } from '../services/language';
 
 export class ListStore {
 	getUserLists(userId: string, includeHidden: boolean = false): List[] {
-		if (!globalState.state.lists[userId]) {
-			globalState.state.lists[userId] = [];
-		}
-		const lists = globalState.state.lists[userId];
+		// קריאה בלבד: אם אין רשימות, נחזיר סתם מערך ריק זמני
+		const lists = globalState.state.lists[userId] || [];
+
 		if (includeHidden) {
 			return lists;
 		}
@@ -23,9 +22,9 @@ export class ListStore {
 		let activeId = globalState.state.activeListId[userId];
 		const lists = this.getUserLists(userId);
 
+		// קריאה בלבד: אם אין ID פעיל תקין, נחזיר את הראשון כברירת מחדל לתצוגה
 		if (!activeId && lists.length > 0) {
-			activeId = lists[0].id;
-			this.setActiveList(userId, activeId);
+			return lists[0];
 		}
 
 		return lists.find((l) => l.id === activeId) || lists[0];
@@ -100,7 +99,7 @@ export class ListStore {
 		if (!originalList) return null;
 
 		const newId = crypto.randomUUID();
-		
+
 		// העתקה עמוקה של המשימות עם IDs חדשים
 		const duplicatedTasks: Task[] = originalList.tasks.map((task) => ({
 			...task,
@@ -123,7 +122,7 @@ export class ListStore {
 
 		globalState.state.lists[userId].push(duplicatedList);
 		globalState.save();
-		
+
 		return newId;
 	}
 

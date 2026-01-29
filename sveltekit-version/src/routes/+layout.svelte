@@ -40,6 +40,7 @@
 			delete (window as any).setAppTheme;
 		}
 	});
+	import SyncOverlay from '$lib/components/SyncOverlay.svelte';
 </script>
 
 <svelte:head>
@@ -52,4 +53,6 @@
 		rel="stylesheet"
 	/>
 </svelte:head>
+
+<SyncOverlay />
 {@render children()}

@@ -34,6 +34,10 @@ temp
 temp/**
 .agent
 
+# Google Auth Test Reports
+scripts/google-auth-test-report.json
+scripts/screenshots/
+
 # Data / DB
 *.db
 *.sqlite

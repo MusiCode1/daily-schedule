@@ -1,0 +1,28 @@
+$ svelte-kit sync && svelte-check --tsconfig ./tsconfig.json
+(node:84516) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+Loading svelte-check in workspace: d:\UserProjects\ThzoharHalev\daily-schedule\sveltekit-version
+Getting Svelte diagnostics...
+
+(node:86904) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+d:\UserProjects\ThzoharHalev\daily-schedule\sveltekit-version\[32msrc\lib\components\AddModal.svelte[39m:181:3
+[33mWarn[39m: Unknown at rule @reference (css)
+[36m<style>
+  [35m@reference[36m "tailwindcss";[39m
+
+d:\UserProjects\ThzoharHalev\daily-schedule\sveltekit-version\[32msrc\lib\components\AddModal.svelte[39m:216:5
+[33mWarn[39m: Unknown at rule @apply (css)
+[36m  .modal-header {
+    [35m@apply[36m px-6 pt-6 pb-4; /* Tailwind padding */
+    flex-shrink: 0; /* ╫פ╫¢╫ץ╫¬╫¿╫¬ ╫£╫נ ╫¬╫¬╫¢╫ץ╫ץ╫Ñ */[39m
+
+d:\UserProjects\ThzoharHalev\daily-schedule\sveltekit-version\[32msrc\lib\components\AddModal.svelte[39m:275:5
+[33mWarn[39m: Unknown at rule @apply (css)
+[36m    max-height: 400px; /* ╫ע╫ץ╫ס╫פ ╫₧╫º╫í╫ש╫₧╫£╫ש ╫¢╫⌐╫₧╫ץ╫¿╫ק╫ס */
+    [35m@apply[36m px-6; /* PADDING ADDED HERE via Tailwind utility */
+  }[39m
+
+====================================
+[33msvelte-check found 0 errors and 3 warnings in 1 file
+[39m

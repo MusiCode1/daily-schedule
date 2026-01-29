@@ -89,4 +89,14 @@ export interface AppState {
 		lastActiveTime: number;
 	};
 	lastModified: number;
+	syncMetadata?: SyncMetadata;
+}
+
+export interface SyncMetadata {
+	lastModified: number;
+	lastModifiedByDeviceId: string;
+	writeId: string;
+	// שדות לאבחון בלבד:
+	parentWriteId?: string;
+	parentTimestamp?: number;
 }

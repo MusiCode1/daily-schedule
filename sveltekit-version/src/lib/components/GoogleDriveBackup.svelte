@@ -37,6 +37,11 @@
           alert('אנא התנתק והתחבר מחדש כדי להחיל את ה-Client ID החדש.');
       }
   }
+
+  let isRemoteNewer = $derived(
+        (backupController.conflictState.remoteTime?.getTime() || 0) > 
+        (backupController.conflictState.localTime?.getTime() || 0)
+  );
 </script>
 
 <div class="google-drive-card">
@@ -158,15 +163,30 @@
     <div class="modal-overlay" style="z-index: 2100;">
         <div class="modal-card warning">
             <h3 style="color: #c2410c;">⚠️ {TEXTS.CONFLICT_TITLE}</h3>
-            <p>{TEXTS.CONFLICT_REMOTE_NEWER}</p>
-            
+            <p>
+                {#if backupController.conflictState.remoteDeviceId}
+                    {TEXTS.CONFLICT_WITH_DEVICE(backupController.conflictState.remoteDeviceId)}
+                {/if}
+
+            <p>
+                {#if backupController.conflictState.remoteDeviceId}
+                    {TEXTS.CONFLICT_WITH_DEVICE(backupController.conflictState.remoteDeviceId)}
+                {/if}
+
+                {#if isRemoteNewer}
+                     {TEXTS.CONFLICT_REMOTE_NEWER}
+                {:else}
+                     {TEXTS.CONFLICT_LOCAL_NEWER}
+                {/if}
+            </p>
+
             <div class="conflict-comparison">
                 <div class="conflict-option remote">
-                    <strong>{TEXTS.REMOTE_VERSION}</strong>
+                    <strong>{TEXTS.REMOTE_VERSION} {isRemoteNewer ? TEXTS.RECOMMENDED_SUFFIX : ''}</strong>
                     <span>{backupController.conflictState.remoteTime?.toLocaleString('he-IL')}</span>
                 </div>
                 <div class="conflict-option local">
-                    <strong>{TEXTS.LOCAL_VERSION}</strong>
+                    <strong>{TEXTS.LOCAL_VERSION} {!isRemoteNewer ? TEXTS.RECOMMENDED_SUFFIX : ''}</strong>
                     <span>{backupController.conflictState.localTime?.toLocaleString('he-IL') || 'לא ידוע'}</span>
                 </div>
             </div>

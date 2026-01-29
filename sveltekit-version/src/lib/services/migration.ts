@@ -386,6 +386,7 @@ export const migrationService = {
 		return { ...INITIAL_STATE, ...parsed };
 	},
 
+	// ... existing code ...
 	migrateFromLegacy(): AppState | null {
 		const legacyLists = localStorage.getItem('my_lists');
 		if (legacyLists) {
@@ -426,5 +427,54 @@ export const migrationService = {
 			}
 		}
 		return null;
+	},
+
+	migrateAuthStorage(
+		legacyToken: string | null,
+		legacyExpiry: string | null
+	): GoogleAuthStorage | null {
+		// אם אין טוקן ישן, אין מה לנסות להגר
+		if (!legacyToken) return null;
+
+		console.log('Migrating Google Auth storage from legacy format...');
+
+		// בדיקת תקינות בסיסית של הטוקן הישן (לוודא שהוא לא פג בצורה קיצונית או ריק)
+		// הערה: בדיקת התפוגה המדויקת תתבצע על ידי GoogleDriveService,
+		// כאן אנו רק דואגים להמיר את המבנה.
+
+		let expiryTime = 0;
+		if (legacyExpiry) {
+			const parsed = parseInt(legacyExpiry);
+			if (!isNaN(parsed)) {
+				expiryTime = parsed;
+			}
+		}
+
+		// אם אין תאריך תפוגה, נניח שהוא פג עכשיו (או שעה מעכשיו, אבל עדיף להיות שמרניים)
+		// בפועל, googleDriveService יטפל בחידוש אם הוא פג.
+		if (expiryTime === 0) {
+			expiryTime = Date.now();
+		}
+
+		const newStorage: GoogleAuthStorage = {
+			accessToken: legacyToken,
+			expiresAt: expiryTime,
+			issuedAt: Date.now() // אין לנו מידע מתי הונפק הישן, נניח שעכשיו (לצורך התיעוד)
+			// user ו-permissionId חסרים בגרסה הישנה, יתמלאו ב-fetchUserInfo הבא
+		};
+
+		return newStorage;
 	}
 };
+
+export interface GoogleAuthStorage {
+	accessToken: string;
+	expiresAt: number; // Timestamp של התפוגה
+	issuedAt: number; // מתי נוצר
+	user?: {
+		id: string; // Google Permission ID (Sub ID)
+		displayName: string;
+		email: string;
+		photoLink: string;
+	};
+}

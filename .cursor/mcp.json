@@ -2,7 +2,17 @@
 	"mcpServers": {
 		"svelte": {
 			"command": "bunx",
-			"args": ["-y", "@sveltejs/mcp"]
+			"args": [
+				"-y",
+				"@sveltejs/mcp"
+			]
+		},
+		"chrome-devtools": {
+			"command": "npx",
+			"args": [
+				"-y",
+				"chrome-devtools-mcp@latest"
+			]
 		}
 	}
 }

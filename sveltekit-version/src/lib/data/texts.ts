@@ -107,10 +107,13 @@ export const TEXTS = {
 		'האם אתה בטוח? פעולה זו תמחק את המידע הנוכחי במכשיר זה ותחליף אותו במידע מהגיבוי.',
 	// קונפליקט וסנכרון
 	CONFLICT_TITLE: 'זוהה גיבוי חדש יותר',
-	CONFLICT_REMOTE_NEWER:
-		'נראה שהשתמשת באפליקציה במכשיר אחר. הגיבוי בענן עדכני יותר מהמידע במכשיר הזה.',
-	REMOTE_VERSION: 'גיבוי בענן (מומלץ)',
-	LOCAL_VERSION: 'מידע מקומי (דריסת הענן)',
+	CONFLICT_REMOTE_NEWER: 'הגיבוי בענן עדכני יותר מהמידע במכשיר הזה.',
+	CONFLICT_LOCAL_NEWER:
+		'המידע במכשיר הזה עדכני יותר, אך הגיבוי בענן מכיל שינויים ממכשיר אחר (ייתכן שתאבד את השינויים שם אם תדרוס).',
+	CONFLICT_WITH_DEVICE: (deviceName: string) => `זוהו שינויים ממכשיר אחר ("${deviceName}").`,
+	REMOTE_VERSION: 'גיבוי בענן',
+	LOCAL_VERSION: 'מידע מקומי',
+	RECOMMENDED_SUFFIX: ' (מומלץ)',
 	KEEP_REMOTE: 'עדכן מהענן',
 	KEEP_LOCAL: 'השאר מקומי',
 	CLIENT_ID_LABEL: 'מזהה לקוח (Client ID) - מתקדם',
