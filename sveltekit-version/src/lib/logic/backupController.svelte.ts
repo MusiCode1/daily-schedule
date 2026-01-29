@@ -4,6 +4,7 @@ import { db } from '../services/db';
 import { globalState } from '../stores/globalState.svelte'; // For listening to changes?
 // Or maybe we just rely on manual trigger + auto-trigger hook
 import { GOOGLE_CLIENT_ID } from '../config';
+import type { AppState, List, Task, UserProfile } from '../types';
 
 export class BackupController {
 	// State
@@ -11,6 +12,7 @@ export class BackupController {
 	isAutoBackupEnabled = $state(true); // Default to true
 	lastBackupTime: Date | null = $state(null);
 	status: 'idle' | 'backing_up' | 'restoring' | 'error' | 'success' = $state('idle');
+	statusMessage = $state('');
 	errorMessage = $state('');
 	userInfo: { displayName?: string; emailAddress?: string; photoLink?: string } | null =
 		$state(null);
@@ -196,11 +198,14 @@ export class BackupController {
 		this.errorMessage = '';
 
 		try {
+			this.statusMessage = 'מכין נתונים לגיבוי...';
 			// הכנת הנתונים לגיבוי כולל תמונות
 			const backupData = await this.prepareBackupData();
 
+			this.statusMessage = 'מעלה ל-Google Drive...';
 			await googleDriveService.backup(backupData, 'DailyScheduleBackup'); // שם התיקייה
 
+			this.statusMessage = '';
 			this.status = 'success';
 			this.lastBackupTime = new Date();
 
@@ -213,7 +218,55 @@ export class BackupController {
 			console.error('Backup failed', e);
 			this.status = 'error';
 			this.errorMessage = e.message || 'Backup failed';
+			this.statusMessage = '';
 		}
+	}
+
+	async downloadLocalBackup() {
+		try {
+			this.statusMessage = 'מכין קובץ להורדה...';
+			const data = await this.prepareBackupData();
+			this.downloadFile(data, 'daily_schedule_backup.json');
+			this.statusMessage = '';
+		} catch (e) {
+			console.error('Failed to download local backup', e);
+			alert('שגיאה ביצירת קובץ הגיבוי');
+			this.statusMessage = '';
+		}
+	}
+
+	async downloadRemoteBackup(fileId: string) {
+		try {
+			this.status = 'restoring';
+			this.statusMessage = 'מוריד קובץ מ-Google Drive...';
+
+			const data = await googleDriveService.restore(fileId);
+			if (!data) throw new Error('Empty backup');
+
+			this.statusMessage = 'יוצר קובץ להורדה...';
+			const json = JSON.stringify(data, null, 2);
+			this.downloadFile(json, 'remote_backup.json');
+			this.status = 'idle';
+			this.statusMessage = '';
+		} catch (e) {
+			console.error('Failed to download remote backup', e);
+			this.status = 'error';
+			this.errorMessage = 'הורדה נכשלה';
+			this.statusMessage = '';
+			alert('שגיאה בהורדת הקובץ');
+		}
+	}
+
+	private downloadFile(content: string, filename: string) {
+		const blob = new Blob([content], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = filename;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
 	}
 
 	// פונקציה להמרת הנתונים לגיבוי מלא (החזרת התמונות מ-IndexedDB לתוך ה-JSON)
@@ -247,7 +300,11 @@ export class BackupController {
 
 					// תמונות משימות
 					for (const task of list.tasks) {
-						if (task.imageSrc && typeof task.imageSrc === 'string' && task.imageSrc.startsWith('idb:')) {
+						if (
+							task.imageSrc &&
+							typeof task.imageSrc === 'string' &&
+							task.imageSrc.startsWith('idb:')
+						) {
 							task.imageSrc = await this.hydrateImage(task.imageSrc);
 						}
 					}
@@ -270,6 +327,75 @@ export class BackupController {
 		}
 
 		return JSON.stringify(state);
+	}
+
+	private async extractImagesFromState(data: any): Promise<any> {
+		const imageMap = new Map<string, string>(); // Cache: DataURL -> IdbID
+
+		// פונקציית עזר פנימית לטיפול ב-URL בודד
+		const processUrl = async (url: string | undefined | null): Promise<string | null> => {
+			if (!url || !url.startsWith('data:image')) return url || null;
+
+			if (imageMap.has(url)) {
+				return imageMap.get(url)!;
+			}
+
+			try {
+				const blob = await this.dataURLToBlob(url);
+				const id = await db.saveImage(blob);
+				imageMap.set(url, id);
+				return id;
+			} catch (e) {
+				console.error('Failed to save image to DB', e);
+				return url; // במקרה שגיאה נשאיר את המקורי
+			}
+		};
+
+		// 1. מעבר על Users
+		if (data.users && Array.isArray(data.users)) {
+			for (const user of data.users) {
+				if (user.avatar) user.avatar = await processUrl(user.avatar);
+			}
+		}
+
+		// 2. מעבר על Lists & Tasks
+		if (data.lists) {
+			for (const userId of Object.keys(data.lists)) {
+				const lists = data.lists[userId];
+				if (Array.isArray(lists)) {
+					for (const list of lists) {
+						if (list.logo) list.logo = await processUrl(list.logo);
+
+						if (list.tasks && Array.isArray(list.tasks)) {
+							for (const task of list.tasks) {
+								if (task.imageSrc) task.imageSrc = await processUrl(task.imageSrc);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// 3. מעבר על Images global map (תיקון מפתחות)
+		if (data.images) {
+			const newImages: any = {};
+			for (const key of Object.keys(data.images)) {
+				const newKey = await processUrl(key);
+				if (newKey && newKey !== key) {
+					newImages[newKey] = data.images[key];
+				} else {
+					// אם זה לא היה data url או שנכשל, שומרים כמו שהיה
+					newImages[key] = data.images[key];
+				}
+			}
+			data.images = newImages;
+		}
+
+		return data;
+	}
+
+	private dataURLToBlob(dataURL: string): Promise<Blob> {
+		return fetch(dataURL).then((res) => res.blob());
 	}
 
 	private async hydrateImage(idbId: string): Promise<string> {
@@ -314,13 +440,21 @@ export class BackupController {
 
 	async restoreFromFile(fileId: string) {
 		this.status = 'restoring';
+		this.statusMessage = 'מתחיל תהליך שחזור...';
 		try {
+			this.statusMessage = 'מוריד קובץ גיבוי...';
 			const data = await googleDriveService.restore(fileId);
 			// בדיקת תקינות בסיסית
 			if (!data || !data.users) throw new Error('Invalid backup file');
 
+			// חילוץ תמונות ל-IndexedDB למניעת קריסת Quota
+			console.log('Extracting images to IndexedDB...');
+			this.statusMessage = 'מחלץ ושומר תמונות (זה עשוי לקחת רגע)...';
+			const cleanData = await this.extractImagesFromState(data);
+
 			// שמירה ל-LocalStorage
-			localStorage.setItem('daily-schedule-data', JSON.stringify(data));
+			this.statusMessage = 'שומר נתונים ומרענן...';
+			localStorage.setItem('daily-schedule-data', JSON.stringify(cleanData));
 
 			// טעינה מחדש של הדף כדי שה-Storms יתעדכנו
 			window.location.reload();
@@ -328,6 +462,7 @@ export class BackupController {
 			console.error('Restore failed', e);
 			this.status = 'error';
 			this.errorMessage = 'Restore failed';
+			this.statusMessage = '';
 		}
 	}
 }

@@ -1,5 +1,69 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-01-29 12:50
+
+### שיפורים במערכת הגיבוי והשחזור
+
+פתרנו בעיות קריטיות בתהליך השחזור (QuotaExceededError) ושדרגנו את חווית הגיבוי עם אפשרויות הורדה וחיווי סטטוס.
+
+#### מה בוצע?
+
+**1. תיקון QuotaExceededError בשחזור**
+
+- יצרנו מנגנון `extractImagesFromState` המזהה תמונות בגיבוי.
+- חילוץ תמונות Base64 ושמירתן ב-IndexedDB במקום ב-LocalStorage.
+- החלפת התמונות ב-IDs קצרים, מה שמאפשר שמירת קבצי גיבוי גדולים ללא חריגה.
+
+**2. אפשרויות ייצוא והורדה**
+
+- הוספת כפתור "📥" לייצוא הגיבוי לקובץ מקומי (`daily_schedule_backup.json`).
+- הוספת כפתור "⬇️" להורדת קובץ גיבוי ישירות מ-Google Drive בחלון השחזור.
+
+**3. שיפור חווית המשתמש**
+
+- הוספת חיווי סטטוס (`statusMessage`) בזמן אמת: "מוריד...", "מחלץ תמונות...", "מגבה...".
+- הוספת אינדיקטור לטעינה (Spinner) בממשק הגיבוי.
+
+**4. תיקון Google Auth Redirect**
+
+- עדכון תיעוד ההגדרות (`docs/google-drive-public-setup.md`) עם ה-URI הנכון לקונסולת מפתחים למניעת שגיאות redirect_uri_mismatch.
+
+**קבצים ששונו**:
+
+- `sveltekit-version/src/lib/logic/backupController.svelte.ts`
+- `sveltekit-version/src/lib/components/GoogleDriveBackup.svelte`
+- `docs/google-drive-public-setup.md`
+
+---
+
+## 2026-01-28 11:20
+
+### תיקון שגיאת Build: state_unsafe_mutation
+
+תיקנו שגיאה קריטית שמנעה בילד תקין, שבה Svelte 5 זיהה שינויי State בתוך פונקציות קריאה (Getters) ב-`ListStore`.
+
+---
+
+#### מה בוצע?
+
+**1. הפיכת `getUserLists` ו-`getActiveList` לפונקציות טהורות**
+
+- ביטלנו את ה"אתחול האוטומטי" (כתיבה למערך ריק) בתוך `getUserLists` אם הרשימה חסרה. כעת הפונקציה מחזירה מערך ריק זמני מבלי לשמור אותו.
+- הסרנו את הקריאה ל-`setActiveList` מתוך `getActiveList`. כעת אם אין רשימה פעילה, הפונקציה מחזירה את הראשונה כברירת מחדל לתצוגה בלבד.
+
+**קבצים ששונו**:
+
+- `sveltekit-version/src/lib/stores/listStore.svelte.ts`
+
+---
+
+#### בדיקות שבוצעו
+
+- ✅ **npm run build**: עבר בהצלחה (לפני כן נכשל עם השגיאה).
+- ✅ **אימות לוגי**: וידאנו שהשינוי לא פוגע במשתמשים קיימים (מכיוון ש-`defaults.ts` ו-`addUser` מייצרים את המצב הראשוני בצורה תקינה).
+
+---
+
 ## 2026-01-28 10:48
 
 ### הוספת פקודת דפלוי ל-Cloudflare (Branch: dev)

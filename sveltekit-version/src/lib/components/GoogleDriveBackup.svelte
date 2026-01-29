@@ -88,12 +88,22 @@
                   <button class="btn-primary" onclick={handleBackup} disabled={backupController.status === 'backing_up'}>
                       {backupController.status === 'backing_up' ? '...' : TEXTS.BACKUP_NOW}
                   </button>
+                  <button class="btn-outline" onclick={() => backupController.downloadLocalBackup()} title="שמור גיבוי לקובץ מקומי">
+                      📥
+                  </button>
               </div>
 
               <label class="toggle-row">
                   <input type="checkbox" bind:checked={backupController.isAutoBackupEnabled} onchange={() => backupController.saveLocalSettings()} />
                   <span>{TEXTS.AUTO_BACKUP}</span>
               </label>
+
+              {#if backupController.statusMessage}
+                  <div class="status-message" in:fade>
+                      <div class="spinner"></div>
+                      <span>{backupController.statusMessage}</span>
+                  </div>
+              {/if}
 
               {#if backupController.lastBackupTime}
                   <div class="last-backup">
@@ -126,10 +136,15 @@
           <h3>{TEXTS.RESTORE_FROM_BACKUP}</h3>
           <div class="backup-list">
               {#each restoreFiles as file}
+              <div style="display: flex; align-items: stretch;">
                   <button class="backup-item" onclick={() => confirmRestore(file.id)}>
                       <span class="file-date">{new Date(file.modifiedTime).toLocaleString('he-IL')}</span>
                       <span class="file-name">{file.name}</span>
                   </button>
+                  <button class="download-btn" onclick={(e) => { e.stopPropagation(); backupController.downloadRemoteBackup(file.id); }} title="הורד קובץ">
+                      ⬇️
+                  </button>
+              </div>
               {/each}
           </div>
           <button class="close-btn" onclick={() => isRestoreModalOpen = false}>{TEXTS.CANCEL}</button>
@@ -255,9 +270,17 @@
   .backup-item {
       display: flex; justify-content: space-between; padding: 1rem;
       background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
-      cursor: pointer; text-align: right;
+      cursor: pointer; text-align: right; flex: 1;
   }
   .backup-item:hover { background: #f1f5f9; border-color: #cbd5e1; }
+
+  .download-btn {
+      background: none; border: 1px solid #e2e8f0; border-radius: 8px;
+      padding: 0 1rem; cursor: pointer; margin-right: 0.5rem;
+      display: flex; align-items: center; justify-content: center;
+  }
+  .download-btn:hover { background: #f1f5f9; }
+
   .close-btn { margin-top: 1rem; background: none; border: 1px solid #e2e8f0; padding: 0.5rem; border-radius: 8px; cursor: pointer; }
   
   .conflict-comparison { display: flex; flex-direction: column; gap: 0.5rem; background: #fff7ed; padding: 1rem; border-radius: 8px; border: 1px solid #fed7aa; }
@@ -269,4 +292,24 @@
   
   .btn-conflict-local { background: white; border: 1px solid #d1d5db; color: #4b5563; padding: 0.75rem 1rem; border-radius: 8px; cursor: pointer; }
   .btn-conflict-local:hover { background: #f3f4f6; }
+
+  .status-message {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: #f0f9ff; color: #0369a1; padding: 0.75rem;
+      border-radius: 8px; border: 1px solid #bae6fd; margin-bottom: 1rem;
+      font-size: 0.9rem; font-weight: 500;
+  }
+
+  .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid #0369a1;
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+  }
 </style>

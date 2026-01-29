@@ -7,6 +7,7 @@
 ## 📋 סיכום מהיר
 
 הפיצ'ר של גיבוי ושחזור דרך Google Drive **מיושם מלא** וכולל:
+
 - ✅ אוטנטיקציה OAuth2 (Serverless)
 - ✅ גיבוי ידני ואוטומטי
 - ✅ שחזור מגיבויים קיימים
@@ -27,6 +28,7 @@
 ### שלב 2: מסך OAuth Consent Screen
 
 1. בתפריט הצד, עבור אל:
+
    ```
    APIs & Services → OAuth consent screen
    ```
@@ -38,12 +40,12 @@
 ### שלב 3: שינוי סטטוס הפרסום
 
 1. לחץ על כפתור **"PUBLISH APP"** (או "Publish to Production")
-   
 2. תופיע אזהרה:
+
    ```
    Publishing your app will make it available to any user with a Google Account.
-   
-   Your app will still show an unverified app screen until you complete 
+
+   Your app will still show an unverified app screen until you complete
    the verification process.
    ```
 
@@ -52,13 +54,15 @@
 ### שלב 4: הבנת המצב "Unverified"
 
 לאחר הפרסום, המשתמשים יראו מסך אזהרה:
+
 ```
 Google hasn't verified this app
-This app hasn't been verified by Google yet. Only proceed if you 
+This app hasn't been verified by Google yet. Only proceed if you
 know and trust the developer.
 ```
 
 **זה נורמלי לחלוטין!** המשתמשים יכולים:
+
 1. ללחוץ על "Advanced"
 2. לבחור "Go to [שם האפליקציה] (unsafe)"
 3. להמשיך להתחברות
@@ -68,11 +72,13 @@ know and trust the developer.
 ## 🔒 האם צריך Verification?
 
 ### מתי **לא** צריך:
+
 - ✅ אפליקציה פרטית/משפחתית (המקרה שלנו!)
 - ✅ מספר מצומצם של משתמשים מוכרים
 - ✅ אין שימוש מסחרי
 
 ### מתי **כן** צריך:
+
 - ❌ אפליקציה ציבורית עם אלפי משתמשים
 - ❌ שימוש מסחרי
 - ❌ רוצים להסיר לחלוטין את מסך האזהרה
@@ -116,16 +122,19 @@ know and trust the developer.
 ## 🧪 בדיקה לאחר הפרסום
 
 ### בדיקה 1: משתמש חדש
+
 1. פתח את האפליקציה במצב Incognito
 2. נסה להתחבר ל-Google Drive
 3. ודא שהמסך "Unverified" מופיע אבל ניתן לעבור אותו
 
 ### בדיקה 2: גיבוי ושחזור
+
 1. בצע גיבוי מכלל אחד
 2. שחזר באותו כלי או בכלי אחר
 3. ודא שהכל עובד
 
 ### בדיקה 3: קונפליקטים
+
 1. פתח את האפליקציה בשני טאבים שונים
 2. ערוך נתונים בכל טאב
 3. בצע גיבוי מטאב אחד
@@ -136,11 +145,13 @@ know and trust the developer.
 ## 🎯 סיכום
 
 **מה יש:**
+
 - ✅ קוד מוכן מלא
 - ✅ OAuth2 פועל
 - ✅ כל הפיצ'רים מיושמים
 
 **מה חסר:**
+
 - ⏸️ לחיצה על "PUBLISH APP" ב-Google Cloud Console
 
 **זמן ביצוע:** ~2 דקות
@@ -158,12 +169,24 @@ know and trust the developer.
 ## 🆘 פתרון בעיות נפוצות
 
 ### בעיה: "Access blocked: Authorization Error"
+
 **פתרון:** ודא שה-scope `https://www.googleapis.com/auth/drive.appdata` מאושר ב-OAuth consent screen.
 
-### בעיה: "Redirect URI mismatch"
-**פתרון:** ודא שה-redirect URI תואם בדיוק ל-URL המוגדר ב-OAuth Client (כולל `http://` או `https://`).
+### בעיה: "Redirect URI mismatch" (שגיאה 400)
+
+**סיבה:** הכתובת הנוכחית (למשל `https://dev.daily-schedule.pages.dev`) אינה מאושרת במסוף של גוגל.
+**פתרון:**
+
+1. כנס ל-Console -> Credentials -> OAuth 2.0 Client IDs.
+2. הוסף תחת **Authorized JavaScript origins** את הכתובת המלאה:
+   - `https://daily-schedule.pages.dev` (פרודקשן)
+   - `https://dev.daily-schedule.pages.dev` (סביבת פיתוח - שים לב ל-dev בהתחלה!)
+   - `http://localhost:5173` (לפיתוח מקומי)
+3. הוסף תחת **Authorized redirect URIs** את אותן כתובות (ליתר ביטחון, למרות שב-Popup ה-Origin הוא הקובע).
+4. שמור והמתן מספר דקות.
 
 ### בעיה: משתמשים לא יכולים להתחבר
+
 **פתרון:** ודא שעברת ל-"In production" ולא "Testing" (במצב Testing רק 100 משתמשים test מאושרים יכולים להיכנס).
 
 ---
