@@ -2,15 +2,16 @@
   import UserSelector from '$lib/components/UserSelector.svelte';
   import { SessionController } from '$lib/logic/session.svelte';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { TEXTS } from '$lib/services/language';
+  import { onMount } from 'svelte';
   
   const session = new SessionController();
 
-  // אם המשתמש נבחר (דרך הקומפוננטה), היא מעדכנת את הסטור.
-  // אנו עוקבים אחרי השינוי ומנווטים.
-  $effect(() => {
+  // אם כבר קיים משתמש מחובר, אין סיבה להישאר במסך ההתחברות.
+  onMount(() => {
     if (session.currentUser) {
-        goto('/');
+      goto(resolve('/tasks'), { replaceState: true });
     }
   });
 

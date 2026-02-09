@@ -1,10 +1,17 @@
 import { page } from 'vitest/browser';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
-import Page from './+page.svelte';
+import { INITIAL_STATE } from '$lib/data/defaults';
+import { STORAGE_KEY } from '$lib/stores/persistence';
+import Page from './(board)/tasks/+page.svelte';
 
-describe('/+page.svelte', () => {
+describe('/tasks/+page.svelte', () => {
 	it('should render h1', async () => {
+		// הגדרה מינימלית של משתמש פעיל כדי שהלוח ירונדר (ולא יפנה ל-login)
+		const state = JSON.parse(JSON.stringify(INITIAL_STATE));
+		state.currentUserId = state.users?.[0]?.id ?? null;
+		localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
 		render(Page);
 
 		const heading = page.getByRole('heading', { level: 1 });

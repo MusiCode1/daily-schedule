@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { Task } from '$lib/types';
-  import ImageDisplay from './ImageDisplay.svelte';
+  import ImageDisplay from '$lib/components/ImageDisplay.svelte';
   import { TEXTS } from '$lib/services/language';
   import ActionButton from '$lib/components/ui/ActionButton.svelte';
 
@@ -61,13 +61,14 @@
     </div>
   {/if}
 
-  <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="task-card"
     draggable={isEditMode}
     class:editable={isEditMode}
     onclick={handleToggle}
+    onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && handleToggle(e)}
+    role="button"
+    tabindex="0"
     {...rest}
   >
     {#if isEditMode}

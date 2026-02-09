@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
+  import { resolve } from '$app/paths';
   import { TEXTS } from '$lib/services/language';
   import { fade } from 'svelte/transition';
 
@@ -11,10 +12,10 @@
     { id: 'lists', label: TEXTS.LISTS_TAB, icon: '📋', path: '/settings/lists' },
     { id: 'people', label: TEXTS.PEOPLE_TAB, icon: '👨‍👩‍👧‍👦', path: '/settings/people' },
     { id: 'general', label: TEXTS.GENERAL_TAB, icon: '⚙️', path: '/settings/general' }
-  ];
+  ] as const;
 
   function handleBack() {
-    goto('/');
+    goto(resolve('/tasks'));
   }
 
   // Derive active tab from URL
@@ -28,11 +29,11 @@
   </header>
 
   <div class="tabs-container">
-    {#each TABS as tab}
+    {#each TABS as tab (tab.id)}
       <button 
         class="tab-btn" 
         class:active={activeTab === tab.id}
-        onclick={() => goto(tab.path)}
+        onclick={() => goto(resolve(tab.path))}
       >
         <span class="tab-icon">{tab.icon}</span>
         {tab.label}

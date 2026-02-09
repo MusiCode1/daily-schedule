@@ -1,15 +1,14 @@
 <script lang="ts">
   import { ACTIVITIES } from '$lib/data/defaults';
-  import ImageUploader from './ImageUploader.svelte';
+  import ImageUploader from '$lib/components/ImageUploader.svelte';
   import { TEXTS } from '$lib/services/language';
+  import { onMount } from 'svelte';
 
   let { 
-    isOpen = false,
     taskToEdit,
     onclose,
     onsave
   } = $props<{ 
-    isOpen?: boolean;
     taskToEdit?: { name: string; imageSrc: string | null } | null;
     onclose?: () => void;
     onsave?: (data: { name: string; imageSrc: string | null }) => void;
@@ -22,20 +21,16 @@
   let changeType: 'cancelled' | 'added' = $state('cancelled');
   let isActivitiesExpanded = $state(true); // מצב פתוח/סגור של רשת הפעילויות
 
-  $effect(() => {
-    if (isOpen && taskToEdit) {
-      taskName = taskToEdit.name;
-      imageSrc = taskToEdit.imageSrc;
-      communicationBoardUrl = (taskToEdit as any).communicationBoardUrl || '';
-      isChangeTask = !!(taskToEdit as any).changeType;
-      changeType = (taskToEdit as any).changeType || 'cancelled';
-      // במצב עריכה, לא נבחר פעילות אוטומטית - נאפשר עריכה חופשית
-      selectedActivityId = null;
-    } else if (isOpen && !taskToEdit) {
-      // ניקוי רק אם נפתח במצב חדש
-    }
-  });
   let selectedActivityId: string | null = $state(null);
+  onMount(() => {
+    if (!taskToEdit) return;
+    taskName = taskToEdit.name;
+    imageSrc = taskToEdit.imageSrc;
+    communicationBoardUrl = (taskToEdit as any).communicationBoardUrl || '';
+    isChangeTask = !!(taskToEdit as any).changeType;
+    changeType = (taskToEdit as any).changeType || 'cancelled';
+    selectedActivityId = null;
+  });
 
   function handleClose() {
     onclose?.();
@@ -80,113 +75,115 @@
   }
 </script>
 
-{#if isOpen}
-  <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="modal-overlay open" onclick={(e) => e.target === e.currentTarget && handleClose()} role="dialog" aria-modal="true" tabindex="-1">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2>{TEXTS.ADD_ACTIVITY}</h2>
+<div
+  class="modal-overlay"
+  onclick={(e) => e.target === e.currentTarget && handleClose()}
+  onkeydown={(e) => e.key === 'Escape' && handleClose()}
+  role="dialog"
+  aria-modal="true"
+  tabindex="-1"
+>
+  <div class="modal-card">
+    <div class="modal-header">
+      <h2>{TEXTS.ADD_ACTIVITY}</h2>
+      <button 
+        type="button"
+        class="toggle-activities-btn"
+        onclick={() => isActivitiesExpanded = !isActivitiesExpanded}
+        title={isActivitiesExpanded ? TEXTS.COLLAPSE_ACTIVITIES_GRID : TEXTS.EXPAND_ACTIVITIES_GRID}
+      >
+        {isActivitiesExpanded ? '▼' : '◀'}
+      </button>
+    </div>
+    
+    <!-- בחירת רשת פעילויות -->
+    <div class="activities-grid" class:collapsed={!isActivitiesExpanded}>
+      {#each ACTIVITIES as activity (activity.id)}
         <button 
           type="button"
-          class="toggle-activities-btn"
-          onclick={() => isActivitiesExpanded = !isActivitiesExpanded}
-          title={isActivitiesExpanded ? TEXTS.COLLAPSE_ACTIVITIES_GRID : TEXTS.EXPAND_ACTIVITIES_GRID}
+          class="selection-card {selectedActivityId === activity.id ? 'selected' : ''}"
+          onclick={() => handleActivitySelect(activity)}
         >
-          {isActivitiesExpanded ? '▼' : '◀'}
+          <img class="selection-card-img" src="/images/activities/{activity.image}" alt={activity.name} loading="lazy" />
+          <span class="selection-card-label">{activity.name}</span>
         </button>
+      {/each}
+    </div>
+
+    <form onsubmit={(e) => { e.preventDefault(); handleSave(); }}>
+      <div class="form-group">
+        <label for="taskName">{TEXTS.ACTIVITY_NAME}</label>
+        <input
+          id="taskName"
+          type="text"
+          bind:value={taskName}
+          oninput={handleNameInput}
+          class="input"
+          placeholder={TEXTS.CHOOSE_OR_TYPE}
+          required
+        />
       </div>
       
-      <!-- בחירת רשת פעילויות -->
-      <div class="activities-grid" class:collapsed={!isActivitiesExpanded}>
-        {#each ACTIVITIES as activity}
-          <button 
-            type="button"
-            class="selection-card {selectedActivityId === activity.id ? 'selected' : ''}"
-            onclick={() => handleActivitySelect(activity)}
-          >
-            <!-- svelte-ignore a11y_img_redundant_alt -->
-            <img class="selection-card-img" src="/images/activities/{activity.image}" alt={activity.name} loading="lazy" />
-            <span class="selection-card-label">{activity.name}</span>
-          </button>
-        {/each}
+      <div class="custom-image-section">
+          <span class="label">{TEXTS.CHOOSE_IMAGE_OPTIONAL}</span>
+          <!-- ניקוי בחירת פעילות אם מתבצעת העלאה ידנית -->
+          <ImageUploader 
+              imageSrc={imageSrc} 
+              onchange={(src) => { 
+                  imageSrc = src; 
+                  if (src) selectedActivityId = null; 
+              }} 
+          />
       </div>
 
-      <form onsubmit={(e) => { e.preventDefault(); handleSave(); }}>
-        <div class="form-group">
-          <label for="taskName">{TEXTS.ACTIVITY_NAME}</label>
-          <input
-            id="taskName"
-            type="text"
-            bind:value={taskName}
-            oninput={handleNameInput}
-            class="input"
-            placeholder={TEXTS.CHOOSE_OR_TYPE}
-            required
-          />
-        </div>
+      <!-- קישור ללוח תקשורת -->
+      <div class="form-group">
+        <label for="boardUrl">{TEXTS.COMMUNICATION_BOARD_URL}</label>
+        <input
+          id="boardUrl"
+          type="url"
+          bind:value={communicationBoardUrl}
+          class="input"
+          placeholder={TEXTS.COMMUNICATION_BOARD_PLACEHOLDER}
+        />
+      </div>
+
+      <!-- סימון כמשימת שינוי -->
+      <div class="change-section">
+        <label class="toggle-label">
+          <input type="checkbox" bind:checked={isChangeTask} />
+          <span>{TEXTS.MARK_AS_CHANGE}</span>
+        </label>
         
-        <div class="custom-image-section">
-            <span class="label">{TEXTS.CHOOSE_IMAGE_OPTIONAL}</span>
-            <!-- ניקוי בחירת פעילות אם מתבצעת העלאה ידנית -->
-            <ImageUploader 
-                imageSrc={imageSrc} 
-                onchange={(src) => { 
-                    imageSrc = src; 
-                    if (src) selectedActivityId = null; 
-                }} 
-            />
-        </div>
+        {#if isChangeTask}
+          <div class="change-type-select">
+            <label class="change-option">
+              <input type="radio" bind:group={changeType} value="cancelled" />
+              <span class="change-cancelled">🚫 {TEXTS.CHANGE_CANCELLED}</span>
+            </label>
+            <label class="change-option">
+              <input type="radio" bind:group={changeType} value="added" />
+              <span class="change-added">✨ {TEXTS.CHANGE_ADDED}</span>
+            </label>
+          </div>
+        {/if}
+      </div>
 
-        <!-- קישור ללוח תקשורת -->
-        <div class="form-group">
-          <label for="boardUrl">{TEXTS.COMMUNICATION_BOARD_URL}</label>
-          <input
-            id="boardUrl"
-            type="url"
-            bind:value={communicationBoardUrl}
-            class="input"
-            placeholder={TEXTS.COMMUNICATION_BOARD_PLACEHOLDER}
-          />
-        </div>
-
-        <!-- סימון כמשימת שינוי -->
-        <div class="change-section">
-          <label class="toggle-label">
-            <input type="checkbox" bind:checked={isChangeTask} />
-            <span>{TEXTS.MARK_AS_CHANGE}</span>
-          </label>
-          
-          {#if isChangeTask}
-            <div class="change-type-select">
-              <label class="change-option">
-                <input type="radio" bind:group={changeType} value="cancelled" />
-                <span class="change-cancelled">🚫 {TEXTS.CHANGE_CANCELLED}</span>
-              </label>
-              <label class="change-option">
-                <input type="radio" bind:group={changeType} value="added" />
-                <span class="change-added">✨ {TEXTS.CHANGE_ADDED}</span>
-              </label>
-            </div>
-          {/if}
-        </div>
-
-        <div class="actions">
-          <button
-            type="button"
-            onclick={handleClose}
-            class="btn-cancel"
-          >
-            {TEXTS.CANCEL}
-          </button>
-          <button type="submit" class="btn-primary" disabled={!taskName}>
-            {TEXTS.SAVE}
-          </button>
-        </div>
-      </form>
-    </div>
+      <div class="actions">
+        <button
+          type="button"
+          onclick={handleClose}
+          class="btn-cancel"
+        >
+          {TEXTS.CANCEL}
+        </button>
+        <button type="submit" class="btn-primary" disabled={!taskName}>
+          {TEXTS.SAVE}
+        </button>
+      </div>
+    </form>
   </div>
-{/if}
+</div>
 
 <style>
   @reference "tailwindcss";
@@ -200,14 +197,10 @@
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(5px);
     z-index: 200;
-    display: none;
+    display: flex;
     align-items: center;
     justify-content: center;
     padding: 1rem;
-  }
-
-  .modal-overlay.open {
-    display: flex;
   }
 
   .modal-card {

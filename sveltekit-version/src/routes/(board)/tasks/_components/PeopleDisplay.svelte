@@ -1,6 +1,6 @@
 <script lang="ts">
   import { peopleStore } from '$lib/stores/peopleStore.svelte';
-  import ImageDisplay from './ImageDisplay.svelte';
+  import ImageDisplay from '$lib/components/ImageDisplay.svelte';
   import { TEXTS } from '$lib/services/language';
 
   // Props

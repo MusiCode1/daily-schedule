@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ImageDisplay from './ImageDisplay.svelte';
+  import ImageDisplay from '$lib/components/ImageDisplay.svelte';
   import { TEXTS } from '$lib/services/language';
 
   // Props

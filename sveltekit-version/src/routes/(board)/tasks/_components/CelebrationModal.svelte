@@ -2,7 +2,7 @@
 	import { scale } from 'svelte/transition';
 	import { elasticOut } from 'svelte/easing';
 	import type { CelebrationData } from '$lib/logic/tasksBoard.svelte';
-	import ImageDisplay from './ImageDisplay.svelte';
+	import ImageDisplay from '$lib/components/ImageDisplay.svelte';
 	import { TEXTS } from '$lib/services/language';
 	import { Card, ModalShell } from '$lib/components/ui';
 

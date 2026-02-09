@@ -26,6 +26,69 @@
 
 - `npm run check` ב-`sveltekit-version` עבר (0 errors). נשארו warnings קיימים ב-`AddModal.svelte` סביב `@reference/@apply`.
 
+## 2026-02-09 16:51
+
+### הפרדת טקסטים לפי קהל יעד (ילד/מבוגר) + בסיס למיפוי TTS מוקלט מראש
+
+ביצענו שינוי מבני ב-`texts.ts` כדי לאפשר הבחנה ברורה בין טקסטים שפונים לילד (UI + טקסטים שמוקראים/אמורים להיות מוקלטים) לבין טקסטים שפונים למבוגר (מסכי ניהול/הגדרות/גיבוי).
+
+#### מה בוצע?
+
+**1. פיצול `TEXTS` פנימית בלי לשבור תאימות לאחור**
+
+- הוגדרו שני אובייקטים חדשים:
+  - `TEXTS_CHILD` – טקסטים של ממשק הילד (Board/Login/Celebration + טקסטים שמוקראים)
+  - `TEXTS_ADMIN` – טקסטים של ממשק ניהול (Settings/Backup/Privacy/Edit mode וכו')
+- עדיין מיוצא `TEXTS` מאוחד: `export const TEXTS = { ...TEXTS_ADMIN, ...TEXTS_CHILD }` כדי שכל שימוש קיים ב-`TEXTS.KEY` ימשיך לעבוד.
+
+**2. הוספת שכבת מטא-דאטה לטקסטים**
+
+- נוספו טיפוסים:
+  - `TextAudience = 'child' | 'admin' | 'shared'`
+  - `TextTtsPolicy = 'preRecorded' | 'runtimeOk'`
+- נוספה מפה התחלתית `TEXTS_META` כדי לתייג מפתחות קריטיים (בעיקר כאלה שמוקראים או משותפים).
+- נוספה רשימה נגזרת `CHILD_PRE_RECORDED_TTS_KEYS` שמחזירה את המפתחות שסומנו כ-`audience: 'child'` ו-`tts: 'preRecorded'`.
+
+**3. תיעוד החלטות**
+
+- עודכן מסמך התכנון `documentation/texts-audience-separation-plan.md` עם:
+  - החלטה להתחיל בלי `TEXTS_SHARED` (כי החפיפה קטנה)
+  - רשימת 6 המפתחות המשותפים שנמצאו בפועל (Child + Admin)
+
+#### בדיקות שבוצעו
+
+- `npm run check` ב-`sveltekit-version` עבר (0 errors). נשארו warnings קיימים ב-`AddModal.svelte` סביב `@reference/@apply`.
+
+#### קבצים ששונו
+
+- `sveltekit-version/src/lib/data/texts.ts`
+- `documentation/texts-audience-separation-plan.md`
+
+## 2026-02-09 18:26
+
+### ארגון Routes לקבוצות + העברת מסך הלוח ל-`/tasks` + הצמדת קומפוננטות לדף (Colocation)
+
+- מסך הלוח הועבר ל-`sveltekit-version/src/routes/(board)/tasks/+page.svelte` ונגיש כעת ב-`/tasks`.
+- דף השורש `sveltekit-version/src/routes/+page.svelte` משמש כ-Redirector קטן (Client-only) ל-`/tasks` או `/login` לפי `SessionController`, עם `goto(resolve(...))`.
+- מסכי ניהול הועברו לקבוצת `(admin)` תחת `sveltekit-version/src/routes/(admin)/settings/**` בלי שינוי כתובת.
+- `test-board` סווג כ-dev והועבר ל-`sveltekit-version/src/routes/(dev)/test-board/+page.svelte` (ללא שינוי URL).
+- קומפוננטות בלעדיות ללוח הוצמדו לדף תחת `sveltekit-version/src/routes/(board)/tasks/_components/**`, ועדכנו imports כך שקומפוננטות משותפות נשארות ב-`$lib/components/**`.
+- ניווטים "חזרה ללוח" עודכנו לעבוד מול `/tasks` (כולל login והגדרות), ו-`UserSelector` מבצע מעבר ל-`/tasks` מיד לאחר בחירת משתמש.
+
+#### בדיקות שבוצעו
+
+- `bun run check` ב-`sveltekit-version` עבר (0 errors). נשארו warnings קיימים ב-`AddModal.svelte` סביב `@reference/@apply`.
+
+#### קבצים מרכזיים
+
+- `sveltekit-version/src/routes/+page.svelte`
+- `sveltekit-version/src/routes/(board)/tasks/+page.svelte`
+- `sveltekit-version/src/routes/(board)/tasks/_components/*`
+- `sveltekit-version/src/routes/(admin)/settings/+layout.svelte`
+- `sveltekit-version/src/routes/(board)/login/+page.svelte`
+- `sveltekit-version/src/lib/components/UserSelector.svelte`
+- `docs/plans/board-route-groups-colocation.md`
+
 ## 2026-02-09 14:29
 
 ### מסמך החלטה: SPA מול Hash Routing
@@ -4615,7 +4678,7 @@ sveltekit-version/
 
 - **קוד**:
   - `src/routes/+page.svelte`: הוספת מנגנון `isLoaded` המבוסס על `onMount` (לווידוא ריצה בצד הלקוח) ושימוש ב-`$effect` לביצוע הפניות ניווט ריאקטיביות. ההפניה האוטומטית מ-`/login` בוטלה לפי בקשת המשתמש.
-  - `src/routes/login/+page.svelte`: דף חדש המארח את `UserSelector` ומטפל בכניסה למערכת.
+  - `src/routes/(board)/login/+page.svelte`: דף חדש המארח את `UserSelector` ומטפל בכניסה למערכת.
 
 ### בדיקות ואימות
 

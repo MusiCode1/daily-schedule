@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ImageDisplay from './ImageDisplay.svelte';
+  import ImageDisplay from '$lib/components/ImageDisplay.svelte';
   import { DEFAULT_LIST_IMAGE } from '$lib/config';
   
   let { 
@@ -22,12 +22,11 @@
 
 <div class="switcher-container">
   <div class="list-switcher">
-    {#each listsData as list}
+    {#each listsData as list (list.id)}
       <button 
         class="list-card" 
         class:active={activeListId === list.id}
         onclick={() => selectList(list.id)}
-        aria-label="Switch to {list.name}"
       >
         <div class="image-container">
           <ImageDisplay 
@@ -112,6 +111,9 @@
     color: #4b5563;
     text-align: center;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
 
   .list-card.active .list-name {

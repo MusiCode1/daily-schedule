@@ -3,6 +3,8 @@
 	import type { UserProfile } from '../types';
 	import ImageDisplay from './ImageDisplay.svelte';
 	import { TEXTS } from '$lib/services/language';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	import favicon from '$lib/assets/logo.svg';
 
@@ -10,6 +12,7 @@
 
 	function handleLogin(userId: string) {
 		userStore.login(userId);
+		goto(resolve('/tasks'), { replaceState: true });
 	}
 </script>
 
@@ -27,7 +30,7 @@
 	<h2 class="prompt">{TEXTS.USER_SELECTOR_TITLE}</h2>
 	
 	<div class="users-grid">
-		{#each users as user}
+		{#each users as user (user.id)}
 			<button 
 				class="user-card" 
 				style="--theme-color: {user.themeColor}"
