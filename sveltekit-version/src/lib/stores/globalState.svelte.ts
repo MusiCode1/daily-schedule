@@ -1,10 +1,10 @@
-import { persistence, CURRENT_VERSION } from './persistence';
+import { persistence } from './persistence';
 import { INITIAL_STATE } from '../data/defaults';
 import type { AppState } from '../types';
 import { migrationService } from '$lib/services/migration';
 
 class GlobalState {
-	state = $state<AppState>({ ...INITIAL_STATE, version: CURRENT_VERSION });
+	state = $state<AppState>({ ...INITIAL_STATE });
 
 	constructor() {
 		const loaded = persistence.load();

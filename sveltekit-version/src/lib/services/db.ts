@@ -9,13 +9,15 @@ class DBService {
 	private initPromise: Promise<void> | null = null;
 
 	constructor() {
-		if (browser) {
+		// הגנה: בבדיקות/סביבות לא-דפדפן יכול להיות שהוגדר browser=true (mock)
+		// אבל אין IndexedDB בפועל.
+		if (browser && typeof indexedDB !== 'undefined') {
 			this.init();
 		}
 	}
 
 	async init() {
-		if (!browser) return;
+		if (!browser || typeof indexedDB === 'undefined') return;
 		if (this.initPromise) return this.initPromise;
 
 		this.initPromise = new Promise((resolve, reject) => {
@@ -42,14 +44,17 @@ class DBService {
 		return this.initPromise;
 	}
 
-	async saveImage(blob: Blob): Promise<string> {
+	async saveImage(blob: Blob, idOverride?: string): Promise<string> {
 		await this.init();
 		return new Promise((resolve, reject) => {
 			if (!this.db) return reject('Database not initialized');
 
 			const transaction = this.db.transaction([STORE_NAME], 'readwrite');
 			const store = transaction.objectStore(STORE_NAME);
-			const id = `idb:${crypto.randomUUID()}`;
+			const id =
+				typeof idOverride === 'string' && idOverride.startsWith('idb:')
+					? idOverride
+					: `idb:${crypto.randomUUID()}`;
 
 			const request = store.put(blob, id);
 

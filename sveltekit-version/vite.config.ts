@@ -1,11 +1,12 @@
 import devtoolsJson from 'vite-plugin-devtools-json';
+import { ttsScannerPlugin } from './plugins/tts-scanner';
 import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-	plugins: [ tailwindcss(), sveltekit(), devtoolsJson()],
+	plugins: [tailwindcss(), sveltekit(), devtoolsJson(), ttsScannerPlugin()],
 
 	server: {
 		allowedHosts: true

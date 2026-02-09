@@ -2,9 +2,11 @@ import fs from "fs";
 import path from "path";
 
 const CURSOR_RULES_DIR = path.resolve(".cursor/rules");
+const CURSOR_COMMANDS_DIR = path.resolve(".cursor/commands");
+const QODER_RULES_DIR = path.resolve(".qoder/rules");
+const QODER_COMMANDS_DIR = path.resolve(".qoder/commands");
 const AGENT_RULES_DIR = path.resolve(".agent/rules");
 const AGENT_WORKFLOWS_DIR = path.resolve(".agent/workflows");
-const CURSOR_COMMANDS_DIR = path.resolve(".cursor/commands");
 
 // --- Helper Functions ---
 
@@ -55,68 +57,148 @@ function stringifyFrontmatter(frontmatter: any): string {
   return output;
 }
 
-// --- Sync Logic: Cursor -> Agent ---
+// --- Sync Logic: Cursor (Source) -> Agent & Qoder ---
 
 function syncToAgent() {
-  console.log("🔄 Syncing from Cursor to Agent...");
+  console.log("🔄 Syncing from Cursor (Source) to Agent & Qoder...");
   ensureDir(AGENT_RULES_DIR);
   ensureDir(AGENT_WORKFLOWS_DIR);
+  ensureDir(QODER_RULES_DIR);
+  ensureDir(QODER_COMMANDS_DIR);
 
-  // Sync Rules
+  // Sync Rules from Cursor (.mdc) -> Agent & Qoder
   if (fs.existsSync(CURSOR_RULES_DIR)) {
     const files = fs.readdirSync(CURSOR_RULES_DIR);
     for (const file of files) {
       if (file.endsWith(".mdc")) {
-        const srcPath = path.join(CURSOR_RULES_DIR, file);
-        const content = fs.readFileSync(srcPath, "utf-8");
-        const { frontmatter, body } = parseFrontmatter(content);
+        // Sync to Agent
+        processRuleFile(CURSOR_RULES_DIR, file, ".mdc");
 
-        // Transform for Agent
-        const newFrontmatter: any = { ...frontmatter };
-
-        // Agent uses 'trigger: glob' if 'globs' is present
-        if (newFrontmatter.globs) {
-          newFrontmatter.trigger = "glob";
-        }
-
-        // Ensure description
-        if (!newFrontmatter.description) {
-          newFrontmatter.description = file.replace(".mdc", "");
-        }
-
-        // Add Source Header
-        const header = `<!--\nSOURCE: .cursor/rules/${file}\n-->\n\n`;
-        const newContent = stringifyFrontmatter(newFrontmatter) + header + body;
-
-        const destFileName = file.replace(".mdc", ".md");
-        const destPath = path.join(AGENT_RULES_DIR, destFileName);
-
-        fs.writeFileSync(destPath, newContent);
-        console.log(`✅ Rule: ${file} -> ${destFileName}`);
+        // Sync to Qoder
+        processRuleToQoder(CURSOR_RULES_DIR, file);
       }
     }
   }
 
+  // NOTE: We disabling Qoder -> Agent sync as Cursor is now the single source of truth.
+  // if (fs.existsSync(QODER_RULES_DIR)) { ... }
+
   // Sync Workflows (Commands -> Workflows)
+  // From Cursor
   if (fs.existsSync(CURSOR_COMMANDS_DIR)) {
     const files = fs.readdirSync(CURSOR_COMMANDS_DIR);
     for (const file of files) {
       if (file.endsWith(".md")) {
+        processCommandFile(CURSOR_COMMANDS_DIR, file);
+        // Also sync command to Qoder if needed, assuming direct copy for commands
+        // Qoder commands folder: .qoder/commands
         const srcPath = path.join(CURSOR_COMMANDS_DIR, file);
         const content = fs.readFileSync(srcPath, "utf-8");
-        // Assuming simple copy for now as plans focus on rules
-        const destPath = path.join(AGENT_WORKFLOWS_DIR, file);
+        const destPath = path.join(QODER_COMMANDS_DIR, file);
+        // Qoder expects proper frontmatter for commands?
+        // For now, simple copy to keep them in sync.
         fs.writeFileSync(destPath, content);
-        console.log(`✅ Workflow: ${file} -> ${file}`);
       }
     }
   }
 }
 
-// --- Sync Logic: Agent -> Cursor ---
+function processRuleToQoder(dir: string, file: string) {
+  const srcPath = path.join(dir, file);
+  const content = fs.readFileSync(srcPath, "utf-8");
+  const { frontmatter, body } = parseFrontmatter(content);
+
+  const newFrontmatter: any = { ...frontmatter };
+
+  // Translate Cursor 'alwaysApply' -> Qoder 'trigger'
+  if (newFrontmatter.alwaysApply === true) {
+    newFrontmatter.trigger = "always_on";
+    delete newFrontmatter.alwaysApply;
+  } else if (newFrontmatter.alwaysApply === false) {
+    // If it has globs, it's auto/glob triggered usually, but if explicit manual context:
+    if (!newFrontmatter.globs) {
+      newFrontmatter.trigger = "manual";
+    }
+    delete newFrontmatter.alwaysApply;
+  }
+
+  // Qoder uses .md
+  const newContent = stringifyFrontmatter(newFrontmatter) + body;
+  const destFileName = file.replace(".mdc", ".md");
+  const destPath = path.join(QODER_RULES_DIR, destFileName);
+
+  fs.writeFileSync(destPath, newContent);
+  console.log(`✅ Rule (Qoder): ${file} -> ${destFileName}`);
+}
+
+function processRuleFile(
+  dir: string,
+  file: string,
+  ext: string,
+  isQoder = false,
+) {
+  const srcPath = path.join(dir, file);
+  const content = fs.readFileSync(srcPath, "utf-8");
+  const { frontmatter, body } = parseFrontmatter(content);
+
+  // Transform for Agent
+  const newFrontmatter: any = { ...frontmatter };
+
+  // Agent uses 'trigger: glob' if 'globs' is present
+  if (newFrontmatter.globs) {
+    newFrontmatter.trigger = "glob";
+  }
+
+  // Ensure description
+  if (!newFrontmatter.description) {
+    newFrontmatter.description = file.replace(ext, "");
+  }
+
+  // Add Source Header
+  const sourceDir = isQoder ? ".qoder/rules" : ".cursor/rules";
+  const header = `<!--\nSOURCE: ${sourceDir}/${file}\n-->\n\n`;
+  const newContent = stringifyFrontmatter(newFrontmatter) + header + body;
+
+  const destFileName = file.replace(ext, ".md");
+  const destPath = path.join(AGENT_RULES_DIR, destFileName);
+
+  fs.writeFileSync(destPath, newContent);
+  console.log(
+    `✅ Rule (${isQoder ? "Qoder" : "Cursor"}): ${file} -> ${destFileName}`,
+  );
+}
+
+function processCommandFile(dir: string, file: string, isQoder = false) {
+  const srcPath = path.join(dir, file);
+  const content = fs.readFileSync(srcPath, "utf-8");
+
+  // For Qoder, we might want to check for type: project_command, but broadly syncing is safer for now unless restricted
+  // But let's verify if user specifically asked for restriction. "project_command" was mentioned as format.
+  // If it's a Qoder command, it should have the Frontmatter.
+
+  if (isQoder) {
+    const { frontmatter } = parseFrontmatter(content);
+    if (frontmatter.type !== "project_command") {
+      // Use console.debug if valid, otherwise just skip silently or log info
+      // console.log(`ℹ️ Skipping ${file} (not project_command)`);
+      return;
+    }
+  }
+
+  // Assuming simple copy for now as plans focus on rules
+  // Note: Qoder commands might need transformation if format differs significantly,
+  // but user mostly showed frontmatter.
+  const destPath = path.join(AGENT_WORKFLOWS_DIR, file);
+  fs.writeFileSync(destPath, content);
+  console.log(
+    `✅ Workflow (${isQoder ? "Qoder" : "Cursor"}): ${file} -> ${file}`,
+  );
+}
+
+// --- Sync Logic: Agent -> Cursor/Qoder ---
 
 function syncToCursor() {
-  console.log("🔄 Syncing from Agent to Cursor...");
+  console.log("🔄 Syncing from Agent to Cursor/Qoder...");
 
   if (!fs.existsSync(AGENT_RULES_DIR)) {
     console.log("No agent rules found.");
@@ -134,7 +216,7 @@ function syncToCursor() {
       // Find Source Header
       const sourceMatch = fullBody.match(/<!--\s*SOURCE:\s*(.*?)\s*-->/);
       if (sourceMatch) {
-        const originalSourceRelPath = sourceMatch[1].trim(); // e.g. .cursor/rules/foo.mdc
+        const originalSourceRelPath = sourceMatch[1].trim(); // e.g. .cursor/rules/foo.mdc OR .qoder/rules/foo.md
         // Clean body by removing the header
         const cleanBody = fullBody.replace(
           /<!--\s*SOURCE:.*?\s*-->\s*\n?/s,
@@ -149,15 +231,24 @@ function syncToCursor() {
           const { frontmatter: originalFrontmatter } =
             parseFrontmatter(originalContent);
 
-          // Update globs if changed in Agent (optional, but requested to sync back changes)
+          // Update globs if changed in Agent
           if (agentFrontmatter.globs) {
             originalFrontmatter.globs = agentFrontmatter.globs;
+          }
+
+          // Translate Agent 'trigger: manual' -> Cursor 'alwaysApply: false'
+          if (agentFrontmatter.trigger === "manual") {
+            originalFrontmatter.alwaysApply = false;
+          }
+          // Translate Agent 'trigger: always_on' -> Cursor 'alwaysApply: true' (optional but good for consistency)
+          if (agentFrontmatter.trigger === "always_on") {
+            originalFrontmatter.alwaysApply = true;
           }
 
           const newContent =
             stringifyFrontmatter(originalFrontmatter) + cleanBody;
           fs.writeFileSync(destPath, newContent);
-          console.log(`✅ Updated Cursor Rule: ${path.basename(destPath)}`);
+          console.log(`✅ Updated Rule: ${path.basename(destPath)}`);
         } else {
           console.warn(
             `⚠️ Original source not found for ${file}: ${destPath}. Skipping create to avoid duplication issues.`,

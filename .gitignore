@@ -58,3 +58,11 @@ scripts/screenshots/
 *.rar
 *.7z
 **/.obsidian/**
+.localappdata
+
+# קבצים של עוזרי קוד
+# נחריג את כולם חוץ מקורסור שישמש כמקור.
+.qoder
+.agent
+
+.agents/skills/excalidraw-mcp

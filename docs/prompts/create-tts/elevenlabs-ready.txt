@@ -1,0 +1,56 @@
+v0.2
+[happy] מי משתמש בלוח היום?
+[excited] סדר יום
+[excited] ויזואלי
+[humming] טוען סדר יום...
+[excited] אתה אלוף! [laughing]
+[excited] את אלופה! [laughing]
+[excited] כל הכבוד! [laughing]
+[excited] סיימת את כל המשימות להיום! [laughing]
+[warmly] בהצלחה,
+[gentle] היום אין
+[happy] סיימת את
+[energetic] עכשיו,
+[surprised] שינוי!
+[assertive] עכשיו
+[satisfied] בוצע
+[curious] מי יהיה איתנו היום?
+[calm] לוח תקשורת
+[calm] פתח לוח תקשורת
+[calm] סגור
+[calm] חלון צף
+[whisper] שירותים
+[happy] ארוחת בוקר
+[happy] ארוחת צהריים
+[happy] ארוחת ערב
+[energetic] לצחצח שיניים!
+[relaxed] להתקלח...
+[energetic] להתלבש!
+[excited] ללכת לאוטו!
+[excited] זמן משחק! [laughing]
+[whisper] זמן שינה... [yawn]
+[happy] טאבלט
+[calm] שיעור
+[excited] ללכת לגינה!
+[creative] ציור ויצירה
+[gentle] לקחת תרופות
+[happy] ללכת לסבא וסבתא!
+[respectful] תפילה
+[focused] עבודה בקופסאות עבודה
+[happy] חצר!
+[happy] חוג בעלי חיים
+[excited] נוסעים באוטו! [laughing]
+[happy] הולכים לביקור
+[excited] אורחים מגיעים!
+[warmly] נפרדים מהאורחים
+[relieved] חזרנו הביתה [sighs]
+[energetic] שגרת בוקר!
+[happy] בוקר טוב!
+[calm] אחרי הצהריים
+[warmly] אחרי צהריים טובים
+[happy] נוסעים לסבא וסבתא!
+[expectant] מתכוננים לנסוע לסבא וסבתא...
+[happy] נסיעה טובה!
+[excited] דודים באים לבקר!
+[excited] מתכוננים לביקור של דודים!
+[welcoming] ברוכים הבאים!

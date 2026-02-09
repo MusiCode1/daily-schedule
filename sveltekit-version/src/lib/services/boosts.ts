@@ -1,11 +1,11 @@
-// src/lib/services/boosts.ts
 import { BOOST_WORDS, type BoostWord } from '$lib/data/boosts';
-import type { Gender } from '$lib/types';
+import type { Gender, Task } from '$lib/types';
 import { audioService } from './audio';
 import { type AudioSegment } from './audioSequencer';
 import { ACTIVITIES } from '$lib/data/defaults';
 import { LanguageService } from './language';
 import { TEXTS } from '$lib/data/texts';
+import { ttsService } from './tts';
 
 export const boostService = {
 	getRandomBoost(gender: Gender): string {
@@ -22,11 +22,17 @@ export const boostService = {
 		}
 
 		// ניגון אודיו ספציפי
-		const audioFile =
-			typeof boost.audioFile === 'object' ? boost.audioFile[gender] : boost.audioFile;
+		const audioId = typeof boost.audioFile === 'object' ? boost.audioFile[gender] : boost.audioFile;
 
-		if (audioFile) {
-			audioService.play(audioFile);
+		if (audioId) {
+			// Resolve TTS ID to file
+			const filename = ttsService.getTtsFile(audioId);
+			if (filename) {
+				audioService.play(filename);
+			} else {
+				// No file found for ID, fallback to ding
+				audioService.playDing();
+			}
 		} else {
 			audioService.playDing();
 		}
@@ -34,7 +40,7 @@ export const boostService = {
 		return text;
 	},
 
-	getFeedbackSequence(gender: Gender, taskName: string, userName: string, nextTaskName?: string) {
-		return LanguageService.getFeedbackSequence(gender, taskName, userName, nextTaskName);
+	getFeedbackSequence(gender: Gender, task: Task, userName: string, nextTask?: Task) {
+		return LanguageService.getFeedbackSequence(gender, task, userName, nextTask);
 	}
 };

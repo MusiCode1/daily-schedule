@@ -1,5 +1,37 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-10 01:21
+
+### שדרוג מערכת TTS: ריבוי גרסאות ואוטומציה
+
+שדרגנו את מערכת ה-TTS (Text-to-Speech) לתמיכה בריבוי הלקטות (Takes) לכל משפט, הוספנו אוטומציה לרישום הקבצים, וביצענו רפרקטורינג לקוד הקיים.
+
+#### מה בוצע?
+
+**1. תשתית אודיו ו-TTS**
+
+- **תמיכה בריבוי גרסאות (Takes)**: המערכת טוענת מספר קבצי אודיו לאותו מזהה ובוחרת ביניהם אקראית בעת הניגון.
+- **אוטומציה מלאה (Vite Plugin)**: פיתחנו פלאגין (`plugins/tts-scanner.ts`) שסורק את תיקיית `static/sounds` ומייצר אוטומטית את קובץ הרישום (`src/lib/data/tts-registry.json`).
+- **קובץ הגדרות רזה**: יצרנו את `src/lib/data/tts-definitions.ts` כמקור האמת להגדרות (ID, Text, BaseFilename), המחליף את הקובץ הישן והמסורבל.
+
+**2. שירותים ולוגיקה**
+
+- **שירות מרכזי (`src/lib/services/tts.ts`)**: מרכז את הלוגיקה של שליפת קובץ אקראי או שימוש ב-Web Speech API כגיבוי.
+- **רפרקטורינג לשירותים קיימים**:
+  - `TasksBoardController`: עודכן להשתמש ב-`ttsService` להשמעת שמות משימות והכרזות.
+  - `LanguageService`: עודכן לקבל אובייקט `Task` ולהשתמש ב-`ttsService` לבניית רצפי משוב.
+  - `boostService`: עודכן להשתמש במזהי TTS במקום שמות קבצים ישירים.
+
+**3. ארגון קבצים**
+
+- **מבנה תיקיות**: קבצי האודיו אורגנו מחדש ב-`static/sounds` תחת תיקיות `voice-version-take` (למשל `hope-v0.2-t1`), מה שמאפשר ניהול גרסאות נוח.
+- **תקינה (Standardization)**: הרצנו סקריפטים לוודא שכל הקבצים נקראים על פי ה-baseFilename המוגדר בהגדרות.
+
+#### החלטות ארכיטקטורה
+
+- **Vite Plugin לרישום**: בחרנו לייצר את ה-Registry בזמן Build/Dev כדי להימנע מרישום ידני כפול ולמנוע שגיאות של קבצים חסרים. הקוד בקלינט מקבל JSON מוכן ופשוט.
+- **שימוש ב-IDs**: המעבר משימוש בשמות קבצים לשימוש ב-IDs לוגיים (כמו `PRAISE_ALUF_BOY`) מאפשר להחליף את קבצי האודיו "מאחורי הקלעים" בלי לשנות את הקוד הצרכני.
+
 ## 2026-02-09 14:41
 
 ### אימוץ פרימיטיבי UI במסך המשימות (Board)
@@ -4886,3 +4918,60 @@ sveltekit-version/
 ## [קודם] מיגרציה ל-Svelte 5 ולוקליזציה
 
 (ראה למטה לשינויים היסטוריים...)
+
+## 2026-02-10 01:03
+
+### Drive Backup V2 (אינקרמנטלי) + איחוד state פר-מכשיר + מיגרציות ובדיקות
+
+מימשנו גיבוי Drive V2 שמעלה `assets` כקבצים נפרדים (עם dedupe) ומפצל בין `content` ל-`progress`, כך ששינוי `isDone` לא גורר העלאה מחדש של כל התמונות. בנוסף איחדנו את כל מפתחות ה-localStorage ה"חיצוניים" לאובייקט אחד פר-מכשיר (`daily-schedule-device-state`) עם מיגרציה ובדיקות fixtures.
+
+---
+
+#### מה בוצע?
+
+**1. Drive Backup V2**
+
+- פיצול מבנה הגיבוי ב-Drive ל-`daily_schedule_manifest.json` (commit marker), `daily_schedule_content.json`, `daily_schedule_progress.json`, `daily_schedule_assets.json` + תיקיית `assets/`.
+- אלגוריתם גיבוי/שחזור V2: כתיבת manifest אחרונה, העלאת assets אינקרמנטלית עם dedupe לפי `sha256:<hex>`, ושחזור שמוריד רק נכסים שחסרים מקומית.
+- **קבצים**: `sveltekit-version/src/lib/services/drive/driveBackupV2.ts`, `sveltekit-version/src/lib/services/drive/backupPayloads.ts`, `sveltekit-version/src/lib/services/drive/crypto.ts`, `sveltekit-version/src/lib/services/drive/types.ts`, `sveltekit-version/src/lib/services/drive/constants.ts`.
+
+**2. פירוק שירות Drive לחלקים רעיוניים**
+
+- הוצאנו Auth לשירות ייעודי (`googleAuthService`) והפרדנו API/HTTP/Repo.
+- **קבצים**: `sveltekit-version/src/lib/services/drive/googleAuthService.ts`, `sveltekit-version/src/lib/services/drive/driveFilesApi.ts`, `sveltekit-version/src/lib/services/drive/driveHttpClient.ts`, `sveltekit-version/src/lib/services/drive/dailyScheduleBackupRepo.ts`.
+
+**3. איחוד מפתחות localStorage פר-מכשיר**
+
+- כל מפתחות ה"metadata" (device/auth/UI/cache) אוחדו תחת `daily-schedule-device-state` עם מיגרציה חד-פעמית שמוחקת legacy keys.
+- מצב ה-floating board הועבר ל-`deviceState.settings.ui.floatingBoard` (per-device).
+- **קבצים**: `sveltekit-version/src/lib/stores/deviceState.ts`, `sveltekit-version/src/lib/services/floatingBoardState.ts`.
+
+**4. מיגרציות + fixtures**
+
+- פיצול `migration.ts` לפונקציה נפרדת לכל גרסה (v2..v14) + runner.
+- יצירת fixtures לגרסאות ישנות + בדיקות שרצות על כולן.
+- **קבצים**: `sveltekit-version/src/lib/services/migration.ts`, `sveltekit-version/src/lib/services/migrations/fixtures/state/`, `sveltekit-version/src/lib/services/migrations/state.migration.test.ts`.
+
+**5. בדיקות**
+
+- בדיקות Unit/Integration ל-Drive V2 כולל manifest-last, progress-only, dedupe, restore-only-missing, ו-fallback ל-cache IDs מיושן.
+- **קבצים**: `sveltekit-version/src/lib/services/drive/driveBackupV2.integration.test.ts`, `sveltekit-version/src/lib/services/drive/dailyScheduleBackupRepo.cache.test.ts`.
+
+**6. כלי Debug לשליפת snapshot מהדפדפן**
+
+- דף debug שמייצא snapshot של `daily-schedule-data` + `daily-schedule-device-state` (עם redaction לטוקנים כברירת מחדל).
+- **קבצים**: `sveltekit-version/src/routes/debug/export/+page.svelte`.
+
+---
+
+#### החלטות ארכיטקטורה
+
+- **[Commit Marker]**: manifest הוא ה"קובץ הראשי" לקונפליקט-דיטקשן (`appProperties.writeId`) ולכן הוא תמיד נכתב אחרון.
+- **[Name Is Truth]**: חיפוש לפי שם ב-Drive הוא מקור האמת; cache של IDs הוא רק אופטימיזציה עם fallback לשם.
+- **[Per-Device State]**: `daily-schedule-device-state` נשאר מקומי ולא מסונכרן לגיבוי הענן (הוא תשתיתי/מכשירי).
+
+---
+
+#### מעקפים ופתרונות
+
+- **[Vitest/Node]**: הוספנו guard ב-`db.ts` כדי לא לנסות להפעיל IndexedDB בסביבות שאין `indexedDB` (למשל בדיקות Node עם mock של `browser=true`).

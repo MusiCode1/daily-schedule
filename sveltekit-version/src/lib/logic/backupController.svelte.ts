@@ -1,4 +1,3 @@
-import { googleDriveService } from '../services/googleDriveService';
 import { persistence } from '../stores/persistence';
 import { db } from '../services/db';
 import { globalState } from '../stores/globalState.svelte'; // For listening to changes?
@@ -7,6 +6,12 @@ import { GOOGLE_CLIENT_ID } from '../config';
 import { setSyncStatus, resetSyncStatus } from '../stores/syncStore';
 import type { AppState, List, Task, UserProfile } from '../types';
 import { TEXTS } from '$lib/data/texts';
+import { deviceState } from '$lib/stores/deviceState';
+import { googleAuthService } from '$lib/services/drive/googleAuthService';
+import { dailyScheduleBackupRepo } from '$lib/services/drive/dailyScheduleBackupRepo';
+import { collectAssetIds } from '$lib/services/drive/backupPayloads';
+import type { ManifestV2 } from '$lib/services/drive/types';
+import { backupToDriveV2, restoreFromDriveV2 } from '$lib/services/drive/driveBackupV2';
 
 export class BackupController {
 	// State
@@ -47,7 +52,7 @@ export class BackupController {
 
 	constructor() {
 		// האזנה לשינויים בסטטוס של השירות
-		googleDriveService.subscribe((status) => {
+		googleAuthService.subscribe((status) => {
 			if (status === 'authenticated') {
 				this.isConnected = true;
 				this.loadUserInfo();
@@ -65,63 +70,29 @@ export class BackupController {
 	}
 
 	private loadLocalSettings() {
-		if (typeof localStorage !== 'undefined') {
-			const savedClientId = localStorage.getItem('google_client_id_override');
-			if (savedClientId) this.customClientId = savedClientId;
+		if (typeof window === 'undefined') return;
 
-			const savedAuto = localStorage.getItem('auto_backup_enabled');
-			if (savedAuto !== null) this.isAutoBackupEnabled = savedAuto === 'true';
-
-			const savedRedirect = localStorage.getItem('use_redirect_mode');
-			if (savedRedirect !== null) this.useRedirectMode = savedRedirect === 'true';
-
-			// Load Sync State
-			let dId = localStorage.getItem('device_id');
-			if (!dId) {
-				dId = crypto.randomUUID();
-				localStorage.setItem('device_id', dId);
-			}
-			this.deviceId = dId;
-
-			let dName = localStorage.getItem('device_name');
-			if (!dName) {
-				// Generate basic name from User Agent
-				const ua = navigator.userAgent;
-				let browser = 'Browser';
-				if (ua.includes('Chrome')) browser = 'Chrome';
-				else if (ua.includes('Firefox')) browser = 'Firefox';
-				else if (ua.includes('Safari')) browser = 'Safari';
-				else if (ua.includes('Edge')) browser = 'Edge';
-
-				let os = 'OS';
-				if (ua.includes('Windows')) os = 'Windows';
-				else if (ua.includes('Mac')) os = 'MacOS';
-				else if (ua.includes('Linux')) os = 'Linux';
-				else if (ua.includes('Android')) os = 'Android';
-				else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
-
-				dName = `${browser} on ${os}`;
-				localStorage.setItem('device_name', dName);
-			}
-			this.deviceName = dName;
-
-			this.lastKnownWriteId = localStorage.getItem('last_known_write_id');
-		}
+		const ds = deviceState.load();
+		this.customClientId = ds.drive.clientIdOverride || '';
+		this.isAutoBackupEnabled = ds.drive.autoBackupEnabled;
+		this.useRedirectMode = ds.drive.useRedirectMode;
+		this.deviceId = ds.drive.deviceId;
+		this.deviceName = ds.drive.deviceName;
+		this.lastKnownWriteId = ds.drive.lastKnownWriteId;
 	}
 
 	saveLocalSettings() {
-		if (typeof localStorage !== 'undefined') {
-			if (this.customClientId)
-				localStorage.setItem('google_client_id_override', this.customClientId);
-			else localStorage.removeItem('google_client_id_override');
+		if (typeof window === 'undefined') return;
 
-			localStorage.setItem('auto_backup_enabled', String(this.isAutoBackupEnabled));
-			localStorage.setItem('use_redirect_mode', String(this.useRedirectMode));
-		}
+		deviceState.update((draft) => {
+			draft.drive.clientIdOverride = this.customClientId || '';
+			draft.drive.autoBackupEnabled = this.isAutoBackupEnabled;
+			draft.drive.useRedirectMode = this.useRedirectMode;
+		});
 	}
 
 	async initialize() {
-		await googleDriveService.initialize(this.customClientId || GOOGLE_CLIENT_ID);
+		await googleAuthService.initialize(this.customClientId || GOOGLE_CLIENT_ID);
 	}
 
 	signIn() {
@@ -129,30 +100,38 @@ export class BackupController {
 
 		if (this.useRedirectMode) {
 			// התחברות עם הפניה (למצבי קיוסק)
-			googleDriveService.signInWithRedirect(this.customClientId || GOOGLE_CLIENT_ID);
+			googleAuthService.signInWithRedirect(this.customClientId || GOOGLE_CLIENT_ID);
 			return;
 		}
 
 		// ברירת מחדל: התחברות רגילה (Popup)
-		googleDriveService.initialize(this.customClientId || GOOGLE_CLIENT_ID).then(() => {
-			googleDriveService.signIn();
+		googleAuthService.initialize(this.customClientId || GOOGLE_CLIENT_ID).then(() => {
+			googleAuthService.signIn();
 		});
 	}
 
 	signOut() {
-		googleDriveService.signOut();
+		googleAuthService.signOut();
 	}
 
 	async loadUserInfo() {
-		const info = await googleDriveService.getUserInfo();
+		const info = await googleAuthService.getUserInfo();
 		this.userInfo = info || null;
 	}
 
 	async checkLastBackup() {
 		try {
-			const files = await googleDriveService.listBackups();
-			if (files.length > 0 && files[0].modifiedTime) {
-				this.lastBackupTime = new Date(files[0].modifiedTime);
+			const meta = await dailyScheduleBackupRepo.findV2ManifestMeta();
+			const writeId = meta?.appProperties && (meta.appProperties as any).writeId;
+			if (writeId && meta?.modifiedTime) {
+				this.lastBackupTime = new Date(meta.modifiedTime);
+				return;
+			}
+
+			// fallback: V1
+			const v1 = await dailyScheduleBackupRepo.findLegacyV1BackupMeta();
+			if (v1?.modifiedTime) {
+				this.lastBackupTime = new Date(v1.modifiedTime);
 			}
 		} catch (e) {
 			console.error('Failed to check last backup', e);
@@ -161,13 +140,9 @@ export class BackupController {
 
 	async checkForRemoteUpdates() {
 		try {
-			const files = await googleDriveService.listBackups();
-			if (files.length === 0) return;
-
-			const latestBackup = files[0];
-			// If we have appProperties, use strictly that for conflict detection
-			if (latestBackup.appProperties && latestBackup.appProperties.writeId) {
-				const remoteWriteId = latestBackup.appProperties.writeId;
+			const latestBackup = await dailyScheduleBackupRepo.findV2ManifestMeta();
+			if (latestBackup?.appProperties && (latestBackup.appProperties as any).writeId) {
+				const remoteWriteId = (latestBackup.appProperties as any).writeId;
 				console.log('Checking Sync:', {
 					remoteWriteId,
 					localWriteId: this.lastKnownWriteId,
@@ -176,8 +151,8 @@ export class BackupController {
 
 				if (remoteWriteId !== this.lastKnownWriteId) {
 					// Conflict driven by UUID mismatch
-					const remoteTime = latestBackup.appProperties.lastModified
-						? new Date(Number(latestBackup.appProperties.lastModified))
+					const remoteTime = (latestBackup.appProperties as any).lastModified
+						? new Date(Number((latestBackup.appProperties as any).lastModified))
 						: new Date(latestBackup.modifiedTime || 0);
 
 					// Try to get local time from parentTimestamp or just file stats
@@ -202,14 +177,14 @@ export class BackupController {
 						remoteTime,
 						localTime: realLocalTime,
 						remoteFileId: latestBackup.id || null,
-						remoteDeviceId: latestBackup.appProperties.lastModifiedByDeviceId
+						remoteDeviceId: (latestBackup.appProperties as any).lastModifiedByDeviceId
 					};
 					return;
 				}
 			}
 
 			// Fallback to old timestamp logic if no appProperties (migration phase)
-			if (!latestBackup.appProperties && latestBackup.modifiedTime) {
+			if (latestBackup && !latestBackup.appProperties && latestBackup.modifiedTime) {
 				// ... (existing timestamp logic can stay as fallback or be removed? Let's keep it minimal)
 				const remoteTime = new Date(latestBackup.modifiedTime);
 				const rawState = localStorage.getItem('daily-schedule-data');
@@ -265,48 +240,50 @@ export class BackupController {
 		try {
 			// Check-Then-Act (Only if not forced)
 			if (!force) {
-				const files = await googleDriveService.listBackups();
-				if (files.length > 0 && files[0].appProperties && files[0].appProperties.writeId) {
-					if (files[0].appProperties.writeId !== this.lastKnownWriteId) {
-						// Double check conflict!
-						console.warn('Conflict detected mid-action!');
-						await this.checkForRemoteUpdates(); // Will verify and open modal
-						this.status = 'idle';
-						return;
-					}
+				const meta = await dailyScheduleBackupRepo.findV2ManifestMeta();
+				const remoteWriteId =
+					meta?.appProperties && (meta.appProperties as any).writeId
+						? String((meta.appProperties as any).writeId)
+						: null;
+				if (remoteWriteId && remoteWriteId !== this.lastKnownWriteId) {
+					console.warn('Conflict detected mid-action!');
+					await this.checkForRemoteUpdates();
+					this.status = 'idle';
+					return;
 				}
 			}
 
 			this.statusMessage = TEXTS.PREPARING_BACKUP;
-			// הכנת הנתונים לגיבוי כולל תמונות
-			const backupDataStr = await this.prepareBackupData();
 
-			// Extract the new WriteID that was generated inside prepareBackupData?
-			// Actually prepareBackupData just stringifies. We should insert metadata there.
-			// Let's modify prepareBackupData to handle logic or do it here.
-			// Better to do it here where we control the flow.
-
-			const state = JSON.parse(backupDataStr);
-			const newWriteId = crypto.randomUUID();
-			state.syncMetadata = {
-				lastModified: Date.now(),
-				lastModifiedByDeviceId: this.deviceId,
-				lastModifiedByDeviceName: this.deviceName,
-				writeId: newWriteId,
-				parentWriteId: this.lastKnownWriteId || undefined
-			};
-			const finalData = JSON.stringify(state);
+			const rawState = localStorage.getItem('daily-schedule-data');
+			if (!rawState) throw new Error('No data to backup');
+			const state: AppState = JSON.parse(rawState);
 
 			this.statusMessage = TEXTS.UPLOADING_TO_DRIVE;
 			setSyncStatus('uploading', TEXTS.UPLOADING_BACKUP_TO_DRIVE, 0);
 
-			await googleDriveService.backup(finalData, 'DailyScheduleBackup', (progress) => {
-				setSyncStatus('uploading', TEXTS.UPLOADING_BACKUP_TO_DRIVE, progress);
+			const ds = deviceState.load();
+			const result = await backupToDriveV2({
+				state,
+				repo: dailyScheduleBackupRepo,
+				db,
+				device: { deviceId: this.deviceId, deviceName: this.deviceName },
+				lastKnownWriteId: this.lastKnownWriteId,
+				cache: {
+					lastUploadedAssetsHash: ds.drive.v2Cache.lastUploadedAssetsHash as any,
+					lastUploadedContentHash: ds.drive.v2Cache.lastUploadedContentHash as any,
+					lastUploadedProgressHash: ds.drive.v2Cache.lastUploadedProgressHash as any
+				}
 			});
 
 			// Update local state on success
-			this.lastKnownWriteId = newWriteId;
-			localStorage.setItem('last_known_write_id', newWriteId);
+			this.lastKnownWriteId = result.writeId;
+			deviceState.update((draft) => {
+				draft.drive.lastKnownWriteId = result.writeId;
+				draft.drive.v2Cache.lastUploadedContentHash = result.cache.lastUploadedContentHash as any;
+				draft.drive.v2Cache.lastUploadedProgressHash = result.cache.lastUploadedProgressHash as any;
+				draft.drive.v2Cache.lastUploadedAssetsHash = result.cache.lastUploadedAssetsHash as any;
+			});
 
 			this.statusMessage = '';
 			this.status = 'success';
@@ -349,12 +326,24 @@ export class BackupController {
 			this.status = 'restoring';
 			this.statusMessage = TEXTS.DOWNLOADING_FILE_FROM_DRIVE;
 
-			const data = await googleDriveService.restore(fileId);
-			if (!data) throw new Error('Empty backup');
+			const manifest = await dailyScheduleBackupRepo.readJson(fileId);
+			if (!manifest) throw new Error('Empty backup');
+
+			// ננסה לצרף גם את ה-content/progress/assetsIndex עבור דיבאג.
+			const bundle: any = { manifest };
+			if (manifest.files?.content?.fileId) {
+				bundle.content = await dailyScheduleBackupRepo.readJson(manifest.files.content.fileId);
+			}
+			if (manifest.files?.progress?.fileId) {
+				bundle.progress = await dailyScheduleBackupRepo.readJson(manifest.files.progress.fileId);
+			}
+			if (manifest.files?.assetsIndex?.fileId) {
+				bundle.assetsIndex = await dailyScheduleBackupRepo.readJson(manifest.files.assetsIndex.fileId);
+			}
 
 			this.statusMessage = TEXTS.CREATING_DOWNLOAD_FILE;
-			const json = JSON.stringify(data, null, 2);
-			this.downloadFile(json, 'remote_backup.json');
+			const json = JSON.stringify(bundle, null, 2);
+			this.downloadFile(json, 'remote_backup_bundle.json');
 			this.status = 'idle';
 			this.statusMessage = '';
 		} catch (e) {
@@ -541,7 +530,29 @@ export class BackupController {
 
 	async getRestoreList() {
 		try {
-			return await googleDriveService.listBackups();
+			// V2
+			const meta = await dailyScheduleBackupRepo.findV2ManifestMeta();
+			const writeId = meta?.appProperties && (meta.appProperties as any).writeId;
+			if (writeId) {
+				return [
+					{
+						id: meta!.id,
+						name: meta!.name,
+						modifiedTime: meta!.modifiedTime
+					}
+				];
+			}
+
+			// fallback: V1
+			const v1 = await dailyScheduleBackupRepo.findLegacyV1BackupMeta();
+			if (!v1) return [];
+			return [
+				{
+					id: v1.id,
+					name: v1.name,
+					modifiedTime: v1.modifiedTime
+				}
+			];
 		} catch (e) {
 			return [];
 		}
@@ -553,44 +564,72 @@ export class BackupController {
 		try {
 			this.statusMessage = TEXTS.DOWNLOADING_BACKUP_FILE;
 			setSyncStatus('downloading', TEXTS.DOWNLOADING_FROM_CLOUD, 0);
-			const data = await googleDriveService.restore(fileId, (progress) => {
+			const downloaded = await dailyScheduleBackupRepo.readJson(fileId, (progress) => {
 				setSyncStatus('downloading', TEXTS.DOWNLOADING_FROM_CLOUD, progress);
 			});
-			// בדיקת תקינות בסיסית
-			if (!data || !data.users) throw new Error('Invalid backup file');
 
-			// חילוץ תמונות ל-IndexedDB למניעת קריסת Quota
-			console.log('Extracting images to IndexedDB...');
-			this.statusMessage = TEXTS.EXTRACTING_IMAGES;
-			const cleanData = await this.extractImagesFromState(data);
+			// זיהוי V2 vs V1
+			const isV2 =
+				downloaded &&
+				typeof downloaded === 'object' &&
+				typeof (downloaded as any).backupSchemaVersion === 'number' &&
+				(downloaded as any).files?.content?.fileId &&
+				(downloaded as any).files?.progress?.fileId;
+
+			if (!isV2) {
+				// fallback: V1 (קובץ state יחיד שכולל data:image/...)
+				const data = downloaded;
+				if (!data || !data.users) throw new Error('Invalid backup file');
+
+				console.log('Extracting images to IndexedDB (V1 restore)...');
+				this.statusMessage = TEXTS.EXTRACTING_IMAGES;
+				const cleanData = await this.extractImagesFromState(data);
+
+				this.statusMessage = TEXTS.SAVING_AND_REFRESHING;
+				localStorage.setItem('daily-schedule-data', JSON.stringify(cleanData));
+
+				// עדכון ה-WriteID הידוע לנו אם קיים
+				if (cleanData.syncMetadata && cleanData.syncMetadata.writeId) {
+					this.lastKnownWriteId = cleanData.syncMetadata.writeId;
+					deviceState.update((draft) => {
+						draft.drive.lastKnownWriteId = cleanData.syncMetadata.writeId;
+					});
+				} else {
+					this.lastKnownWriteId = null;
+					deviceState.update((draft) => {
+						draft.drive.lastKnownWriteId = null;
+					});
+				}
+
+				resetSyncStatus();
+				window.location.reload();
+				return;
+			}
+
+			const { state: restored, manifest } = await restoreFromDriveV2({
+				manifestFileId: fileId,
+				repo: dailyScheduleBackupRepo,
+				db
+			});
 
 			// שמירה ל-LocalStorage
 			this.statusMessage = TEXTS.SAVING_AND_REFRESHING;
-			localStorage.setItem('daily-schedule-data', JSON.stringify(cleanData));
+			localStorage.setItem('daily-schedule-data', JSON.stringify(restored));
 
-			console.log('Restored data metadata:', cleanData.syncMetadata);
-
-			// עדכון ה-WriteID הידוע לנו מהגיבוי ששחזרנו
-			if (cleanData.syncMetadata && cleanData.syncMetadata.writeId) {
-				console.log('Updating lastKnownWriteId from backup to:', cleanData.syncMetadata.writeId);
-				this.lastKnownWriteId = cleanData.syncMetadata.writeId;
-				localStorage.setItem('last_known_write_id', this.lastKnownWriteId!);
-
-				// HEAL: Ensure server metadata matches the content we just accepted
-				try {
-					console.log('Self-healing server metadata to match content...');
-					await googleDriveService.updateFileMetadata(fileId, {
-						appProperties: cleanData.syncMetadata
-					});
-				} catch (metaErr) {
-					console.warn('Failed to self-heal metadata', metaErr);
-				}
-			} else {
-				// Backward compatibility: If no writeId, maybe generate one or nullify?
-				// Let's reset it so next backup creates a new chain
-				this.lastKnownWriteId = null;
-				localStorage.removeItem('last_known_write_id');
-			}
+			// עדכון state per-device
+			this.lastKnownWriteId = manifest.syncMetadata.writeId;
+			deviceState.update((draft) => {
+				draft.drive.lastKnownWriteId = manifest.syncMetadata.writeId;
+				// גם cache IDs כדי לחסוך חיפושים בפעם הבאה
+				draft.drive.v2Cache.assetsFolderId = manifest.files.assetsFolder.folderId;
+				draft.drive.v2Cache.manifestFileId = fileId;
+				draft.drive.v2Cache.contentFileId = manifest.files.content.fileId;
+				draft.drive.v2Cache.progressFileId = manifest.files.progress.fileId;
+				draft.drive.v2Cache.assetsIndexFileId = manifest.files.assetsIndex.fileId;
+				draft.drive.v2Cache.lastUploadedContentHash = manifest.hashes.contentHash;
+				draft.drive.v2Cache.lastUploadedProgressHash = manifest.hashes.progressHash;
+				draft.drive.v2Cache.lastUploadedAssetsHash = manifest.hashes.assetsHash;
+			});
 
 			// טעינה מחדש של הדף כדי שה-Storms יתעדכנו
 			resetSyncStatus(); // ליתר ביטחון, למרות שהריפרש ינקה

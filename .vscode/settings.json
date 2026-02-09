@@ -1,0 +1,26 @@
+{
+    "workbench.editor.customLabels.patterns": {
+        "**/src/routes/**/+page.svelte": "/${dirname} - Page",
+        "**/src/routes/**/+layout.svelte": "/${dirname} - Layout",
+        "**/src/routes/**/+page.server.ts": "/${dirname} - Server",
+        "**/src/routes/**/+error.svelte": "/${dirname} - Error"
+    },
+    "[svelte]": {
+        "editor.defaultFormatter": "svelte.svelte-vscode",
+        "editor.formatOnSave": true
+    },
+    "svelte.plugin.svelte.format.config.svelteSortOrder": "options-markup-styles-scripts",
+    "workbench.editor.labelFormat": "short",
+    "workbench.tree.indent": 16,
+    "explorer.sortOrder": "filesFirst",
+    "svelte.enable-ts-plugin": true,
+    "eslint.validate": [
+        "javascript",
+        "typescript",
+        /* "svelte" */
+    ],
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "material-icon-theme.files.color": "#91a4ae"
+}

@@ -1,0 +1,1133 @@
+{
+    "version": 14,
+    "users": [
+        {
+            "id": "u_ezra",
+            "name": "עזרא",
+            "gender": "boy",
+            "avatar": "/images/users/ezra.png",
+            "themeColor": "#4169E1",
+            "theme": "theme-focus"
+        },
+        {
+            "id": "1776d15d-28f7-4799-b07e-28ba4a37b238",
+            "name": "אבישי",
+            "gender": "boy",
+            "avatar": "data:image/png;",
+            "themeColor": "#6366f1"
+        },
+        {
+            "id": "ae5e13f7-ae53-4bbb-8210-53c6e51781e5",
+            "name": "שכנא",
+            "gender": "boy",
+            "avatar": "data:image/png;",
+            "themeColor": "#6366f1"
+        }
+    ],
+    "lists": {
+        "u_ezra": [
+            {
+                "id": "morning_routine",
+                "name": "עבודה עם אבי",
+                "logo": "data:image/png;",
+                "greeting": "בוקר טוב",
+                "peopleIds": [
+                    "p_father",
+                    "p_mother"
+                ],
+                "tasks": [
+                    {
+                        "id": "36e00fe4-a6a6-40c7-8169-8b7676c64997",
+                        "name": "שירותים",
+                        "imageSrc": "/images/activities/activity_toilet.png",
+                        "isDone": true
+                    },
+                    {
+                        "id": "b71c62f5-9c1f-4130-9531-7fb87e29aff5",
+                        "name": "לצחצח שיניים",
+                        "imageSrc": "/images/activities/activity_brushing_teeth.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "d46101c0-e81b-405d-899c-4186428e18da",
+                        "name": "להתלבש",
+                        "imageSrc": "/images/activities/activity_getting_dressed.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "def0c0a2-090d-4636-8b18-9ae1257a590c",
+                        "name": "ארוחת בוקר",
+                        "imageSrc": "/images/activities/activity_breakfast.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "1ca5cbb2-1a29-473d-a5bc-c7cf664ac888",
+                        "name": "ללכת לאוטו",
+                        "imageSrc": "/images/activities/activity_going_to_car.png",
+                        "isDone": false
+                    }
+                ],
+                "isPeopleSectionVisible": true,
+                "isLocked": false
+            },
+            {
+                "id": "afternoon_routine",
+                "name": "אחרי הצהריים",
+                "logo": "/images/times/list_afternoon_sunset.png",
+                "greeting": "אחרי צהריים טובים",
+                "peopleIds": [
+                    "p_mother"
+                ],
+                "tasks": [
+                    {
+                        "id": "1c1e19c0-2805-4926-b4e2-a745b5049e2c",
+                        "name": "ארוחת צהריים",
+                        "imageSrc": "/images/activities/activity_lunch.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "809cf3fc-4e80-49fa-a62d-080220720c9a",
+                        "name": "זמן משחק",
+                        "imageSrc": "/images/activities/activity_play_time.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "b2aee626-f801-4fae-a049-7937fdb711b3",
+                        "name": "טאבלט",
+                        "imageSrc": "/images/activities/activity_tablet.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "035ed28c-f34e-4064-a1b6-99745f812e7f",
+                        "name": "ארוחת ערב",
+                        "imageSrc": "/images/activities/activity_dinner.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "8cda0bbb-654a-4b98-83a6-a50e7a67fce7",
+                        "name": "להתקלח",
+                        "imageSrc": "/images/activities/activity_shower.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "543d3fb9-ed1f-490d-b197-1c68fe76b8cf",
+                        "name": "זמן שינה",
+                        "imageSrc": "/images/activities/activity_sleep_time.png",
+                        "isDone": false
+                    }
+                ],
+                "isPeopleSectionVisible": true,
+                "isLocked": false
+            },
+            {
+                "id": "visit_grandparents",
+                "name": "נוסעים לסבא וסבתא",
+                "logo": "/images/people/grandfather.png",
+                "greeting": "נסיעה טובה",
+                "title": "מתכוננים לנסוע לסבא וסבתא",
+                "peopleIds": [
+                    "p_grandfather",
+                    "p_grandmother"
+                ],
+                "tasks": [
+                    {
+                        "id": "5b90d3ea-3bc5-4dbe-b5a8-420e385c8d3f",
+                        "name": "להתלבש",
+                        "imageSrc": "/images/activities/activity_getting_dressed.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "b94314d5-00bf-485a-af06-8b588f3169c7",
+                        "name": "ללכת לאוטו",
+                        "imageSrc": "/images/activities/activity_going_to_car.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "13b26359-0fd5-4c2d-adf2-c355603fbe98",
+                        "name": "נוסעים באוטו",
+                        "imageSrc": "/images/activities/activity_travel_car.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "77e721ed-d4c6-4c6e-8dcd-f66fd054296d",
+                        "name": "הולכים לביקור",
+                        "imageSrc": "/images/activities/activity_visit_building.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "af6dc708-b1e4-4f79-81cc-774a59b83a34",
+                        "name": "זמן משחק",
+                        "imageSrc": "/images/activities/activity_play_time.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "3648da7a-49d5-4970-b373-f4cff3dee00a",
+                        "name": "ארוחת ערב",
+                        "imageSrc": "/images/activities/activity_dinner.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "7d3c5a93-a7ee-48e2-93db-fb4155eaa922",
+                        "name": "נוסעים באוטו",
+                        "imageSrc": "/images/activities/activity_travel_car.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "06b516e1-b418-4500-bf3d-da8219390a03",
+                        "name": "חזרנו הביתה",
+                        "imageSrc": "/images/activities/activity_back_home.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "1633a4c5-7d48-4922-8eb4-adddb1f8cce5",
+                        "name": "להתקלח",
+                        "imageSrc": "/images/activities/activity_shower.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "03667a57-a18a-4be3-9d3e-c610651ea045",
+                        "name": "זמן שינה",
+                        "imageSrc": "/images/activities/activity_sleep_time.png",
+                        "isDone": false
+                    }
+                ],
+                "isPeopleSectionVisible": true,
+                "isLocked": false
+            },
+            {
+                "id": "guests_visit",
+                "name": "דודים באים לבקר",
+                "logo": "/images/activities/activity_guests_arrive.png",
+                "greeting": "ברוכים הבאים",
+                "title": "מתכוננים לביקור של דודים",
+                "peopleIds": [
+                    "p_uncle",
+                    "p_aunt"
+                ],
+                "tasks": [
+                    {
+                        "id": "086b1641-033b-43ba-8780-a9ba913b45fe",
+                        "name": "להתלבש",
+                        "imageSrc": "/images/activities/activity_getting_dressed.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "8bd65bfa-cf26-4ca5-80a5-a07005265ccf",
+                        "name": "אורחים מגיעים",
+                        "imageSrc": "/images/activities/activity_guests_arrive.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "54988354-2b82-4814-85e5-79f14c0ac590",
+                        "name": "זמן משחק",
+                        "imageSrc": "/images/activities/activity_play_time.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "5453deab-48cb-4968-a34c-4ae170918acb",
+                        "name": "ארוחת ערב",
+                        "imageSrc": "/images/activities/activity_dinner.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "ea3dd5e3-f875-401a-9ce9-0ed18e533213",
+                        "name": "נפרדים מהאורחים",
+                        "imageSrc": "/images/activities/activity_guests_leave.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "5f348e36-a3dd-4a1a-8371-bc822b1642a3",
+                        "name": "להתקלח",
+                        "imageSrc": "/images/activities/activity_shower.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "05f426a5-f013-4713-ba6a-8a64b0d7508c",
+                        "name": "זמן שינה",
+                        "imageSrc": "/images/activities/activity_sleep_time.png",
+                        "isDone": false
+                    }
+                ],
+                "isPeopleSectionVisible": true,
+                "isLocked": false
+            }
+        ],
+        "u_tzofia": [
+            {
+                "id": "morning_routine",
+                "name": "שגרת בוקר",
+                "logo": "/images/times/list_morning_sun.png",
+                "greeting": "בוקר טוב",
+                "peopleIds": [
+                    "p_father",
+                    "p_mother"
+                ],
+                "tasks": [
+                    {
+                        "id": "85f0cf99-caa1-43b8-83fa-a23acbfa25ca",
+                        "name": "שירותים",
+                        "imageSrc": "/images/activities/activity_toilet.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "aa0fbf49-6124-46cc-a941-339f6b8bee3e",
+                        "name": "לצחצח שיניים",
+                        "imageSrc": "/images/activities/activity_brushing_teeth.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "4d376ad4-ce59-403a-8246-c251a3f41529",
+                        "name": "להתלבש",
+                        "imageSrc": "/images/activities/activity_getting_dressed.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "6add0127-b8c3-449a-95da-f75f71f7788b",
+                        "name": "ארוחת בוקר",
+                        "imageSrc": "/images/activities/activity_breakfast.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "60cbf3ca-0698-404b-a729-b0d8fe748343",
+                        "name": "ללכת לאוטו",
+                        "imageSrc": "/images/activities/activity_going_to_car.png",
+                        "isDone": false
+                    }
+                ],
+                "isPeopleSectionVisible": true,
+                "isLocked": false
+            },
+            {
+                "id": "afternoon_routine",
+                "name": "אחרי הצהריים",
+                "logo": "/images/times/list_afternoon_sunset.png",
+                "greeting": "אחרי צהריים טובים",
+                "peopleIds": [
+                    "p_mother"
+                ],
+                "tasks": [
+                    {
+                        "id": "d7e2bcf1-030d-48b2-980d-3e82dbce7b7a",
+                        "name": "ארוחת צהריים",
+                        "imageSrc": "/images/activities/activity_lunch.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "718213fd-79eb-459d-adc1-7dad8a33fca9",
+                        "name": "זמן משחק",
+                        "imageSrc": "/images/activities/activity_play_time.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "156de1da-6fc9-4821-99a0-d065d98874c7",
+                        "name": "טאבלט",
+                        "imageSrc": "/images/activities/activity_tablet.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "200aea96-ba30-403b-b65d-9fc297caddb4",
+                        "name": "ארוחת ערב",
+                        "imageSrc": "/images/activities/activity_dinner.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "6005d368-5166-428a-8415-310c88771113",
+                        "name": "להתקלח",
+                        "imageSrc": "/images/activities/activity_shower.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "e1a63a9e-7b24-4c49-b31a-a14defa9d30b",
+                        "name": "זמן שינה",
+                        "imageSrc": "/images/activities/activity_sleep_time.png",
+                        "isDone": false
+                    }
+                ],
+                "isPeopleSectionVisible": true,
+                "isLocked": false
+            },
+            {
+                "id": "visit_grandparents",
+                "name": "נוסעים לסבא וסבתא",
+                "logo": "/images/people/grandfather.png",
+                "greeting": "נסיעה טובה",
+                "title": "מתכוננים לנסוע לסבא וסבתא",
+                "peopleIds": [
+                    "p_grandfather",
+                    "p_grandmother"
+                ],
+                "tasks": [
+                    {
+                        "id": "af76f34e-d8de-40ad-8636-eb31e2bd0154",
+                        "name": "להתלבש",
+                        "imageSrc": "/images/activities/activity_getting_dressed.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "97bda649-a355-49c5-a60e-64004d451116",
+                        "name": "ללכת לאוטו",
+                        "imageSrc": "/images/activities/activity_going_to_car.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "633db1a1-ffcc-4d67-9c58-09eb39f313bd",
+                        "name": "נוסעים באוטו",
+                        "imageSrc": "/images/activities/activity_travel_car.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "dac3ed62-2f28-4171-ad29-dd935b82a946",
+                        "name": "הולכים לביקור",
+                        "imageSrc": "/images/activities/activity_visit_building.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "e078d578-9947-4eeb-93b6-df24c58cd059",
+                        "name": "זמן משחק",
+                        "imageSrc": "/images/activities/activity_play_time.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "3ed4ceff-b96e-412d-8d9b-5c62b97896ef",
+                        "name": "ארוחת ערב",
+                        "imageSrc": "/images/activities/activity_dinner.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "9db6babd-f5d3-48d5-a7ca-d488f2f1d970",
+                        "name": "נוסעים באוטו",
+                        "imageSrc": "/images/activities/activity_travel_car.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "6a91c820-d018-4c1b-b6e5-d05d579d6881",
+                        "name": "חזרנו הביתה",
+                        "imageSrc": "/images/activities/activity_back_home.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "878862e4-135e-4c80-993e-3e1706c30314",
+                        "name": "להתקלח",
+                        "imageSrc": "/images/activities/activity_shower.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "27f5a99b-fe83-45a9-b7bf-6af607396c28",
+                        "name": "זמן שינה",
+                        "imageSrc": "/images/activities/activity_sleep_time.png",
+                        "isDone": false
+                    }
+                ],
+                "isPeopleSectionVisible": true,
+                "isLocked": false
+            },
+            {
+                "id": "guests_visit",
+                "name": "דודים באים לבקר",
+                "logo": "/images/activities/activity_guests_arrive.png",
+                "greeting": "ברוכים הבאים",
+                "title": "מתכוננים לביקור של דודים",
+                "peopleIds": [
+                    "p_uncle",
+                    "p_aunt"
+                ],
+                "tasks": [
+                    {
+                        "id": "f55f83d1-3f18-41bf-b2a2-ac77e8b2c12c",
+                        "name": "להתלבש",
+                        "imageSrc": "/images/activities/activity_getting_dressed.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "0947aee1-3ee5-4296-bd92-9d4b3e7df420",
+                        "name": "אורחים מגיעים",
+                        "imageSrc": "/images/activities/activity_guests_arrive.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "89f1d47a-499d-47dd-9a19-ebac5b927403",
+                        "name": "זמן משחק",
+                        "imageSrc": "/images/activities/activity_play_time.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "04ce3257-352f-4df6-8720-39905065b7fe",
+                        "name": "ארוחת ערב",
+                        "imageSrc": "/images/activities/activity_dinner.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "78e1cd31-eaa4-4433-934f-f8227fbd0fd4",
+                        "name": "נפרדים מהאורחים",
+                        "imageSrc": "/images/activities/activity_guests_leave.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "51fabd18-9b2c-403c-812e-68b0a039a3d0",
+                        "name": "להתקלח",
+                        "imageSrc": "/images/activities/activity_shower.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "7ac4056c-354c-460e-8f4b-81728d872b13",
+                        "name": "זמן שינה",
+                        "imageSrc": "/images/activities/activity_sleep_time.png",
+                        "isDone": false
+                    }
+                ],
+                "isPeopleSectionVisible": true,
+                "isLocked": false
+            }
+        ],
+        "u_adam": [
+            {
+                "id": "morning_routine",
+                "name": "שגרת בוקר",
+                "logo": "/images/times/list_morning_sun.png",
+                "greeting": "בוקר טוב",
+                "peopleIds": [
+                    "p_father",
+                    "p_mother"
+                ],
+                "tasks": [
+                    {
+                        "id": "d67f0f61-69b3-4239-a7a8-02b0aca06527",
+                        "name": "שירותים",
+                        "imageSrc": "/images/activities/activity_toilet.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "b57ea6b4-8762-4ac9-a68e-7761bf937d7c",
+                        "name": "לצחצח שיניים",
+                        "imageSrc": "/images/activities/activity_brushing_teeth.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "57f2a35f-2108-468d-954b-8858476a134d",
+                        "name": "להתלבש",
+                        "imageSrc": "/images/activities/activity_getting_dressed.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "af40362a-3ec5-4a45-93db-ade4e565f929",
+                        "name": "ארוחת בוקר",
+                        "imageSrc": "/images/activities/activity_breakfast.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "9519d1d0-cfba-4ce8-b2c6-ec26bff3d7a2",
+                        "name": "ללכת לאוטו",
+                        "imageSrc": "/images/activities/activity_going_to_car.png",
+                        "isDone": false
+                    }
+                ],
+                "isPeopleSectionVisible": true,
+                "isLocked": false
+            },
+            {
+                "id": "afternoon_routine",
+                "name": "אחרי הצהריים",
+                "logo": "/images/times/list_afternoon_sunset.png",
+                "greeting": "אחרי צהריים טובים",
+                "peopleIds": [
+                    "p_mother"
+                ],
+                "tasks": [
+                    {
+                        "id": "f35700ff-ee10-4b60-b6a5-7aa8f6ea0355",
+                        "name": "ארוחת צהריים",
+                        "imageSrc": "/images/activities/activity_lunch.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "7a03fa60-601b-4831-a1a0-2fbcb5413ff5",
+                        "name": "זמן משחק",
+                        "imageSrc": "/images/activities/activity_play_time.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "6f1fb29d-c55e-4d41-bdbf-54d64b3131b3",
+                        "name": "טאבלט",
+                        "imageSrc": "/images/activities/activity_tablet.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "373945d8-3040-4212-ade3-32045e7f0df2",
+                        "name": "ארוחת ערב",
+                        "imageSrc": "/images/activities/activity_dinner.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "cf1944dd-1d06-4b04-a1f1-f663b7677712",
+                        "name": "להתקלח",
+                        "imageSrc": "/images/activities/activity_shower.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "2eb8db11-b471-433d-b759-7e829418f303",
+                        "name": "זמן שינה",
+                        "imageSrc": "/images/activities/activity_sleep_time.png",
+                        "isDone": false
+                    }
+                ],
+                "isPeopleSectionVisible": true,
+                "isLocked": false
+            },
+            {
+                "id": "visit_grandparents",
+                "name": "נוסעים לסבא וסבתא",
+                "logo": "/images/people/grandfather.png",
+                "greeting": "נסיעה טובה",
+                "title": "מתכוננים לנסוע לסבא וסבתא",
+                "peopleIds": [
+                    "p_grandfather",
+                    "p_grandmother"
+                ],
+                "tasks": [
+                    {
+                        "id": "589860cb-cf0f-4d35-92c4-d47502d48029",
+                        "name": "להתלבש",
+                        "imageSrc": "/images/activities/activity_getting_dressed.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "20a2ffc6-8e32-484d-a622-7646677e1b42",
+                        "name": "ללכת לאוטו",
+                        "imageSrc": "/images/activities/activity_going_to_car.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "1e5710af-e1ce-4cba-8bfa-673cd8a39c95",
+                        "name": "נוסעים באוטו",
+                        "imageSrc": "/images/activities/activity_travel_car.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "64065f73-a93c-4262-97ca-1742f66dff08",
+                        "name": "הולכים לביקור",
+                        "imageSrc": "/images/activities/activity_visit_building.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "36cbe6db-a0dc-44b0-bb4e-0640ad0e21cf",
+                        "name": "זמן משחק",
+                        "imageSrc": "/images/activities/activity_play_time.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "95dac4c5-562b-4094-9bf8-2aa17f1045a6",
+                        "name": "ארוחת ערב",
+                        "imageSrc": "/images/activities/activity_dinner.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "142deecf-76ce-4fb7-a8a9-24721045136d",
+                        "name": "נוסעים באוטו",
+                        "imageSrc": "/images/activities/activity_travel_car.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "e79b9e21-516c-4094-a519-a90aed76ac64",
+                        "name": "חזרנו הביתה",
+                        "imageSrc": "/images/activities/activity_back_home.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "acc4232e-9a3a-4797-80e4-38ef91f761ea",
+                        "name": "להתקלח",
+                        "imageSrc": "/images/activities/activity_shower.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "11aa95ae-f421-4ba1-b486-4d51592480b8",
+                        "name": "זמן שינה",
+                        "imageSrc": "/images/activities/activity_sleep_time.png",
+                        "isDone": false
+                    }
+                ],
+                "isPeopleSectionVisible": true,
+                "isLocked": false
+            },
+            {
+                "id": "guests_visit",
+                "name": "דודים באים לבקר",
+                "logo": "/images/activities/activity_guests_arrive.png",
+                "greeting": "ברוכים הבאים",
+                "title": "מתכוננים לביקור של דודים",
+                "peopleIds": [
+                    "p_uncle",
+                    "p_aunt"
+                ],
+                "tasks": [
+                    {
+                        "id": "888aaae1-5a43-418f-a0c7-96f60d7df572",
+                        "name": "להתלבש",
+                        "imageSrc": "/images/activities/activity_getting_dressed.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "8952fd49-d686-4ce4-a584-3c04d43e17c2",
+                        "name": "אורחים מגיעים",
+                        "imageSrc": "/images/activities/activity_guests_arrive.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "f8392e56-5e9c-4458-af10-3c608c90cb66",
+                        "name": "זמן משחק",
+                        "imageSrc": "/images/activities/activity_play_time.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "13ff23ff-24c7-40d1-8ed0-4cbdb3062d5e",
+                        "name": "ארוחת ערב",
+                        "imageSrc": "/images/activities/activity_dinner.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "8b84eb05-f926-4cef-9730-90767a7c20ad",
+                        "name": "נפרדים מהאורחים",
+                        "imageSrc": "/images/activities/activity_guests_leave.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "45b99c05-954d-4775-8994-21e286ae9f23",
+                        "name": "להתקלח",
+                        "imageSrc": "/images/activities/activity_shower.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "e24380cc-2352-4dcf-b31a-090237b1f380",
+                        "name": "זמן שינה",
+                        "imageSrc": "/images/activities/activity_sleep_time.png",
+                        "isDone": false
+                    }
+                ],
+                "isPeopleSectionVisible": true,
+                "isLocked": false
+            }
+        ],
+        "1776d15d-28f7-4799-b07e-28ba4a37b238": [
+            {
+                "id": "morning_routine",
+                "name": "שגרת בוקר",
+                "logo": "/images/times/list_morning_sun.png",
+                "greeting": "בוקר טוב",
+                "peopleIds": [
+                    "p_father",
+                    "p_mother"
+                ],
+                "tasks": [
+                    {
+                        "id": "bc939712-3231-4e3f-a786-070aa8164ba1",
+                        "name": "תפילה",
+                        "imageSrc": "/images/activities/activity_prayer.png",
+                        "isDone": true
+                    },
+                    {
+                        "id": "f784ca96-c8bf-421c-ad60-fe3142aa1dba",
+                        "name": "עבודה בקופסאות עבודה",
+                        "imageSrc": "/images/activities/activity_box_work.png",
+                        "isDone": true
+                    },
+                    {
+                        "id": "c4669b57-a681-4df2-8f02-8f8c51379856",
+                        "name": "הדפסת דף",
+                        "imageSrc": "data:image/png;",
+                        "isDone": true
+                    },
+                    {
+                        "id": "185bcef3-42e3-40ab-aef0-561214b6d393",
+                        "name": "Spiffy EXE",
+                        "imageSrc": "data:image/jpeg;",
+                        "isDone": false
+                    },
+                    {
+                        "id": "97e7089e-0e62-4adb-a19c-557e80687ff0",
+                        "name": "ארוחת בוקר",
+                        "imageSrc": "/images/activities/activity_breakfast.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "4a9c280f-ac72-4e27-ae53-38244bf4fb26",
+                        "name": "עבודה בטאבלט",
+                        "imageSrc": "/images/activities/activity_tablet.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "b14d6ec7-d09a-4f29-84f9-98d7597b7619",
+                        "name": "ארוחת צהריים",
+                        "imageSrc": "/images/activities/activity_lunch.png",
+                        "isDone": false
+                    }
+                ],
+                "isPeopleSectionVisible": true,
+                "isLocked": false
+            },
+            {
+                "id": "guests_visit",
+                "name": "דודים באים לבקר",
+                "logo": "/images/activities/activity_guests_arrive.png",
+                "greeting": "ברוכים הבאים",
+                "title": "מתכוננים לביקור של דודים",
+                "peopleIds": [
+                    "p_uncle",
+                    "p_aunt"
+                ],
+                "tasks": [
+                    {
+                        "id": "d3725fb6-717d-45e0-b8c5-d149df4afb92",
+                        "name": "להתלבש",
+                        "imageSrc": "/images/activities/activity_getting_dressed.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "02e7f741-e084-4226-9fec-841e7571bc15",
+                        "name": "אורחים מגיעים",
+                        "imageSrc": "/images/activities/activity_guests_arrive.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "ba707758-b259-4880-95fb-014a7a54d39b",
+                        "name": "זמן משחק",
+                        "imageSrc": "/images/activities/activity_play_time.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "a95cab54-9bdc-4ec1-b888-bd19dc5dbba3",
+                        "name": "ארוחת ערב",
+                        "imageSrc": "/images/activities/activity_dinner.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "1a8cdd57-d0d5-40f9-930e-5b0d5150c4e9",
+                        "name": "נפרדים מהאורחים",
+                        "imageSrc": "/images/activities/activity_guests_leave.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "1b2fa3fe-5fe1-43d8-997d-3bacb82797a5",
+                        "name": "להתקלח",
+                        "imageSrc": "/images/activities/activity_shower.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "bd71a345-ed96-4d10-94ff-d19c3798c09c",
+                        "name": "זמן שינה",
+                        "imageSrc": "/images/activities/activity_sleep_time.png",
+                        "isDone": false
+                    }
+                ],
+                "isPeopleSectionVisible": true,
+                "isLocked": false,
+                "isHidden": true
+            }
+        ],
+        "ae5e13f7-ae53-4bbb-8210-53c6e51781e5": [
+            {
+                "id": "morning_routine",
+                "name": "בוקר בבית הספר",
+                "logo": "/images/times/list_morning_sun.png",
+                "greeting": "בוקר טוב",
+                "title": "",
+                "peopleIds": [
+                    "p_father",
+                    "p_mother"
+                ],
+                "tasks": [
+                    {
+                        "id": "e32dfb18-dfe8-4ec0-8f34-bb34f6d7e1ab",
+                        "name": "נוסע באוטו עם איציק",
+                        "imageSrc": "/images/activities/activity_travel_car.png",
+                        "isDone": true
+                    },
+                    {
+                        "id": "6ecd31dd-f6c4-4e7c-a366-f2048652a437",
+                        "name": "ערסל",
+                        "imageSrc": "data:image/png;",
+                        "isDone": true
+                    },
+                    {
+                        "id": "4ea05e34-ce18-4ee6-80e8-aae64c913051",
+                        "name": "תפילה",
+                        "imageSrc": "/images/activities/activity_prayer.png",
+                        "isDone": true
+                    },
+                    {
+                        "id": "c348a890-95c1-46d5-ad3d-166e9b629f8c",
+                        "name": "עבודה בקופסאות עבודה",
+                        "imageSrc": "/images/activities/activity_box_work.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "f0ff2a4a-099a-40fb-a874-56ae884b8e50",
+                        "name": "נשיקות",
+                        "imageSrc": "data:image/jpeg;",
+                        "isDone": false
+                    },
+                    {
+                        "id": "a6b4eac5-738e-46e6-88e6-beb616b08d58",
+                        "name": "ארוחת בוקר",
+                        "imageSrc": "/images/activities/activity_breakfast.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "0d29efca-4ba0-43be-8689-e3c7649750cd",
+                        "name": "חצר",
+                        "imageSrc": "/images/activities/activity_playground.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "dd22222e-363a-4d68-95c9-92a744889606",
+                        "name": "עבודה בטאבלט",
+                        "imageSrc": "/images/activities/activity_tablet.png",
+                        "isDone": false
+                    }
+                ],
+                "description": "",
+                "isPeopleSectionVisible": false
+            },
+            {
+                "id": "guests_visit",
+                "name": "דודים באים לבקר",
+                "logo": "/images/activities/activity_guests_arrive.png",
+                "greeting": "ברוכים הבאים",
+                "title": "מתכוננים לביקור של דודים",
+                "peopleIds": [
+                    "p_uncle",
+                    "p_aunt"
+                ],
+                "tasks": [
+                    {
+                        "id": "4bb4be7b-57c2-43a6-adb6-442b0821d233",
+                        "name": "להתלבש",
+                        "imageSrc": "/images/activities/activity_getting_dressed.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "f8f2a3e1-2bee-4701-89fe-d4122f837be3",
+                        "name": "אורחים מגיעים",
+                        "imageSrc": "/images/activities/activity_guests_arrive.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "033bb138-2cd8-4ce6-904f-5cfa28f57ca0",
+                        "name": "זמן משחק",
+                        "imageSrc": "/images/activities/activity_play_time.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "4fd10ef4-5f26-49b9-9641-83c43b4c08a7",
+                        "name": "ארוחת ערב",
+                        "imageSrc": "/images/activities/activity_dinner.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "940ab102-fdc6-415e-b1e5-51876fece4f8",
+                        "name": "נפרדים מהאורחים",
+                        "imageSrc": "/images/activities/activity_guests_leave.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "4587fe80-58e6-4a05-9985-24d48450a39a",
+                        "name": "להתקלח",
+                        "imageSrc": "/images/activities/activity_shower.png",
+                        "isDone": false
+                    },
+                    {
+                        "id": "c30bc8de-63ec-477b-9550-6a95a6a952aa",
+                        "name": "זמן שינה",
+                        "imageSrc": "/images/activities/activity_sleep_time.png",
+                        "isDone": false
+                    }
+                ],
+                "isHidden": true
+            }
+        ]
+    },
+    "images": {
+        "data:image/png;": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1.2
+            }
+        },
+        "data:image/png;": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        },
+        "/images/activities/activity_breakfast.png": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        },
+        "/images/activities/activity_going_to_car.png": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        },
+        "/images/activities/activity_prayer.png": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        },
+        "/images/activities/activity_box_work.png": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        },
+        "data:image/png;": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        },
+        "data:image/jpeg;": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1.4
+            }
+        },
+        "/images/activities/activity_tablet.png": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        },
+        "data:image/jpeg;": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        },
+        "/images/times/list_morning_sun.png": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        },
+        "data:image/jpeg;": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1.2
+            }
+        },
+        "/images/activities/activity_travel_car.png": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        },
+        "data:image/jpeg;": {
+            "crop": {
+                "x": 40.93333333333334,
+                "y": 73.73333333333333,
+                "scale": 1.5999999999999999
+            }
+        },
+        "/images/activities/activity_playground.png": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        },
+        "data:image/png;": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        },
+        "data:image/png;": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        },
+        "/images/activities/activity_lunch.png": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        },
+        "/images/activities/activity_brushing_teeth.png": {
+            "crop": {
+                "x": 50,
+                "y": 50,
+                "scale": 1
+            }
+        }
+    },
+    "people": [
+        {
+            "id": "p_father",
+            "name": "אבא",
+            "avatar": "/images/people/father.png"
+        },
+        {
+            "id": "p_mother",
+            "name": "אמא",
+            "avatar": "/images/people/mother.png"
+        },
+        {
+            "id": "p_uncle",
+            "name": "דוד יאיר",
+            "avatar": "/images/people/uncle.png"
+        },
+        {
+            "id": "p_aunt",
+            "name": "דודה אפרת",
+            "avatar": "/images/people/aunt.png"
+        },
+        {
+            "id": "p_grandfather",
+            "name": "סבא",
+            "avatar": "/images/people/grandfather.png"
+        },
+        {
+            "id": "p_grandmother",
+            "name": "סבתא",
+            "avatar": "/images/people/grandmother.png"
+        }
+    ],
+    "activeListId": {
+        "u_ezra": "morning_routine",
+        "u_tzofia": "morning_routine",
+        "u_adam": "morning_routine",
+        "1776d15d-28f7-4799-b07e-28ba4a37b238": "morning_routine",
+        "ae5e13f7-ae53-4bbb-8210-53c6e51781e5": "morning_routine"
+    },
+    "currentUserId": "u_ezra",
+    "settings": {
+        "lastActiveTime": 1769594240665
+    },
+    "lastModified": 1770655704660,
+    "syncMetadata": {
+        "lastModified": 1770199499566,
+        "lastModifiedByDeviceId": "fd6073db-ed21-440b-9b3f-88879cc90954",
+        "lastModifiedByDeviceName": "Chrome on Windows",
+        "writeId": "f5a18121-f3a3-4206-b8a8-e2d828988e82",
+        "parentWriteId": "4b5698af-537a-40e7-88e1-537b09633ed3"
+    }
+}

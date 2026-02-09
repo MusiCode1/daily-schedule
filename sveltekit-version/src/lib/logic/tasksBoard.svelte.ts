@@ -2,6 +2,7 @@ import { listStore } from '$lib/stores/listStore.svelte';
 import { userStore } from '$lib/stores/userStore.svelte';
 import { boostService } from '$lib/services/boosts';
 import { audioSequencer } from '$lib/services/audioSequencer';
+import { ttsService } from '$lib/services/tts';
 import type { Task } from '$lib/types';
 import { TEXTS } from '$lib/data/texts';
 import { DragDropManager } from './dragDrop.svelte';
@@ -80,20 +81,20 @@ export class TasksBoardController {
 		if (this.activeList.isLocked) {
 			const task = this.tasks.find((t) => t.id === taskId);
 			if (task) {
-				await this.playTaskName(task.name);
+				await this.playTaskName(task);
 			}
 			return; // לא מעדכנים את המשימה
 		}
 
 		const currentTaskIndex = this.tasks.findIndex((t) => t.id === taskId);
 		const currentTask = this.tasks[currentTaskIndex];
-		
+
 		// אם המשימה מסומנת כ"בוטלה" - רק להשמיע הודעה, לא לסמן כהושלמה
 		if (currentTask.changeType === 'cancelled') {
-			await this.playChangeAnnouncement(currentTask.name);
+			await this.playChangeAnnouncement(currentTask);
 			return; // לא מעדכנים את המשימה
 		}
-		
+
 		const nextTask = this.tasks[currentTaskIndex + 1];
 
 		const newTasks = this.tasks.map((t) => {
@@ -111,25 +112,23 @@ export class TasksBoardController {
 		listStore.updateTasks(this.currentUser.id, this.activeList.id, newTasks);
 	}
 
-	async playTaskName(taskName: string) {
+	async playTaskName(task: Task) {
 		// השמעת שם המשימה בלבד (למצב רשימה נעולה)
-		const sequence: Array<{ type: 'file' | 'tts'; content: string }> = [
-			{ type: 'tts', content: taskName }
-		];
-		await audioSequencer.playSequence(sequence);
+		// שימוש ב-TTS Service כדי למצוא הקלטה אם קיימת
+		const segment = ttsService.getAudioSegment(task.id, task.name);
+		await audioSequencer.playSequence([segment]);
 	}
 
-	async playChangeAnnouncement(taskName: string) {
+	async playChangeAnnouncement(task: Task) {
 		if (!this.currentUser) return;
-		
+
 		// השמעת הודעת שינוי: "שינוי! היום אין [משימה]!"
-		// כרגע משתמשים ב-TTS כי אין קבצי אודיו ייעודיים
-		const sequence: Array<{ type: 'file' | 'tts'; content: string }> = [
-			{ type: 'tts', content: TEXTS.CHANGE_LABEL },
-			{ type: 'tts', content: TEXTS.TODAY_NO },
-			{ type: 'tts', content: taskName }
+		const sequence = [
+			ttsService.getAudioSegment('CHANGE_LABEL', TEXTS.CHANGE_LABEL),
+			ttsService.getAudioSegment('TODAY_NO', TEXTS.TODAY_NO),
+			ttsService.getAudioSegment(task.id, task.name)
 		];
-		
+
 		await audioSequencer.playSequence(sequence);
 	}
 
@@ -140,9 +139,9 @@ export class TasksBoardController {
 		if (completedTask) {
 			const { sequence, praise } = boostService.getFeedbackSequence(
 				this.currentUser.gender,
-				completedTask.name,
+				completedTask, // Passing full task object to allow ID lookup
 				this.currentUser.name || '',
-				nextTask?.name
+				nextTask
 			);
 
 			this.celebrationData = {
@@ -190,7 +189,7 @@ export class TasksBoardController {
 	}
 
 	// -- לוח תקשורת --
-	
+
 	openCommunicationBoard(url: string) {
 		this.iframeBoardUrl = url;
 		this.iframeBoardVisible = true;
@@ -213,13 +212,13 @@ export class TasksBoardController {
 		this.taskToEdit = null;
 	}
 
-	saveTask({ 
-		name, 
-		imageSrc, 
-		communicationBoardUrl, 
-		changeType 
-	}: { 
-		name: string; 
+	saveTask({
+		name,
+		imageSrc,
+		communicationBoardUrl,
+		changeType
+	}: {
+		name: string;
 		imageSrc: string | null;
 		communicationBoardUrl?: string;
 		changeType?: 'cancelled' | 'added';
@@ -231,9 +230,9 @@ export class TasksBoardController {
 			// עריכה
 			newTasks = this.tasks.map((t) => {
 				if (t.id === this.taskToEdit!.id) {
-					return { 
-						...t, 
-						name, 
+					return {
+						...t,
+						name,
 						imageSrc,
 						communicationBoardUrl,
 						changeType

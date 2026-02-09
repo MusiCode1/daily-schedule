@@ -1,15 +1,5 @@
 import { browser } from '$app/environment';
-
-// ממשק למיקום וגודל החלון הצף
-interface FloatingBoardPosition {
-	top: number;
-	left: number;
-	width: number;
-	height: number;
-}
-
-// מפתח ב-localStorage
-const STORAGE_KEY = 'floating-board-state';
+import { deviceState, type FloatingBoardPosition } from '$lib/stores/deviceState';
 
 // ערכי ברירת מחדל
 const DEFAULT_STATE: FloatingBoardPosition = {
@@ -35,21 +25,20 @@ export const floatingBoardState = {
 		}
 
 		try {
-			const stored = localStorage.getItem(STORAGE_KEY);
-			if (!stored) {
-				return { ...DEFAULT_STATE };
-			}
-
-			const parsed = JSON.parse(stored) as FloatingBoardPosition;
+			const ds = deviceState.load();
+			const parsed = ds.settings.ui.floatingBoard;
 
 			// ולידציה בסיסית של הערכים
 			if (
-				typeof parsed.top !== 'number' ||
-				typeof parsed.left !== 'number' ||
-				typeof parsed.width !== 'number' ||
-				typeof parsed.height !== 'number'
+				typeof parsed?.top !== 'number' ||
+				typeof parsed?.left !== 'number' ||
+				typeof parsed?.width !== 'number' ||
+				typeof parsed?.height !== 'number'
 			) {
 				console.warn('Invalid floating board state, using defaults');
+				deviceState.update((draft) => {
+					draft.settings.ui.floatingBoard = { ...DEFAULT_STATE };
+				});
 				return { ...DEFAULT_STATE };
 			}
 
@@ -67,10 +56,26 @@ export const floatingBoardState = {
 			}
 
 			// וידוא גודל מינימלי ומקסימלי סביר
-			parsed.width = Math.max(400, Math.min(parsed.width, screenWidth * 0.95));
-			parsed.height = Math.max(300, Math.min(parsed.height, screenHeight * 0.9));
+			const normalized: FloatingBoardPosition = {
+				top: parsed.top,
+				left: parsed.left,
+				width: Math.max(400, Math.min(parsed.width, screenWidth * 0.95)),
+				height: Math.max(300, Math.min(parsed.height, screenHeight * 0.9))
+			};
 
-			return parsed;
+			// אם בוצעו תיקונים (גבולות/גדלים), נשמור אותם כדי שהמצב יתיישר.
+			if (
+				normalized.top !== parsed.top ||
+				normalized.left !== parsed.left ||
+				normalized.width !== parsed.width ||
+				normalized.height !== parsed.height
+			) {
+				deviceState.update((draft) => {
+					draft.settings.ui.floatingBoard = normalized;
+				});
+			}
+
+			return normalized;
 		} catch (error) {
 			console.error('Failed to load floating board state:', error);
 			return { ...DEFAULT_STATE };
@@ -103,7 +108,9 @@ export const floatingBoardState = {
 				return;
 			}
 
-			localStorage.setItem(STORAGE_KEY, JSON.stringify(position));
+			deviceState.update((draft) => {
+				draft.settings.ui.floatingBoard = position;
+			});
 		} catch (error) {
 			console.error('Failed to save floating board state:', error);
 		}
@@ -118,7 +125,9 @@ export const floatingBoardState = {
 		}
 
 		try {
-			localStorage.removeItem(STORAGE_KEY);
+			deviceState.update((draft) => {
+				draft.settings.ui.floatingBoard = { ...DEFAULT_STATE };
+			});
 		} catch (error) {
 			console.error('Failed to reset floating board state:', error);
 		}

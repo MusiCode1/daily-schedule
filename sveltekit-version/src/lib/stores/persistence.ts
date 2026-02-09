@@ -1,9 +1,11 @@
 import { browser } from '$app/environment';
 import type { AppState } from '../types';
+import { INITIAL_STATE } from '../data/defaults';
 import { migrationService } from '../services/migration';
 
 export const STORAGE_KEY = 'daily-schedule-data';
-export const CURRENT_VERSION = 6;
+// גרסת ה-state הנוכחית חייבת להיות זהה לגרסה שב-INITIAL_STATE (מקור האמת).
+export const CURRENT_VERSION = INITIAL_STATE.version;
 
 export const persistence = {
 	load(): AppState | null {

@@ -1,0 +1,23 @@
+{
+  "users": [
+    { "id": "u1", "name": "דוגמה 1", "gender": "boy", "avatar": "/avatars/u1.png", "themeColor": "#000000" },
+    { "id": "u2", "name": "דוגמה 2", "gender": "girl", "avatar": "/avatars/u2.png", "themeColor": "#000000" },
+    { "id": "u3", "name": "דוגמה 3", "gender": "boy", "avatar": "/avatars/u3.png", "themeColor": "#000000" }
+  ],
+  "lists": {
+    "u1": [
+      {
+        "id": "morning_routine",
+        "name": "בוקר",
+        "tasks": [
+          { "id": "t1", "name": "שירותים", "imageSrc": "/images/clean/activity_toilet.png", "isDone": false }
+        ]
+      }
+    ]
+  },
+  "activeListId": { "u1": "morning_routine" },
+  "currentUserId": "u1",
+  "settings": { "lastActiveTime": 0 },
+  "lastModified": 0
+}
+

@@ -1,0 +1,25 @@
+{
+  "version": 9,
+  "users": [
+    { "id": "u1", "name": "דוגמה 1", "gender": "boy", "avatar": "idb:aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee", "themeColor": "#000000" }
+  ],
+  "people": [],
+  "lists": {
+    "u1": [
+      {
+        "id": "morning_routine",
+        "name": "בוקר",
+        "logo": "idb:11111111-2222-3333-4444-555555555555",
+        "tasks": [
+          { "id": "t1", "name": "שירותים", "imageSrc": "idb:99999999-8888-7777-6666-555555555555", "isDone": false }
+        ]
+      }
+    ]
+  },
+  "images": {},
+  "activeListId": { "u1": "morning_routine" },
+  "currentUserId": "u1",
+  "settings": { "lastActiveTime": 0 },
+  "lastModified": 0
+}
+

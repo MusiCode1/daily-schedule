@@ -1,8 +1,53 @@
 // src/lib/data/texts.ts
 import type { Gender } from '$lib/types';
+// ---
+// הפרדת טקסטים לפי קהל יעד (ילד/מבוגר) כדי לתמוך בתהליך יצירת TTS מוקלט מראש.
+// חשוב: אנחנו עדיין מייצאים TEXTS מאוחד לתאימות לאחור.
+// ---
 
-const managment = {
-	// הגדרות / בחירת משתמש
+const TEXTS_CHILD = {
+	// מסך בחירת משתמש (ממשק הילד)
+	USER_SELECTOR_TITLE: 'מי משתמש בלוח היום?',
+	LOGIN_AS: (name: string) => `התחבר כ-${name}`,
+
+	APP_TITLE: 'סדר יום ויזואלי',
+	APP_TITLE_PART1: 'סדר יום',
+	APP_TITLE_PART2: 'ויזואלי',
+	LOGIN_PAGE_TITLE: 'כניסה - סדר יום ויזואלי',
+	LOADING_APP: 'טוען סדר יום...',
+
+	// משוב / חיזוקים (ממשק הילד + הקראה)
+	PRAISE_ALUF: (gender: Gender) => (gender === 'boy' ? 'אתה אלוף!' : 'את אלופה!'),
+	WELL_DONE: 'כל הכבוד!',
+	ALL_DONE_MESSAGE: 'סיימת את כל המשימות להיום!',
+	DEFAULT_GREETING_WITH_COMMA: 'בהצלחה,',
+	TODAY_NO: 'היום אין',
+	FINISHED_PREFIX: (gender: Gender) => (gender === 'boy' ? 'סיימת את' : 'סיימת את'),
+	NOW_PREFIX: 'עכשיו,',
+	FINISHED_TASK: (gender: Gender, taskName: string) => `סיימת את ${taskName}`,
+	NOW_NEXT: (nextTaskName: string) => `. עכשיו, ${nextTaskName}`,
+	CHANGE_LABEL: 'שינוי!',
+
+	// לוח / משימות (ממשק הילד)
+	NOW: 'עכשיו',
+	DONE: 'בוצע',
+	LOCKED_LIST: '(נעולה)',
+
+	// אנשים (מוצג בלוח)
+	WHO_WILL_BE_WITH_US: 'מי יהיה איתנו היום?',
+	SHOW_HIDE_PEOPLE: 'הצג/הסתר אנשים',
+	SHOW: 'הצג',
+	HIDE: 'הסתר',
+
+	// לוח תקשורת
+	COMMUNICATION_BOARD: 'לוח תקשורת',
+	OPEN_COMMUNICATION_BOARD: 'פתח לוח תקשורת',
+	CLOSE: 'סגור',
+	FLOATING_WINDOW_TITLE: 'חלון צף'
+} as const;
+
+const TEXTS_ADMIN = {
+	// הגדרות / ניהול
 	SETTINGS_TITLE: 'הגדרות מערכת',
 	USERS_TAB: 'משתמשים',
 	LISTS_TAB: 'רשימות',
@@ -12,8 +57,6 @@ const managment = {
 	LIST_MANAGEMENT: 'ניהול רשימות',
 	PEOPLE_MANAGEMENT: 'ניהול אנשים',
 	GENERAL_SETTINGS: 'הגדרות כלליות',
-	USER_SELECTOR_TITLE: 'מי משתמש בלוח היום?',
-	LOGIN_AS: (name: string) => `התחבר כ-${name}`,
 	NEW_USER: '+ משתמש חדש',
 	EDIT_USER: 'עריכת משתמש',
 	SAVE: 'שמור',
@@ -33,7 +76,6 @@ const managment = {
 	HIDDEN_LIST: '(מוסתרת)',
 	LOCK_LIST: 'נעל רשימה (תרגול)',
 	UNLOCK_LIST: 'שחרר נעילה',
-	LOCKED_LIST: '(נעולה)',
 	BACK_TO_BOARD: '➡️ חזרה ללוח',
 	SWITCH_USER_ARIA: 'החלף משתמש',
 	ADVANCED_SETTINGS_TITLE: 'הגדרות מתקדמות',
@@ -49,26 +91,6 @@ const managment = {
 	RESET_TASKS_CONFIRM_BOARD: 'האם אתה בטוח שברצונך לאפס את כל המשימות?',
 	NO_TASKS_IN_LIST: 'אין משימות ברשימה זו.',
 	CLICK_PLUS_TO_ADD: 'לחץ על + כדי להוסיף.',
-};
-
-const userBoard = {
-	
-};
-
-
-export const TEXTS = {
-	...managment,
-	...userBoard,
-
-	APP_TITLE: 'סדר יום ויזואלי',
-	APP_TITLE_PART1: 'סדר יום',
-	APP_TITLE_PART2: 'ויזואלי',
-	LOGIN_PAGE_TITLE: 'כניסה - סדר יום ויזואלי',
-	LOADING_APP: 'טוען סדר יום...',
-
-
-
-	PRAISE_ALUF: (gender: Gender) => (gender === 'boy' ? 'אתה אלוף!' : 'את אלופה!'),
 
 	// רשימות
 	NEW_LIST: '+ רשימה חדשה',
@@ -92,11 +114,7 @@ export const TEXTS = {
 	NEW_PERSON: 'הוסף אדם חדש',
 	EDIT_PERSON: 'עריכת אדם',
 	PERSON_NAME: 'שם האדם',
-	WHO_WILL_BE_WITH_US: 'מי יהיה איתנו היום?',
 	SELECT_PEOPLE_FOR_LIST: 'בחר אנשים לרשימה זו',
-	SHOW_HIDE_PEOPLE: 'הצג/הסתר אנשים',
-	SHOW: 'הצג',
-	HIDE: 'הסתר',
 	DELETE_PERSON_CONFIRM: 'למחוק את האדם? הוא יוסר מכל הרשימות שבהן הוא מופיע.',
 	NO_PEOPLE_IN_DB: 'אין אנשים במאגר',
 	CLICK_ADD_PERSON_TO_START: 'לחץ על "הוסף אדם חדש" כדי להתחיל',
@@ -110,12 +128,9 @@ export const TEXTS = {
 	CHOOSE_IMAGE_OPTIONAL: 'בחירת תמונה (אופציונלי):',
 	COMMUNICATION_BOARD_URL: 'קישור ללוח תקשורת (אופציונלי)',
 	COMMUNICATION_BOARD_PLACEHOLDER: 'https://app.cboard.io/board/...',
-	COMMUNICATION_BOARD: 'לוח תקשורת',
-	OPEN_COMMUNICATION_BOARD: 'פתח לוח תקשורת',
 	MARK_AS_CHANGE: 'סמן כמשימת שינוי',
 	CHANGE_CANCELLED: 'משימה בוטלה',
 	CHANGE_ADDED: 'פעילות חדשה',
-	CHANGE_LABEL: 'שינוי!',
 	NEW_ACTIVITY_LABEL: 'פעילות חדשה',
 
 	// טפסים
@@ -127,22 +142,8 @@ export const TEXTS = {
 	ADD_ACTION: 'הוסף',
 	UPDATE_ACTION: 'עדכן',
 	DELETE_TASK_CONFIRM: 'למחוק?',
-	NOW: 'עכשיו',
-	DONE: 'בוצע',
 	EDIT_ACTION: 'ערוך',
 	DELETE_ACTION: 'מחק',
-	CLOSE: 'סגור',
-	FLOATING_WINDOW_TITLE: 'חלון צף',
-
-	// משוב / חיזוקים
-	WELL_DONE: 'כל הכבוד!',
-	ALL_DONE_MESSAGE: 'סיימת את כל המשימות להיום!',
-	DEFAULT_GREETING_WITH_COMMA: 'בהצלחה,',
-	TODAY_NO: 'היום אין',
-	FINISHED_PREFIX: (gender: Gender) => (gender === 'boy' ? 'סיימת את' : 'סיימת את'),
-	NOW_PREFIX: 'עכשיו,',
-	FINISHED_TASK: (gender: Gender, taskName: string) => `סיימת את ${taskName}`,
-	NOW_NEXT: (nextTaskName: string) => `. עכשיו, ${nextTaskName}`,
 
 	// תמונות
 	IMAGE_ALT_GENERIC: 'תמונה',
@@ -274,7 +275,42 @@ export const TEXTS = {
 
 	// Legacy / מיגרציות
 	LEGACY_GREETING_HELLO: 'שלום'
+} as const;
+
+export const TEXTS = {
+	...TEXTS_ADMIN,
+	...TEXTS_CHILD
+} as const;
+
+export type TextAudience = 'child' | 'admin' | 'shared';
+export type TextTtsPolicy = 'preRecorded' | 'runtimeOk';
+
+// מפת מטא-דאטה בסיסית. המטרה היא להתחיל עם הדברים הקריטיים (ילד + דיבור) ולהרחיב בהדרגה.
+export const TEXTS_META: Partial<Record<keyof typeof TEXTS, { audience: TextAudience; tts?: TextTtsPolicy }>> = {
+	// טקסטים שמומלץ להקליט מראש (כי הם נאמרים כרגע ב-TTS)
+	CHANGE_LABEL: { audience: 'child', tts: 'preRecorded' },
+	TODAY_NO: { audience: 'child', tts: 'preRecorded' },
+
+	// טקסטים של הילד (UI)
+	USER_SELECTOR_TITLE: { audience: 'child' },
+	LOADING_APP: { audience: 'child' },
+	ALL_DONE_MESSAGE: { audience: 'child' },
+	NOW: { audience: 'child' },
+	DONE: { audience: 'child' },
+
+	// מפתחות שמופיעים גם בלוח (Child) וגם במסכי ניהול (Admin)
+	CANCEL: { audience: 'shared' },
+	NEW_PERSON: { audience: 'shared' },
+	NO_PEOPLE_IN_DB: { audience: 'shared' },
+	CLICK_ADD_PERSON_TO_START: { audience: 'shared' },
+	HIDE_LIST: { audience: 'shared' },
+	SHOW_LIST: { audience: 'shared' }
 };
+
+// רשימת מפתחות שטקסט היעד שלהם אמור להיות מוקלט מראש כחלק מ-TTS “ילדי”.
+// כרגע הרשימה נוצרת על בסיס TEXTS_META (רק מה שסומן במפורש).
+export const CHILD_PRE_RECORDED_TTS_KEYS = (Object.keys(TEXTS_META) as Array<keyof typeof TEXTS>)
+	.filter((k) => TEXTS_META[k]?.audience === 'child' && TEXTS_META[k]?.tts === 'preRecorded');
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const txt = (key: keyof typeof TEXTS, ...args: any[]) => {

@@ -3,6 +3,9 @@
 	{
 		"name": "daily-schedule",
 		"path": "."
+	},
+	{
+		"path": "../../../../../home/user"
 	}
 ],
   "settings": {

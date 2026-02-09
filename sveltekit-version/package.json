@@ -52,7 +52,7 @@
 		"vite-plugin-devtools-json": "^1.0.0",
 		"vitest": "^4.0.15",
 		"vitest-browser-svelte": "^2.0.1",
-		"wrangler": "^4.54.0"
+		"wrangler": "^4.63.0"
 	},
 	"dependencies": {
 		"@sveltejs/adapter-static": "^3.0.10",

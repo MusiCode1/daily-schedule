@@ -8,7 +8,7 @@
 
 ### מיגרציה לאותנטיקציה (Google Auth Storage)
 
-יש לבצע בדיקה זו בכל שינוי הקשור ל-`googleDriveService` או למבנה הנתונים שלו.
+יש לבצע בדיקה זו בכל שינוי הקשור ל-OAuth / טוקנים, ובפרט ל-`googleAuthService` או למבנה ה-state הפר-מכשיר (`daily-schedule-device-state`).
 
 1.  **הכנת הסביבה (Pre-Condition):**
     - וודא שהמערכת נקייה (התנתק, מחק LocalStorage).
@@ -33,5 +33,5 @@
 4.  **אימות (Validation):**
     - בדוק ב-Application -> Local Storage.
     - וודא שהמפתחות הישנים `gdrive_token` ו-`gdrive_expiry` נעלמו.
-    - וודא שקיים מפתח חדש `google_auth_storage`.
-    - וודא שהתוכן שלו תקין ומכיל את הטוקן שהזרקת.
+    - וודא שקיים מפתח חדש `daily-schedule-device-state`.
+    - וודא שבתוכו יש `auth.googleAuthStorage.accessToken` ושזה הטוקן שהזרקת.

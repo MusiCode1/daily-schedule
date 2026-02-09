@@ -1,0 +1,29 @@
+{
+  "version": 13,
+  "users": [
+    { "id": "u_ezra", "name": "עזרא", "gender": "boy", "avatar": "/images/users/ezra.png", "themeColor": "#4169E1" }
+  ],
+  "people": [
+    { "id": "p_father", "name": "אבא", "avatar": "/images/people/father.png" }
+  ],
+  "lists": {
+    "u_ezra": [
+      {
+        "id": "morning_routine",
+        "name": "עבודה עם אבא",
+        "logo": "/images/times/list_morning_sun.png",
+        "tasks": [
+          { "id": "t1", "name": "שירותים", "imageSrc": "/images/activities/activity_toilet.png", "isDone": false }
+        ],
+        "isPeopleSectionVisible": true,
+        "isLocked": false
+      }
+    ]
+  },
+  "images": {},
+  "activeListId": { "u_ezra": "morning_routine" },
+  "currentUserId": "u_ezra",
+  "settings": { "lastActiveTime": 0 },
+  "lastModified": 0
+}
+

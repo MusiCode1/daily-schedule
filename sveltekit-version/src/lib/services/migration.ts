@@ -1,4 +1,4 @@
-import type { AppState, List, Task } from '$lib/types';
+import type { AppState, List } from '$lib/types';
 import { INITIAL_STATE, ACTIVITIES, DEFAULT_LIST_DEFINITIONS } from '$lib/data/defaults';
 import { TEXTS } from '$lib/data/texts';
 import { db } from './db';
@@ -7,6 +7,370 @@ import { db } from './db';
 async function dataURLToBlob(dataURL: string): Promise<Blob> {
 	const response = await fetch(dataURL);
 	return await response.blob();
+}
+
+type AnyState = any;
+
+const LATEST_STATE_VERSION = INITIAL_STATE.version;
+
+function cloneForMigration(input: AnyState): AnyState {
+	// המיגרציות משנות את האובייקט "במקום". כדי לא להפתיע קוראים, נשכפל לפני ריצה.
+	if (typeof structuredClone === 'function') return structuredClone(input);
+	return JSON.parse(JSON.stringify(input));
+}
+
+function getSafeStateVersion(state: AnyState): number {
+	const v = Number(state?.version);
+	// לפני v2 לא תמיד היה version מסודר, לכן נניח "1" אם חסר/לא תקין.
+	if (!Number.isFinite(v) || v <= 0) return 1;
+	return v;
+}
+
+function migrateToV2(state: AnyState): AnyState {
+	console.log('Migrating to version 2: Adding list logos...');
+	const users = Object.keys(state.lists || {});
+	users.forEach((userId) => {
+		const userLists: List[] = state.lists[userId] || [];
+		userLists.forEach((list) => {
+			const def = DEFAULT_LIST_DEFINITIONS.find((d) => d.id === list.id);
+			if (def && !list.logo) {
+				list.logo = def.logo || '';
+			}
+		});
+	});
+	state.version = 2;
+	return state;
+}
+
+function migrateToV3(state: AnyState): AnyState {
+	console.log('Migrating to version 3: Fixing image paths...');
+
+	// תיקון תמונות משתמשים
+	if (state.users) {
+		state.users.forEach((u: any) => {
+			if (u.avatar && u.avatar.includes('/avatars/')) {
+				u.avatar = u.avatar.replace('/avatars/', '/images/users/');
+			}
+		});
+	}
+
+	// תיקון תמונות משימות
+	const users = Object.keys(state.lists || {});
+	users.forEach((userId) => {
+		const userLists: List[] = state.lists[userId] || [];
+		userLists.forEach((list) => {
+			list.tasks.forEach((task) => {
+				if (task.imageSrc && typeof task.imageSrc === 'string') {
+					task.imageSrc = task.imageSrc
+						.replace('/images/clean/', '/images/activities/')
+						.replace('/avatars/', '/images/users/');
+				}
+			});
+		});
+	});
+
+	state.version = 3;
+	return state;
+}
+
+function migrateToV4(state: AnyState): AnyState {
+	console.log('Migrating to version 4: Adding greetings...');
+	const users = Object.keys(state.lists || {});
+	users.forEach((userId) => {
+		const userLists: List[] = state.lists[userId] || [];
+		userLists.forEach((list) => {
+			if (!list.greeting) {
+				const def = DEFAULT_LIST_DEFINITIONS.find((d) => d.id === list.id);
+				const greeting = def && 'greeting' in (def as any) ? (def as any).greeting : undefined;
+				list.greeting = greeting || TEXTS.LEGACY_GREETING_HELLO;
+			}
+		});
+	});
+	state.version = 4;
+	return state;
+}
+
+function migrateToV5(state: AnyState): AnyState {
+	console.log('Migrating to version 5: Update default greetings...');
+	const users = Object.keys(state.lists || {});
+	users.forEach((userId) => {
+		const userLists: List[] = state.lists[userId] || [];
+		userLists.forEach((list) => {
+			if (list.greeting === TEXTS.LEGACY_GREETING_HELLO) {
+				list.greeting = TEXTS.DEFAULT_GREETING;
+			}
+		});
+	});
+	state.version = 5;
+	return state;
+}
+
+function migrateToV6(state: AnyState): AnyState {
+	console.log('Migrating to version 6: Separating image metadata...');
+
+	// אתחול images אם לא קיים
+	if (!state.images) {
+		state.images = {};
+	}
+
+	// מעבר על כל המשתמשים והעברת crop לתוך images
+	const users = Object.keys(state.lists || {});
+	users.forEach((userId) => {
+		const userLists: List[] = state.lists[userId] || [];
+
+		userLists.forEach((list) => {
+			// טיפול ב-logo של רשימה
+			if (list.logo && typeof list.logo === 'object' && 'src' in list.logo) {
+				const logoData = list.logo as any;
+				if (logoData.crop) {
+					state.images[logoData.src] = { crop: logoData.crop };
+				}
+				list.logo = logoData.src;
+			}
+
+			// טיפול במשימות
+			list.tasks.forEach((task: any) => {
+				if (task.imageSrc && typeof task.imageSrc === 'object' && 'src' in task.imageSrc) {
+					const imgData = task.imageSrc;
+					if (imgData.crop) {
+						state.images[imgData.src] = { crop: imgData.crop };
+					}
+					task.imageSrc = imgData.src;
+				}
+			});
+		});
+	});
+
+	// טיפול ב-avatars של משתמשים
+	if (state.users) {
+		state.users.forEach((user: any) => {
+			if (user.avatar && typeof user.avatar === 'object' && 'src' in user.avatar) {
+				const avatarData = user.avatar;
+				if (avatarData.crop) {
+					state.images[avatarData.src] = { crop: avatarData.crop };
+				}
+				user.avatar = avatarData.src;
+			}
+		});
+	}
+
+	state.version = 6;
+	console.log(`Migrated ${Object.keys(state.images).length} image metadata entries`);
+	return state;
+}
+
+function migrateToV7(state: AnyState): AnyState {
+	console.log('Migrating to version 7: Adding communication board URLs and change types...');
+	const users = Object.keys(state.lists || {});
+	users.forEach((userId) => {
+		const userLists: List[] = state.lists[userId] || [];
+		userLists.forEach((list) => {
+			list.tasks.forEach((task: any) => {
+				if (!task.communicationBoardUrl) {
+					task.communicationBoardUrl = undefined;
+				}
+				if (!task.changeType) {
+					task.changeType = undefined;
+				}
+			});
+		});
+	});
+	state.version = 7;
+	return state;
+}
+
+function migrateToV8(state: AnyState): AnyState {
+	console.log('Migrating to version 8: Adding list title and description...');
+	const users = Object.keys(state.lists || {});
+	users.forEach((userId) => {
+		const userLists: List[] = state.lists[userId] || [];
+		userLists.forEach((list: any) => {
+			if (!list.title) {
+				list.title = undefined;
+			}
+			if (!list.description) {
+				list.description = undefined;
+			}
+		});
+	});
+	state.version = 8;
+	return state;
+}
+
+function migrateToV9(state: AnyState): AnyState {
+	console.log('Migrating to version 9: Adding people (team/family members)...');
+
+	// אתחול מאגר האנשים אם לא קיים
+	if (!state.people) {
+		state.people = [];
+	}
+
+	// הוספת שדות לרשימות (אופציונליים)
+	const users = Object.keys(state.lists || {});
+	users.forEach((userId) => {
+		const userLists: List[] = state.lists[userId] || [];
+		userLists.forEach((list: any) => {
+			if (!list.peopleIds) {
+				list.peopleIds = undefined;
+			}
+			if (!list.isPeopleSectionVisible) {
+				list.isPeopleSectionVisible = true; // ברירת מחדל - גלוי
+			}
+		});
+	});
+
+	state.version = 9;
+	return state;
+}
+
+function migrateToV10(state: AnyState): AnyState {
+	console.log('Migrating to version 10: Adding isLocked to lists...');
+	const users = Object.keys(state.lists || {});
+	users.forEach((userId) => {
+		const userLists: List[] = state.lists[userId] || [];
+		userLists.forEach((list: any) => {
+			if (list.isLocked === undefined) {
+				list.isLocked = false; // ברירת מחדל: לא נעול
+			}
+		});
+	});
+	state.version = 10;
+	return state;
+}
+
+function migrateToV11(state: AnyState): AnyState {
+	console.log('Migrating to version 11: Populating example family members...');
+	if (!state.people || state.people.length === 0) {
+		state.people = INITIAL_STATE.people;
+	}
+	state.version = 11;
+	return state;
+}
+
+function migrateToV12(state: AnyState): AnyState {
+	console.log('Migrating to version 12: Updating defaults to Family Members (Ezra, Tzofia, Adam)...');
+
+	const oldDefaultIds = ['u1', 'u2', 'u3'];
+	const currentUsers = state.users || [];
+	const isDefaultSetup =
+		currentUsers.length === 3 && currentUsers.every((u: any) => oldDefaultIds.includes(u.id));
+
+	// רק אם זה עדיין הסטאפ הדיפולטיבי הישן (או ריק), נחליף לחדש
+	if (isDefaultSetup || currentUsers.length === 0) {
+		state.users = INITIAL_STATE.users;
+		state.lists = INITIAL_STATE.lists;
+		state.activeListId = INITIAL_STATE.activeListId;
+		// עדכון רשימת האנשים (הסרת הילדים ממנה)
+		state.people = INITIAL_STATE.people;
+	} else {
+		// אם המשתמש כבר ערך שינויים, רק נעדכן את רשימת האנשים (people) שתתאים לחדש
+		if (state.people) {
+			state.people = state.people.filter(
+				(p: any) => !['p_ezra', 'p_tzofia', 'p_adam'].includes(p.id)
+			);
+		}
+	}
+
+	state.version = 12;
+	return state;
+}
+
+function migrateToV13(state: AnyState): AnyState {
+	console.log('Migrating to version 13: Adding new preparation lists (Grandparents, Guests)...');
+
+	const users = Object.keys(state.lists || {});
+	users.forEach((userId) => {
+		const userLists = state.lists[userId] || [];
+
+		const newListsDefs = DEFAULT_LIST_DEFINITIONS.filter((def) =>
+			['visit_grandparents', 'guests_visit'].includes(def.id)
+		);
+
+		const listsToAdd = newListsDefs.map((def) => {
+			return {
+				id: def.id,
+				name: def.name,
+				logo: def.logo,
+				greeting: (def as any).greeting,
+				title: (def as any).title,
+				tasks: def.items
+					.map((item: any) => {
+						const activity = ACTIVITIES.find((a) => a.id === item.activityId);
+						return {
+							id: crypto.randomUUID(),
+							name: activity ? activity.name : 'Unknown', // Fallback
+							imageSrc: activity ? `/images/activities/${activity.image}` : null,
+							isDone: false
+						};
+					})
+					.filter((t: any) => t.name !== 'Unknown')
+			};
+		});
+
+		listsToAdd.forEach((newList: any) => {
+			if (!userLists.find((l: any) => l.id === newList.id)) {
+				userLists.push(newList);
+			}
+		});
+	});
+
+	state.version = 13;
+	return state;
+}
+
+function migrateToV14(state: AnyState): AnyState {
+	console.log('Migrating to version 14: Updating peopleIds for preparation lists...');
+
+	const users = Object.keys(state.lists || {});
+	users.forEach((userId) => {
+		const userLists = state.lists[userId] || [];
+		userLists.forEach((list: any) => {
+			if (list.id === 'morning_routine') {
+				list.peopleIds = ['p_father', 'p_mother'];
+			} else if (list.id === 'afternoon_routine') {
+				list.peopleIds = ['p_mother'];
+			} else if (list.id === 'visit_grandparents') {
+				list.peopleIds = ['p_grandfather', 'p_grandmother'];
+			} else if (list.id === 'guests_visit') {
+				list.peopleIds = ['p_uncle', 'p_aunt'];
+			}
+		});
+	});
+
+	state.version = 14;
+	return state;
+}
+
+const STATE_MIGRATIONS: Record<number, (state: AnyState) => AnyState> = {
+	2: migrateToV2,
+	3: migrateToV3,
+	4: migrateToV4,
+	5: migrateToV5,
+	6: migrateToV6,
+	7: migrateToV7,
+	8: migrateToV8,
+	9: migrateToV9,
+	10: migrateToV10,
+	11: migrateToV11,
+	12: migrateToV12,
+	13: migrateToV13,
+	14: migrateToV14
+};
+
+function runStateMigrations(input: AnyState): AnyState {
+	const state = cloneForMigration(input);
+	state.version = getSafeStateVersion(state);
+
+	while (state.version < LATEST_STATE_VERSION) {
+		const targetVersion = state.version + 1;
+		const migrate = STATE_MIGRATIONS[targetVersion];
+		if (!migrate) {
+			throw new Error(`Missing migration for target version ${targetVersion}`);
+		}
+		migrate(state);
+	}
+
+	return state;
 }
 
 export const migrationService = {
@@ -47,344 +411,8 @@ export const migrationService = {
 	},
 
 	migrateState(parsed: any): AppState {
-		// לוגיקת המיגרציה
-		if (!parsed.version || parsed.version < 2) {
-			console.log('Migrating to version 2: Adding list logos...');
-			const users = Object.keys(parsed.lists || {});
-			users.forEach((userId) => {
-				const userLists: List[] = parsed.lists[userId];
-				userLists.forEach((list) => {
-					const def = DEFAULT_LIST_DEFINITIONS.find((d) => d.id === list.id);
-					if (def && !list.logo) {
-						list.logo = def.logo || '';
-					}
-				});
-			});
-			parsed.version = 2;
-		}
-
-		if (parsed.version < 3) {
-			console.log('Migrating to version 3: Fixing image paths...');
-
-			// תיקון תמונות משתמשים
-			if (parsed.users) {
-				parsed.users.forEach((u: any) => {
-					if (u.avatar && u.avatar.includes('/avatars/')) {
-						u.avatar = u.avatar.replace('/avatars/', '/images/users/');
-					}
-				});
-			}
-
-			// תיקון תמונות משימות
-			const users = Object.keys(parsed.lists || {});
-			users.forEach((userId) => {
-				const userLists: List[] = parsed.lists[userId];
-				userLists.forEach((list) => {
-					list.tasks.forEach((task) => {
-						if (task.imageSrc && typeof task.imageSrc === 'string') {
-							task.imageSrc = task.imageSrc
-								.replace('/images/clean/', '/images/activities/')
-								.replace('/avatars/', '/images/users/');
-						}
-					});
-				});
-			});
-			parsed.version = 3;
-		}
-
-		if (parsed.version < 4) {
-			console.log('Migrating to version 4: Adding greetings...');
-			const users = Object.keys(parsed.lists || {});
-			users.forEach((userId) => {
-				const userLists: List[] = parsed.lists[userId];
-				userLists.forEach((list) => {
-					if (!list.greeting) {
-						const def = DEFAULT_LIST_DEFINITIONS.find((d) => d.id === list.id);
-						const greeting = def && 'greeting' in (def as any) ? (def as any).greeting : undefined;
-						list.greeting = greeting || TEXTS.LEGACY_GREETING_HELLO;
-					}
-				});
-			});
-			parsed.version = 4;
-		}
-
-		if (parsed.version < 5) {
-			console.log('Migrating to version 5: Update default greetings...');
-			const users = Object.keys(parsed.lists || {});
-			users.forEach((userId) => {
-				const userLists: List[] = parsed.lists[userId];
-				userLists.forEach((list) => {
-					if (list.greeting === TEXTS.LEGACY_GREETING_HELLO) {
-						list.greeting = TEXTS.DEFAULT_GREETING;
-					}
-				});
-			});
-			parsed.version = 5;
-		}
-
-		if (parsed.version < 6) {
-			console.log('Migrating to version 6: Separating image metadata...');
-
-			// אתחול images אם לא קיים
-			if (!parsed.images) {
-				parsed.images = {};
-			}
-
-			// מעבר על כל המשתמשים והעברת crop לתוך images
-			const users = Object.keys(parsed.lists || {});
-			users.forEach((userId) => {
-				const userLists: List[] = parsed.lists[userId];
-
-				userLists.forEach((list) => {
-					// טיפול ב-logo של רשימה
-					if (list.logo && typeof list.logo === 'object' && 'src' in list.logo) {
-						const logoData = list.logo as any;
-						if (logoData.crop) {
-							parsed.images[logoData.src] = { crop: logoData.crop };
-						}
-						list.logo = logoData.src;
-					}
-
-					// טיפול במשימות
-					list.tasks.forEach((task: any) => {
-						if (task.imageSrc && typeof task.imageSrc === 'object' && 'src' in task.imageSrc) {
-							const imgData = task.imageSrc;
-							if (imgData.crop) {
-								parsed.images[imgData.src] = { crop: imgData.crop };
-							}
-							task.imageSrc = imgData.src;
-						}
-					});
-				});
-			});
-
-			// טיפול ב-avatars של משתמשים
-			if (parsed.users) {
-				parsed.users.forEach((user: any) => {
-					if (user.avatar && typeof user.avatar === 'object' && 'src' in user.avatar) {
-						const avatarData = user.avatar;
-						if (avatarData.crop) {
-							parsed.images[avatarData.src] = { crop: avatarData.crop };
-						}
-						user.avatar = avatarData.src;
-					}
-				});
-			}
-
-			parsed.version = 6;
-			console.log(`Migrated ${Object.keys(parsed.images).length} image metadata entries`);
-		}
-
-		if (parsed.version < 7) {
-			console.log('Migrating to version 7: Adding communication board URLs and change types...');
-
-			// הוספת שדות חדשים למשימות קיימות (אופציונליים - אין צורך באתחול)
-			const users = Object.keys(parsed.lists || {});
-			users.forEach((userId) => {
-				const userLists: List[] = parsed.lists[userId];
-				userLists.forEach((list) => {
-					list.tasks.forEach((task: any) => {
-						// השדות האלו אופציונליים, אז פשוט מוודאים שהם undefined אם לא קיימים
-						if (!task.communicationBoardUrl) {
-							task.communicationBoardUrl = undefined;
-						}
-						if (!task.changeType) {
-							task.changeType = undefined;
-						}
-					});
-				});
-			});
-
-			parsed.version = 7;
-		}
-
-		if (parsed.version < 8) {
-			console.log('Migrating to version 8: Adding list title and description...');
-
-			// הוספת שדות כותרת ותיאור לרשימות (אופציונליים)
-			const users = Object.keys(parsed.lists || {});
-			users.forEach((userId) => {
-				const userLists: List[] = parsed.lists[userId];
-				userLists.forEach((list: any) => {
-					if (!list.title) {
-						list.title = undefined;
-					}
-					if (!list.description) {
-						list.description = undefined;
-					}
-				});
-			});
-
-			parsed.version = 8;
-		}
-
-		if (parsed.version < 9) {
-			console.log('Migrating to version 9: Adding people (team/family members)...');
-
-			// אתחול מאגר האנשים אם לא קיים
-			if (!parsed.people) {
-				parsed.people = [];
-			}
-
-			// הוספת שדות לרשימות (אופציונליים)
-			const users = Object.keys(parsed.lists || {});
-			users.forEach((userId) => {
-				const userLists: List[] = parsed.lists[userId];
-				userLists.forEach((list: any) => {
-					if (!list.peopleIds) {
-						list.peopleIds = undefined;
-					}
-					if (!list.isPeopleSectionVisible) {
-						list.isPeopleSectionVisible = true; // ברירת מחדל - גלוי
-					}
-				});
-			});
-
-			parsed.version = 9;
-		}
-
-		if (parsed.version < 10) {
-			console.log('Migrating to version 10: Adding isLocked to lists...');
-
-			// הוספת שדה isLocked לכל הרשימות
-			const users = Object.keys(parsed.lists || {});
-			users.forEach((userId) => {
-				const userLists: List[] = parsed.lists[userId];
-				userLists.forEach((list: any) => {
-					if (list.isLocked === undefined) {
-						list.isLocked = false; // ברירת מחדל: לא נעול
-					}
-				});
-			});
-
-			parsed.version = 10;
-		}
-
-		if (parsed.version < 11) {
-			console.log('Migrating to version 11: Populating example family members...');
-
-			// אכלוס רשימת האנשים בברירת המחדל אם היא ריקה
-			if (!parsed.people || parsed.people.length === 0) {
-				// אנו מעתיקים מ-INITIAL_STATE שכבר מכיל את האנשים החדשים (כי עדכנו את defaults.ts)
-				// הערה: בגלל שה-merge בסוף הפונקציה דורס את INITIAL_STATE עם parsed,
-				// אנחנו חייבים לעדכן את parsed.people כאן.
-				parsed.people = INITIAL_STATE.people;
-			}
-
-			parsed.version = 11;
-		}
-
-		if (parsed.version < 12) {
-			console.log(
-				'Migrating to version 12: Updating defaults to Family Members (Ezra, Tzofia, Adam)...'
-			);
-
-			// אנו דורסים את המשתמשים ואת ה-lists שלהם כדי להתאים למשפחה החדשה
-			// שים לב: זה מהלך אגרסיבי, אבל מתבקש מכיוון שזו "משפחה לדוגמא"
-			// משתמשים אמיתיים (ששינו את המשתמשים) לא ייפגעו אם נבדוק אם אלו משתמשי ברירת המחדל הישנים
-
-			const oldDefaultIds = ['u1', 'u2', 'u3'];
-			const currentUsers = parsed.users || [];
-			const isDefaultSetup =
-				currentUsers.length === 3 && currentUsers.every((u: any) => oldDefaultIds.includes(u.id));
-
-			// רק אם זה עדיין הסטאפ הדיפולטיבי הישן (או ריק), נחליף לחדש
-			if (isDefaultSetup || currentUsers.length === 0) {
-				parsed.users = INITIAL_STATE.users;
-				parsed.lists = INITIAL_STATE.lists;
-				parsed.activeListId = INITIAL_STATE.activeListId;
-				// עדכון רשימת האנשים (הסרת הילדים ממנה)
-				parsed.people = INITIAL_STATE.people;
-			} else {
-				// אם המשתמש כבר ערך שינויים, רק נעדכן את רשימת האנשים (people) שתתאים לחדש
-				// כלומר נסיר את הילדים אם הם בטעות שם (בגלל מיגרציה 11)
-				if (parsed.people) {
-					parsed.people = parsed.people.filter(
-						(p: any) => !['p_ezra', 'p_tzofia', 'p_adam'].includes(p.id)
-					);
-				}
-			}
-
-			parsed.version = 12;
-		}
-
-		if (parsed.version < 13) {
-			console.log(
-				'Migrating to version 13: Adding new preparation lists (Grandparents, Guests)...'
-			);
-
-			// אנו צריכים להוסיף את הרשימות החדשות לכל המשתמשים
-			// אבל רק אם הן לא קיימות כבר (למניעת כפילות למרות שזה מערך חדש של ברירת מחדל)
-
-			const users = Object.keys(parsed.lists || {});
-
-			users.forEach((userId) => {
-				const userLists = parsed.lists[userId] || [];
-
-				// יצירת הרשימות החדשות מתוך ההגדרות (רק ה-2 החדשות)
-				const newListsDefs = DEFAULT_LIST_DEFINITIONS.filter((def) =>
-					['visit_grandparents', 'guests_visit'].includes(def.id)
-				);
-
-				const listsToAdd = newListsDefs.map((def) => {
-					// יצירת אובייקט List חדש (לוגיקה מועתקת מ-createDefaultLists)
-					return {
-						id: def.id,
-						name: def.name,
-						logo: def.logo,
-						greeting: (def as any).greeting,
-						title: (def as any).title,
-						tasks: def.items
-							.map((item: any) => {
-								const activity = ACTIVITIES.find((a) => a.id === item.activityId);
-								return {
-									id: crypto.randomUUID(),
-									name: activity ? activity.name : 'Unknown', // Fallback
-									imageSrc: activity ? `/images/activities/${activity.image}` : null,
-									isDone: false
-								};
-							})
-							.filter((t: any) => t.name !== 'Unknown') // סינון פעילויות שלא נמצאו
-					};
-				});
-
-				// הוספה לרשימות המשתמש (רק אם לא קיים כבר ID כזה)
-				listsToAdd.forEach((newList: any) => {
-					if (!userLists.find((l: any) => l.id === newList.id)) {
-						userLists.push(newList);
-					}
-				});
-			});
-
-			parsed.version = 13;
-		}
-
-		if (parsed.version < 14) {
-			console.log('Migrating to version 14: Updating peopleIds for preparation lists...');
-
-			const users = Object.keys(parsed.lists || {});
-
-			users.forEach((userId) => {
-				const userLists = parsed.lists[userId] || [];
-
-				userLists.forEach((list: any) => {
-					// עדכון עבור רשימות ספציפיות
-					if (list.id === 'morning_routine') {
-						list.peopleIds = ['p_father', 'p_mother']; // בוקר: אבא ואמא
-					} else if (list.id === 'afternoon_routine') {
-						list.peopleIds = ['p_mother']; // ערב: אמא
-					} else if (list.id === 'visit_grandparents') {
-						list.peopleIds = ['p_grandfather', 'p_grandmother']; // סבא וסבתא בנסיעה
-					} else if (list.id === 'guests_visit') {
-						list.peopleIds = ['p_uncle', 'p_aunt']; // דוד ודודה באירוח
-					}
-				});
-			});
-
-			parsed.version = 14;
-		}
-
-		return { ...INITIAL_STATE, ...parsed };
+		const migrated = runStateMigrations(parsed);
+		return { ...INITIAL_STATE, ...migrated };
 	},
 
 	// ... existing code ...
@@ -452,7 +480,7 @@ export const migrationService = {
 		}
 
 		// אם אין תאריך תפוגה, נניח שהוא פג עכשיו (או שעה מעכשיו, אבל עדיף להיות שמרניים)
-		// בפועל, googleDriveService יטפל בחידוש אם הוא פג.
+		// בפועל, googleAuthService יטפל בחידוש אם הוא פג.
 		if (expiryTime === 0) {
 			expiryTime = Date.now();
 		}
