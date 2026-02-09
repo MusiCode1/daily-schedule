@@ -1,5 +1,56 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-09 14:41
+
+### אימוץ פרימיטיבי UI במסך המשימות (Board)
+
+- הוספנו עטיפות דקות ייעודיות למסך הלוח ב-`sveltekit-version/src/lib/components/board/*` (BoardIconButton, BoardActionCard, BoardFabAddButton) כדי לשמור על המבנה וה-classes הקיימים.
+- `sveltekit-version/src/routes/+page.svelte` עבר להשתמש בעטיפות, והוגדרו ה-styles הרלוונטיים כ-`:global(...)` כדי שיעבדו גם דרך גבולות קומפוננטה (Scoped styles).
+- `sveltekit-version/src/lib/components/TaskRow.svelte` עבר להשתמש ב-`ActionButton` לפריטי עריכה (מחק/ערוך) עם class ייעודי `task-row-action-btn`, וה-CSS עודכן ל-`:global(...)` כדי לא לשבור עיצוב.
+- נוספו צילומי מסך לפני/אחרי: `before-board.png`, `after-board.png`.
+
+#### בדיקות שבוצעו
+
+- `npm run check` ב-`sveltekit-version` עבר (0 errors). נשארו warnings קיימים ב-`AddModal.svelte` סביב `@reference/@apply`.
+
+## 2026-02-09 15:42
+
+### יישור CelebrationModal לפרימיטיבים + שכבת חגיגיות
+
+- `sveltekit-version/src/lib/components/CelebrationModal.svelte` עבר להשתמש ב-`ModalShell` ו-`Card` כדי לשבת על הבסיס העיצובי של המערכת (modals/cards ב-`components.css`).
+- הוספנו “skin” חגיגי מעל הבסיס באמצעות `overlayClass/contentClass` ו-`:global(...)` (כולל קונפטי עדין באמצעות pseudo-element) תוך שימוש בטוקנים (`--primary`, `--secondary`, `--shadow-xl`) במקום צבעים קשיחים.
+- נשמרה דרישת UX: כל קליק סוגר את המודאל (גם על התוכן).
+- נוספו צילומי מסך לפני/אחרי: `before-celebration.png`, `after-celebration.png`.
+
+#### בדיקות שבוצעו
+
+- `npm run check` ב-`sveltekit-version` עבר (0 errors). נשארו warnings קיימים ב-`AddModal.svelte` סביב `@reference/@apply`.
+
+## 2026-02-09 14:29
+
+### מסמך החלטה: SPA מול Hash Routing
+
+- נוסף מסמך ידע/החלטה: `docs/routing-spa-vs-hash.md`.
+- המסמך מסכם יתרונות/חסרונות של SPA (pathname + fallback) מול Hash routing ב־SvelteKit, ומותאם למצב הנוכחי בפרויקט (דאטה בצד לקוח, Google Drive בדפדפן).
+- הודגשה נקודת סיכון: התנגשות בין Hash routing לבין Google OAuth במצב Redirect, שמחזיר `access_token` ב־URL hash.
+
+## 2026-02-09 13:42
+
+### פרימיטיבי UI (Svelte 5) + התחלת אימוץ
+
+#### מה בוצע?
+
+- נוצרו פרימיטיבים ב-`sveltekit-version/src/lib/components/ui/*` (Button, IconButton, FabButton, ActionButton, Card, Badge, TextInput, Select, Textarea, ModalShell) כעטיפות דקות מעל ה-classes של `sveltekit-version/src/routes/components.css`.
+- הפרימיטיבים כתובים ב-Svelte 5 (runes): שימוש ב-`$props`, `Snippet`/`{@render}`, `class={[...]}` (clsx מובנה), ו-`$bindable` עבור `bind:value` בשדות.
+- שימוש ב-Svelte MCP: `list-sections`, `get-documentation`, ו-`svelte-autofixer` כדי לוודא תאימות Svelte 5.
+- ריפקטורינג אימוץ פרימיטיבים: `sveltekit-version/src/routes/settings/users/+page.svelte`, `sveltekit-version/src/routes/settings/people/+page.svelte`, `sveltekit-version/src/lib/components/PersonForm.svelte`, ו-`sveltekit-version/src/lib/components/PeoplePicker.svelte` עברו להשתמש בפרימיטיבים (Button/Card/Badge/IconButton/ActionButton/ModalShell/TextInput/Select).
+- תיקון TypeScript ב-`sveltekit-version/src/lib/data/texts.ts` כדי לאפשר הפעלת פונקציות טקסט עם args בלי שגיאת spread.
+- תיעוד תכנון: `docs/plans/ui-primitives-plan.md`.
+
+#### בדיקות שבוצעו
+
+- `npm run check` ב-`sveltekit-version` עבר (0 errors). נשארו warnings קיימים ב-`AddModal.svelte` סביב `@reference/@apply`.
+
 ## 2026-02-09 11:40
 
 ### אכיפת כללי טקסטים (SSOT) ותיקוני UI נקודתיים

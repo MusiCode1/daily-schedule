@@ -1,6 +1,8 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import ImageUploader from './ImageUploader.svelte';
   import type { Person } from '$lib/types';
+  import { Button, TextInput } from '$lib/components/ui';
   import { TEXTS } from '$lib/services/language';
 
   // Props
@@ -16,20 +18,10 @@
     compact?: boolean;
   } = $props();
 
-  // State - שימוש ב-derived כדי לעקוב אחרי שינויים ב-person
-  let name = $state('');
-  let avatar = $state('');
-
-  // אתחול ועדכון ערכים כאשר person משתנה
-  $effect(() => {
-    if (person) {
-      name = person.name;
-      avatar = person.avatar;
-    } else {
-      name = '';
-      avatar = '';
-    }
-  });
+  // State - טופס מקומי; אנחנו מצלמים ערכי התחלה מ-"person" בעת יצירת הקומפוננטה.
+  // הרכיב בדרך כלל נוצר/נהרס יחד עם המודאל, ולכן זה מספיק (בלי סנכרון דו-כיווני מול ה-prop).
+  let name = $state(untrack(() => person?.name ?? ''));
+  let avatar = $state(untrack(() => person?.avatar ?? ''));
 
   function handleSubmit(e: Event) {
     e.preventDefault();
@@ -53,7 +45,7 @@
 >
   <div class="form-group">
     <label for="person-name">{TEXTS.NAME}:</label>
-    <input id="person-name" type="text" class="input" bind:value={name} placeholder={TEXTS.PERSON_NAME} required />
+    <TextInput id="person-name" bind:value={name} placeholder={TEXTS.PERSON_NAME} required />
   </div>
 
   <div class="form-group">
@@ -67,8 +59,8 @@
 
   <div class="modal-actions">
     {#if oncancel}
-      <button type="button" class="btn btn-secondary" onclick={handleCancel}>{TEXTS.CANCEL}</button>
+      <Button type="button" variant="secondary" onclick={handleCancel}>{TEXTS.CANCEL}</Button>
     {/if}
-    <button type="submit" class="btn">{person ? TEXTS.UPDATE_ACTION : TEXTS.ADD_ACTION}</button>
+    <Button type="submit">{person ? TEXTS.UPDATE_ACTION : TEXTS.ADD_ACTION}</Button>
   </div>
 </form>

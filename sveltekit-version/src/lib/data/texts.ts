@@ -1,13 +1,7 @@
 // src/lib/data/texts.ts
 import type { Gender } from '$lib/types';
 
-export const TEXTS = {
-	APP_TITLE: 'סדר יום ויזואלי',
-	APP_TITLE_PART1: 'סדר יום',
-	APP_TITLE_PART2: 'ויזואלי',
-	LOGIN_PAGE_TITLE: 'כניסה - סדר יום ויזואלי',
-	LOADING_APP: 'טוען סדר יום...',
-
+const managment = {
 	// הגדרות / בחירת משתמש
 	SETTINGS_TITLE: 'הגדרות מערכת',
 	USERS_TAB: 'משתמשים',
@@ -55,6 +49,25 @@ export const TEXTS = {
 	RESET_TASKS_CONFIRM_BOARD: 'האם אתה בטוח שברצונך לאפס את כל המשימות?',
 	NO_TASKS_IN_LIST: 'אין משימות ברשימה זו.',
 	CLICK_PLUS_TO_ADD: 'לחץ על + כדי להוסיף.',
+};
+
+const userBoard = {
+	
+};
+
+
+export const TEXTS = {
+	...managment,
+	...userBoard,
+
+	APP_TITLE: 'סדר יום ויזואלי',
+	APP_TITLE_PART1: 'סדר יום',
+	APP_TITLE_PART2: 'ויזואלי',
+	LOGIN_PAGE_TITLE: 'כניסה - סדר יום ויזואלי',
+	LOADING_APP: 'טוען סדר יום...',
+
+
+
 	PRAISE_ALUF: (gender: Gender) => (gender === 'boy' ? 'אתה אלוף!' : 'את אלופה!'),
 
 	// רשימות
@@ -262,3 +275,19 @@ export const TEXTS = {
 	// Legacy / מיגרציות
 	LEGACY_GREETING_HELLO: 'שלום'
 };
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const txt = (key: keyof typeof TEXTS, ...args: any[]) => {
+	const value = TEXTS[key];
+
+	if (typeof value === 'function') {
+		if (args.length === 0) {
+			throw new Error(`Missing arguments for text key "${key}". Expected a function but no arguments were provided.`);
+		}
+		// TypeScript לא מסוגל להסיק חתימת פונקציה מדויקת לכל key כאן; אנחנו מאחדים לטיפוס כללי.
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		return (value as (...fnArgs: any[]) => string)(...args);
+	}
+
+	return value;
+}

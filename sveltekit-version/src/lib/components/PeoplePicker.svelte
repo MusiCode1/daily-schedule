@@ -2,6 +2,7 @@
   import { peopleStore } from '$lib/stores/peopleStore.svelte';
   import PersonForm from './PersonForm.svelte';
   import ImageDisplay from './ImageDisplay.svelte';
+  import { Button } from '$lib/components/ui';
   import { TEXTS } from '$lib/services/language';
 
   // Props
@@ -40,9 +41,9 @@
 <div class="flex flex-col gap-4">
   <div class="flex flex-wrap items-center justify-between gap-4">
     <h4 class="m-0 text-base font-semibold text-slate-600">{TEXTS.SELECT_PEOPLE_FOR_LIST}</h4>
-    <button type="button" class="btn btn-xs btn-edit" onclick={() => (showAddForm = !showAddForm)}>
+    <Button variant="edit" size="xs" onclick={() => (showAddForm = !showAddForm)}>
       {showAddForm ? `✕ ${TEXTS.CANCEL}` : `+ ${TEXTS.NEW_PERSON}`}
-    </button>
+    </Button>
   </div>
 
   {#if showAddForm}

@@ -19,6 +19,9 @@
 	import SplashScreen from '$lib/components/SplashScreen.svelte';
 	import FloatingIframe from '$lib/components/FloatingIframe.svelte';
 	import { TEXTS } from '$lib/services/language';
+	import BoardIconButton from '$lib/components/board/BoardIconButton.svelte';
+	import BoardActionCard from '$lib/components/board/BoardActionCard.svelte';
+	import BoardFabAddButton from '$lib/components/board/BoardFabAddButton.svelte';
 
 	// -- אתחול Controllers --
 	const session = new SessionController();
@@ -109,33 +112,23 @@
 	<header>
 		<div class="header-controls">
 			{#if board.isEditMode}
-				<button
-					class="icon-btn"
+				<BoardIconButton
 					onclick={toggleFullScreen}
 					title={isFullScreen ? TEXTS.FULLSCREEN_EXIT : TEXTS.FULLSCREEN_ENTER}
-					transition:fade
+					withFade
 				>
 					{isFullScreen ? '↙️' : '⛶'}
-				</button>
+				</BoardIconButton>
 			{/if}
 
-			<button
-				class="icon-btn"
-				onclick={() => board.toggleEditMode()}
-				title={board.isEditMode ? TEXTS.EDIT_MODE_EXIT : TEXTS.EDIT_MODE_ENTER}
-			>
+			<BoardIconButton onclick={() => board.toggleEditMode()} title={board.isEditMode ? TEXTS.EDIT_MODE_EXIT : TEXTS.EDIT_MODE_ENTER}>
 				{board.isEditMode ? '🔓' : '🔒'}
-			</button>
+			</BoardIconButton>
 
 			{#if board.isEditMode}
-				<button
-					class="icon-btn settings-btn"
-					onclick={() => goto('/settings')}
-					title={TEXTS.ADVANCED_SETTINGS_TITLE}
-					transition:fade
-				>
+				<BoardIconButton class="settings-btn" onclick={() => goto('/settings')} title={TEXTS.ADVANCED_SETTINGS_TITLE} withFade>
 					⚙️
-				</button>
+				</BoardIconButton>
 			{/if}
 		</div>
 
@@ -203,76 +196,64 @@
 					</div>
 
 					<div class="panel-actions">
-						<button
-							class="action-card primary"
+						<BoardActionCard
+							variant="primary"
+							icon="➕"
+							label={TEXTS.NEW_LIST_ACTION}
 							onclick={() => {
 								editingListForModal = null;
 								isListEditModalOpen = true;
 							}}
-						>
-							<span class="action-icon">➕</span>
-							<span class="action-label">{TEXTS.NEW_LIST_ACTION}</span>
-						</button>
+						/>
 
 						{#if nav.activeList}
-							<button
-								class="action-card edit"
+							<BoardActionCard
+								variant="edit"
+								icon="✏️"
+								label={TEXTS.EDIT_LIST_ACTION}
 								onclick={() => {
 									editingListForModal = nav.activeList || null;
 									isListEditModalOpen = true;
 								}}
-							>
-								<span class="action-icon">✏️</span>
-								<span class="action-label">{TEXTS.EDIT_LIST_ACTION}</span>
-							</button>
+							/>
 
 							{#if !nav.activeList.isDefault}
-								<button
-									class="action-card visibility"
+								<BoardActionCard
+									variant="visibility"
+									icon={nav.activeList.isHidden ? '👁️' : '🚫'}
+									label={nav.activeList.isHidden ? TEXTS.SHOW_LIST : TEXTS.HIDE_LIST}
 									onclick={() => {
 										if (session.currentUser && nav.activeList) {
 											listStore.toggleListVisibility(session.currentUser.id, nav.activeList.id);
 										}
 									}}
-								>
-									<span class="action-icon">{nav.activeList.isHidden ? '👁️' : '🚫'}</span>
-									<span class="action-label"
-										>{nav.activeList.isHidden ? TEXTS.SHOW_LIST : TEXTS.HIDE_LIST}</span
-									>
-								</button>
+								/>
 
-								<button
-									class="action-card lock"
+								<BoardActionCard
+									variant="lock"
+									icon={nav.activeList.isLocked ? '🔓' : '🔒'}
+									label={nav.activeList.isLocked ? TEXTS.UNLOCK_LIST : TEXTS.LOCK_LIST}
 									onclick={() => {
 										if (session.currentUser && nav.activeList) {
 											listStore.toggleListLock(session.currentUser.id, nav.activeList.id);
 										}
 									}}
-								>
-									<span class="action-icon">{nav.activeList.isLocked ? '🔓' : '🔒'}</span>
-									<span class="action-label"
-										>{nav.activeList.isLocked ? TEXTS.UNLOCK_LIST : TEXTS.LOCK_LIST}</span
-									>
-								</button>
+								/>
 							{/if}
 						{/if}
 
-						<button class="action-card danger" onclick={() => nav.deleteCurrentList()}>
-							<span class="action-icon">🗑️</span>
-							<span class="action-label">{TEXTS.DELETE_LIST_ACTION}</span>
-						</button>
+						<BoardActionCard variant="danger" icon="🗑️" label={TEXTS.DELETE_LIST_ACTION} onclick={() => nav.deleteCurrentList()} />
 
-						<button
-							class="action-card warning"
+						<BoardActionCard
+							variant="warning"
+							icon="🔄"
+							label={TEXTS.RESET_TASKS_ACTION}
 							onclick={() => {
 								if (confirm(TEXTS.RESET_TASKS_CONFIRM_BOARD)) {
 									board.resetAllTasks();
 								}
 							}}
-						>
-							<span class="action-icon">🔄</span>
-							<span class="action-label">{TEXTS.RESET_TASKS_ACTION}</span>
-						</button>
+						/>
 					</div>
 				</div>
 			{/if}
@@ -314,9 +295,7 @@
 	</div>
 
 	{#if board.isEditMode}
-		<button class="floating-add-btn" onclick={() => board.openAddModal(null)} transition:fade
-			>＋</button
-		>
+		<BoardFabAddButton onclick={() => board.openAddModal(null)}>＋</BoardFabAddButton>
 	{/if}
 
 	<AddModal
@@ -416,7 +395,7 @@
 		justify-content: center;
 	}
 
-	.floating-add-btn {
+	:global(.floating-add-btn) {
 		position: fixed;
 		bottom: 1.5rem;
 		left: 1.5rem;
@@ -448,7 +427,7 @@
 		left: 1rem;
 	}
 
-	.icon-btn {
+	:global(.icon-btn) {
 		background: none;
 		border: none;
 		font-size: 1.5rem;
@@ -456,7 +435,7 @@
 		opacity: 0.5;
 		transition: opacity 0.2s;
 	}
-	.icon-btn:hover {
+	:global(.icon-btn:hover) {
 		opacity: 1;
 	}
 
@@ -496,7 +475,7 @@
 		gap: 0.75rem;
 	}
 
-	.action-card {
+	:global(.action-card) {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -511,89 +490,89 @@
 		font-weight: 500;
 	}
 
-	.action-icon {
+	:global(.action-icon) {
 		font-size: 1.8rem;
 		line-height: 1;
 	}
 
-	.action-label {
+	:global(.action-label) {
 		text-align: center;
 		line-height: 1.2;
 		max-width: 100%;
 	}
 
-	.action-card.primary {
+	:global(.action-card.primary) {
 		border-color: #6366f1;
 		color: #6366f1;
 		background: #f5f7ff;
 	}
 
-	.action-card.primary:hover {
+	:global(.action-card.primary:hover) {
 		background: #6366f1;
 		color: white;
 		transform: translateY(-2px);
 		box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
 	}
 
-	.action-card.edit {
+	:global(.action-card.edit) {
 		border-color: #8b5cf6;
 		color: #8b5cf6;
 		background: #faf5ff;
 	}
 
-	.action-card.edit:hover {
+	:global(.action-card.edit:hover) {
 		background: #8b5cf6;
 		color: white;
 		transform: translateY(-2px);
 		box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3);
 	}
 
-	.action-card.visibility {
+	:global(.action-card.visibility) {
 		border-color: #f59e0b;
 		color: #f59e0b;
 		background: #fffbeb;
 	}
 
-	.action-card.visibility:hover {
+	:global(.action-card.visibility:hover) {
 		background: #f59e0b;
 		color: white;
 		transform: translateY(-2px);
 		box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
 	}
 
-	.action-card.danger {
+	:global(.action-card.danger) {
 		border-color: #ef4444;
 		color: #ef4444;
 		background: #fef2f2;
 	}
 
-	.action-card.danger:hover {
+	:global(.action-card.danger:hover) {
 		background: #ef4444;
 		color: white;
 		transform: translateY(-2px);
 		box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
 	}
 
-	.action-card.warning {
+	:global(.action-card.warning) {
 		border-color: #eab308;
 		color: #92400e;
 		background: #fefce8;
 	}
 
-	.action-card.warning:hover {
+	:global(.action-card.warning:hover) {
 		background: #eab308;
 		color: white;
 		transform: translateY(-2px);
 		box-shadow: 0 6px 16px rgba(234, 179, 8, 0.3);
 	}
 
-	.action-card.lock {
+	:global(.action-card.lock) {
 		border-color: #64748b;
 		color: #64748b;
 		background: #f8fafc;
 	}
 
-	.action-card.lock:hover {
+	:global(.action-card.lock:hover) {
 		background: #64748b;
 		color: white;
 		transform: translateY(-2px);
@@ -605,12 +584,12 @@
 			grid-template-columns: repeat(2, 1fr);
 		}
 
-		.action-card {
+		:global(.action-card) {
 			padding: 0.75rem 0.5rem;
 			font-size: 0.85rem;
 		}
 
-		.action-icon {
+		:global(.action-icon) {
 			font-size: 1.3rem;
 		}
 	}

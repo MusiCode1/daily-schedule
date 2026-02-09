@@ -2,6 +2,7 @@
   import type { Task } from '$lib/types';
   import ImageDisplay from './ImageDisplay.svelte';
   import { TEXTS } from '$lib/services/language';
+  import ActionButton from '$lib/components/ui/ActionButton.svelte';
 
   let { 
     task, 
@@ -70,8 +71,23 @@
     {...rest}
   >
     {#if isEditMode}
-      <button class="action-btn delete-btn" onclick={handleDelete} title={TEXTS.DELETE_ACTION}>✕</button>
-      <button class="action-btn edit-btn" onclick={handleEdit} title={TEXTS.EDIT_ACTION}>✎</button>
+      <ActionButton
+        tone="danger"
+        class="task-row-action-btn delete-btn"
+        onclick={handleDelete}
+        title={TEXTS.DELETE_ACTION}
+        aria-label={TEXTS.DELETE_ACTION}
+      >
+        ✕
+      </ActionButton>
+      <ActionButton
+        class="task-row-action-btn edit-btn"
+        onclick={handleEdit}
+        title={TEXTS.EDIT_ACTION}
+        aria-label={TEXTS.EDIT_ACTION}
+      >
+        ✎
+      </ActionButton>
       <div class="drag-handle-indicator">⋮⋮</div>
     {/if}
 
@@ -322,7 +338,7 @@
 
   /* כפתור מחיקה */
   /* כפתורי פעולה */
-  .action-btn {
+  :global(.task-row-action-btn) {
     position: absolute;
     top: 0;
     width: 36px;
@@ -338,39 +354,33 @@
     z-index: 10;
   }
 
-  .action-btn:hover {
+  :global(.task-row-action-btn:hover) {
     opacity: 1;
     transform: scale(1.1);
   }
 
-  .delete-btn {
+  :global(.task-row-action-btn.delete-btn) {
     left: 0;
     background: rgba(239, 68, 68, 0.1);
     color: var(--danger-color, #ef4444);
     border-bottom-right-radius: 12px;
   }
 
-  .delete-btn:hover {
+  :global(.task-row-action-btn.delete-btn:hover) {
     background: var(--danger-color, #ef4444);
     color: white;
   }
 
-  .edit-btn {
+  :global(.task-row-action-btn.edit-btn) {
     right: 0;
     background: rgba(99, 102, 241, 0.1);
     color: var(--primary-accent, #6366f1);
     border-bottom-left-radius: 12px;
   }
 
-  .edit-btn:hover {
+  :global(.task-row-action-btn.edit-btn:hover) {
     background: var(--primary-accent, #6366f1);
     color: white;
-  }
-
-  .delete-btn:hover {
-    background: var(--danger-color, #ef4444);
-    color: white;
-    opacity: 1;
   }
 
   .drag-handle-indicator {
