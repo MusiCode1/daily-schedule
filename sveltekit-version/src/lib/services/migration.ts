@@ -1,5 +1,6 @@
 import type { AppState, List, Task } from '$lib/types';
 import { INITIAL_STATE, ACTIVITIES, DEFAULT_LIST_DEFINITIONS } from '$lib/data/defaults';
+import { TEXTS } from '$lib/data/texts';
 import { db } from './db';
 
 // פונקציית עזר להמרת base64 (data URL) ל-Blob
@@ -98,9 +99,9 @@ export const migrationService = {
 				const userLists: List[] = parsed.lists[userId];
 				userLists.forEach((list) => {
 					if (!list.greeting) {
-						if (list.id === 'morning_routine') list.greeting = 'בוקר טוב';
-						else if (list.id === 'afternoon_routine') list.greeting = 'אחרי צהריים טובים';
-						else list.greeting = 'שלום';
+						const def = DEFAULT_LIST_DEFINITIONS.find((d) => d.id === list.id);
+						const greeting = def && 'greeting' in (def as any) ? (def as any).greeting : undefined;
+						list.greeting = greeting || TEXTS.LEGACY_GREETING_HELLO;
 					}
 				});
 			});
@@ -113,8 +114,8 @@ export const migrationService = {
 			users.forEach((userId) => {
 				const userLists: List[] = parsed.lists[userId];
 				userLists.forEach((list) => {
-					if (list.greeting === 'שלום') {
-						list.greeting = 'בהצלחה';
+					if (list.greeting === TEXTS.LEGACY_GREETING_HELLO) {
+						list.greeting = TEXTS.DEFAULT_GREETING;
 					}
 				});
 			});

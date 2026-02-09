@@ -3,6 +3,7 @@ import { userStore } from '$lib/stores/userStore.svelte';
 import { boostService } from '$lib/services/boosts';
 import { audioSequencer } from '$lib/services/audioSequencer';
 import type { Task } from '$lib/types';
+import { TEXTS } from '$lib/data/texts';
 import { DragDropManager } from './dragDrop.svelte';
 
 export interface CelebrationData {
@@ -56,7 +57,9 @@ export class TasksBoardController {
 	}
 
 	get greeting() {
-		return this.activeList?.greeting ? this.activeList.greeting + ',' : 'בהצלחה,';
+		return this.activeList?.greeting
+			? `${this.activeList.greeting},`
+			: TEXTS.DEFAULT_GREETING_WITH_COMMA;
 	}
 
 	// אינדקס המשימה הפעילה (דילוג על משימות מבוטלות)
@@ -122,8 +125,8 @@ export class TasksBoardController {
 		// השמעת הודעת שינוי: "שינוי! היום אין [משימה]!"
 		// כרגע משתמשים ב-TTS כי אין קבצי אודיו ייעודיים
 		const sequence: Array<{ type: 'file' | 'tts'; content: string }> = [
-			{ type: 'tts', content: 'שינוי!' },
-			{ type: 'tts', content: 'היום אין' },
+			{ type: 'tts', content: TEXTS.CHANGE_LABEL },
+			{ type: 'tts', content: TEXTS.TODAY_NO },
 			{ type: 'tts', content: taskName }
 		];
 		

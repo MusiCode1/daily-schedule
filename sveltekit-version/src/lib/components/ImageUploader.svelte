@@ -4,10 +4,11 @@
   import ImageCropEditor from './ImageCropEditor.svelte';
   import ImageDisplay from './ImageDisplay.svelte';
   import type { ImageCropData } from '$lib/types';
+  import { TEXTS } from '$lib/services/language';
 
   let {
     imageSrc = null,
-    alt = "תמונה",
+    alt = TEXTS.IMAGE_ALT_GENERIC,
     className = "",
     onchange
   } = $props<{
@@ -66,7 +67,7 @@
         }
       } catch (err) {
         console.error("Failed to save image", err);
-        alert("שגיאה בשמירת התמונה");
+        alert(TEXTS.SAVE_ERROR);
       } finally {
         isLoading = false;
         if (fileInput) fileInput.value = '';
@@ -164,22 +165,22 @@
         {alt}
         className="preview-image-display"
       />
-      <button type="button" class="remove-btn" onclick={handleRemove} title="הסר תמונה">✕</button>
+      <button type="button" class="remove-btn" onclick={handleRemove} title={TEXTS.REMOVE_IMAGE_TITLE}>✕</button>
     </div>
     <div class="action-buttons">
       <button type="button" class="edit-btn" onclick={handleEditCrop}>
-        ✂️ ערוך חיתוך
+        ✂️ {TEXTS.EDIT_CROP_ACTION}
       </button>
       <button type="button" class="change-btn" onclick={triggerFileInput}>
-        {isLoading ? 'שומר...' : '🔄 החלף תמונה'}
+        {isLoading ? TEXTS.SAVING_ELLIPSIS : `🔄 ${TEXTS.REPLACE_IMAGE}`}
       </button>
     </div>
   {:else}
     <button type="button" class="upload-btn" onclick={triggerFileInput}>
       {#if isLoading}
-        ⏳ שומר...
+        ⏳ {TEXTS.SAVING_ELLIPSIS}
       {:else}
-        📷 העלה תמונה
+        📷 {TEXTS.UPLOAD_IMAGE}
       {/if}
     </button>
   {/if}

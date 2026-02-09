@@ -1,16 +1,17 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import favicon from '$lib/assets/logo.svg';
+  import { TEXTS } from '$lib/services/language';
 
   // רכיב זה יוצג בזמן שהאפליקציה טוענת נתונים
 </script>
 
 <div class="splash-container" out:fade={{ duration: 500 }}>
   <div class="logo-wrapper">
-    <img src={favicon} alt="לוגו סדר יום" class="logo-image" />
+    <img src={favicon} alt={TEXTS.APP_LOGO_ALT} class="logo-image" />
     <div class="pulse-ring"></div>
   </div>
-  <h1 class="loading-text">טוען סדר יום...</h1>
+  <h1 class="loading-text">{TEXTS.LOADING_APP}</h1>
 </div>
 
 <style>

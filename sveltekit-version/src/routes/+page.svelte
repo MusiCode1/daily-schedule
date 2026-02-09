@@ -112,7 +112,7 @@
 				<button
 					class="icon-btn"
 					onclick={toggleFullScreen}
-					title={isFullScreen ? 'צא ממסך מלא' : 'מסך מלא'}
+					title={isFullScreen ? TEXTS.FULLSCREEN_EXIT : TEXTS.FULLSCREEN_ENTER}
 					transition:fade
 				>
 					{isFullScreen ? '↙️' : '⛶'}
@@ -122,7 +122,7 @@
 			<button
 				class="icon-btn"
 				onclick={() => board.toggleEditMode()}
-				title={board.isEditMode ? 'סגור עריכה' : 'מצב עריכה'}
+				title={board.isEditMode ? TEXTS.EDIT_MODE_EXIT : TEXTS.EDIT_MODE_ENTER}
 			>
 				{board.isEditMode ? '🔓' : '🔒'}
 			</button>
@@ -131,7 +131,7 @@
 				<button
 					class="icon-btn settings-btn"
 					onclick={() => goto('/settings')}
-					title="הגדרות מתקדמות"
+					title={TEXTS.ADVANCED_SETTINGS_TITLE}
 					transition:fade
 				>
 					⚙️
@@ -140,7 +140,7 @@
 		</div>
 
 		<div class="user-profile">
-			<button class="avatar-circle" onclick={() => session.logout()} aria-label="החלף משתמש">
+			<button class="avatar-circle" onclick={() => session.logout()} aria-label={TEXTS.SWITCH_USER_ARIA}>
 				{#if session.currentUser.avatar}
 					<div class="avatar-image">
 						<ImageDisplay imageSrc={session.currentUser.avatar} alt={session.currentUser.name} />
@@ -158,7 +158,7 @@
 				<span class="highlight-name">{session.currentUser.name}</span>
 			</h1>
 			<div class="subtitle">
-				{session.currentUser.gender === 'boy' ? 'אתה אלוף!' : 'את אלופה!'}
+				{TEXTS.PRAISE_ALUF(session.currentUser.gender)}
 			</div>
 		</div>
 	</header>
@@ -199,7 +199,7 @@
 				<div class="list-actions-panel" transition:fade>
 					<div class="panel-header">
 						<span class="panel-icon">📋</span>
-						<span class="panel-title">ניהול רשימה</span>
+						<span class="panel-title">{TEXTS.LIST_ACTIONS_PANEL_TITLE}</span>
 					</div>
 
 					<div class="panel-actions">
@@ -211,7 +211,7 @@
 							}}
 						>
 							<span class="action-icon">➕</span>
-							<span class="action-label">רשימה חדשה</span>
+							<span class="action-label">{TEXTS.NEW_LIST_ACTION}</span>
 						</button>
 
 						{#if nav.activeList}
@@ -223,7 +223,7 @@
 								}}
 							>
 								<span class="action-icon">✏️</span>
-								<span class="action-label">ערוך רשימה</span>
+								<span class="action-label">{TEXTS.EDIT_LIST_ACTION}</span>
 							</button>
 
 							{#if !nav.activeList.isDefault}
@@ -237,7 +237,7 @@
 								>
 									<span class="action-icon">{nav.activeList.isHidden ? '👁️' : '🚫'}</span>
 									<span class="action-label"
-										>{nav.activeList.isHidden ? 'הצג רשימה' : 'הסתר רשימה'}</span
+										>{nav.activeList.isHidden ? TEXTS.SHOW_LIST : TEXTS.HIDE_LIST}</span
 									>
 								</button>
 
@@ -259,19 +259,19 @@
 
 						<button class="action-card danger" onclick={() => nav.deleteCurrentList()}>
 							<span class="action-icon">🗑️</span>
-							<span class="action-label">מחק רשימה</span>
+							<span class="action-label">{TEXTS.DELETE_LIST_ACTION}</span>
 						</button>
 
 						<button
 							class="action-card warning"
 							onclick={() => {
-								if (confirm('האם אתה בטוח שברצונך לאפס את כל המשימות?')) {
+								if (confirm(TEXTS.RESET_TASKS_CONFIRM_BOARD)) {
 									board.resetAllTasks();
 								}
 							}}
 						>
 							<span class="action-icon">🔄</span>
-							<span class="action-label">אפס משימות</span>
+							<span class="action-label">{TEXTS.RESET_TASKS_ACTION}</span>
 						</button>
 					</div>
 				</div>
@@ -304,9 +304,9 @@
 
 			{#if board.tasks.length === 0}
 				<div class="empty-state">
-					<p>אין משימות ברשימה זו.</p>
+					<p>{TEXTS.NO_TASKS_IN_LIST}</p>
 					{#if board.isEditMode}
-						<p>לחץ על + כדי להוסיף.</p>
+						<p>{TEXTS.CLICK_PLUS_TO_ADD}</p>
 					{/if}
 				</div>
 			{/if}
@@ -642,6 +642,7 @@
 		padding: 0;
 		transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* מעבר קופצני */
 		transform-origin: top right;
+		position: relative; /* חשוב לתצוגה נכונה */
 	}
 
 	.avatar-circle:hover,

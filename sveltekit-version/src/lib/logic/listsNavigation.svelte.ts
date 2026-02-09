@@ -1,5 +1,6 @@
 import { listStore } from '$lib/stores/listStore.svelte';
 import { userStore } from '$lib/stores/userStore.svelte';
+import { TEXTS } from '$lib/data/texts';
 
 export class ListsNavigationController {
 	get currentUser() {
@@ -18,7 +19,7 @@ export class ListsNavigationController {
 
 	createNewList() {
 		if (!this.currentUser) return;
-		const name = prompt('שם הרשימה החדשה:');
+		const name = prompt(TEXTS.NEW_LIST_NAME_PROMPT);
 		if (!name) return;
 
 		listStore.addList(this.currentUser.id, name);
@@ -32,11 +33,11 @@ export class ListsNavigationController {
 
 		// ולידציה - לוגיקה ששייכת ל-Controller כי היא עשויה לערב ממשק משתמש (התראות)
 		if (this.userLists.length <= 1) {
-			alert('אי אפשר למחוק את הרשימה האחרונה.');
+			alert(TEXTS.CANNOT_DELETE_LAST_LIST);
 			return;
 		}
 
-		if (!confirm('למחוק את הרשימה הנוכחית?')) return;
+		if (!confirm(TEXTS.DELETE_CURRENT_LIST_CONFIRM)) return;
 
 		listStore.deleteList(user.id, list.id);
 	}

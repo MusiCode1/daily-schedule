@@ -28,7 +28,7 @@
   function handleDelete(e: Event) {
     if (!isEditMode) return;
     e.stopPropagation();
-    if (confirm("למחוק?")) {
+    if (confirm(TEXTS.DELETE_TASK_CONFIRM)) {
       ondelete?.(task.id);
     }
   }
@@ -55,7 +55,7 @@
 <div class="task-row-wrapper" class:completed={task.isDone} class:active={isActive} class:cancelled={task.changeType === 'cancelled'}>
   {#if isActive && !isEditMode}
     <div class="now-indicator">
-      <div class="now-text">עכשיו</div>
+      <div class="now-text">{TEXTS.NOW}</div>
       <div class="now-arrow"></div>
     </div>
   {/if}
@@ -70,8 +70,8 @@
     {...rest}
   >
     {#if isEditMode}
-      <button class="action-btn delete-btn" onclick={handleDelete} title="מחק">✕</button>
-      <button class="action-btn edit-btn" onclick={handleEdit} title="ערוך">✎</button>
+      <button class="action-btn delete-btn" onclick={handleDelete} title={TEXTS.DELETE_ACTION}>✕</button>
+      <button class="action-btn edit-btn" onclick={handleEdit} title={TEXTS.EDIT_ACTION}>✎</button>
       <div class="drag-handle-indicator">⋮⋮</div>
     {/if}
 
@@ -118,7 +118,7 @@
         </button>
       {/if}
       
-      <div class="check-icon">✓ בוצע</div>
+      <div class="check-icon">✓ {TEXTS.DONE}</div>
     </div>
   </div>
 </div>

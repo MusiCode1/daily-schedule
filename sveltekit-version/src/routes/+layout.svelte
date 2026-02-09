@@ -6,6 +6,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { backupController } from '$lib/logic/backupController.svelte';
 	import { userStore } from '$lib/stores/userStore.svelte';
+	import { TEXTS } from '$lib/services/language';
 	import type { ThemeType } from '$lib/types';
 
 	let { children } = $props();
@@ -44,7 +45,7 @@
 </script>
 
 <svelte:head>
-	<title>סדר יום ויזואלי</title>
+	<title>{TEXTS.APP_TITLE}</title>
 	<link rel="icon" href={favicon} />
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />

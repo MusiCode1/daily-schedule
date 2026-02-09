@@ -44,7 +44,7 @@
         listImageSrc = editingList.logo || null;
         selectedPeopleIds = editingList.peopleIds ? [...editingList.peopleIds] : [];
       } else {
-        listForm = { name: '', greeting: 'בהצלחה', logo: '', title: '', description: '' };
+        listForm = { name: '', greeting: TEXTS.DEFAULT_GREETING, logo: '', title: '', description: '' };
         listImageSrc = null;
         selectedPeopleIds = [];
       }

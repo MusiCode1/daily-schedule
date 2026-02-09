@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { floatingBoardState } from '$lib/services/floatingBoardState';
+	import { TEXTS } from '$lib/services/language';
 
 	// Props
 	let {
 		isVisible = $bindable(false),
 		url = $bindable(''),
-		title = 'חלון צף'
+		title = TEXTS.FLOATING_WINDOW_TITLE
 	} = $props();
 
 	// משתני מצב
@@ -236,7 +237,7 @@
 				onclick={close}
 				onmousedown={preventDrag}
 				ontouchstart={preventDrag}
-				title="סגור"
+				title={TEXTS.CLOSE}
 			>
 				✕
 			</button>

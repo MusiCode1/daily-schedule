@@ -2,6 +2,7 @@
   import UserSelector from '$lib/components/UserSelector.svelte';
   import { SessionController } from '$lib/logic/session.svelte';
   import { goto } from '$app/navigation';
+  import { TEXTS } from '$lib/services/language';
   
   const session = new SessionController();
 
@@ -16,7 +17,7 @@
 </script>
 
 <svelte:head>
-	<title>כניסה - סדר יום ויזואלי</title>
+	<title>{TEXTS.LOGIN_PAGE_TITLE}</title>
 </svelte:head>
 
 <!-- אנו מעבירים את רשימת המשתמשים ל-UserSelector -->

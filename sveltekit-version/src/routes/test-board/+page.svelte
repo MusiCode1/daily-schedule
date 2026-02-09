@@ -1,20 +1,21 @@
 <script lang="ts">
 	import FloatingIframe from '$lib/components/FloatingIframe.svelte';
+	import { TEXTS } from '$lib/services/language';
 
 	// הגדרות לוחות תקשורת
 	const boards = [
 		{
-			name: 'לוח למוטי',
+			name: TEXTS.TEST_BOARD_BOARD_MOTI,
 			url: 'https://app.cboard.io/board/68f62f8754db13001d95d45a',
 			icon: '👤'
 		},
 		{
-			name: 'לוח למוישי',
+			name: TEXTS.TEST_BOARD_BOARD_MOISHI,
 			url: 'https://app.cboard.io/board/68667c28ed972b001cd90cc2',
 			icon: '👤'
 		},
 		{
-			name: 'לוח רגשות לאבישי',
+			name: TEXTS.TEST_BOARD_BOARD_AVISHAI_FEELINGS,
 			url: 'https://app.cboard.io/board/694d24e629a4a1001dc42b18',
 			icon: '😊'
 		}
@@ -35,8 +36,8 @@
 
 <div class="page-container">
 	<div class="header">
-		<h1>💬 מערכת תקשורת - Cboard</h1>
-		<p class="info">בחר לוח תקשורת מהכפתורים למטה. החלון יופיע ויהיה ניתן לגרור ולשנות גודל.</p>
+		<h1>{TEXTS.TEST_BOARD_TITLE}</h1>
+		<p class="info">{TEXTS.TEST_BOARD_INFO}</p>
 	</div>
 
 	<!-- כפתורי בחירת לוחות -->
@@ -50,22 +51,22 @@
 	</div>
 
 	<div class="instructions">
-		<h3>💡 הוראות שימוש:</h3>
+		<h3>{TEXTS.TEST_BOARD_INSTRUCTIONS_TITLE}</h3>
 		<ul>
-			<li>🖱️ <strong>להזזת החלון:</strong> אחוז בפס הסגול העליון וגרור</li>
-			<li>📏 <strong>לשינוי גודל:</strong> משוך מקצוות החלון או מהפינה השמאלית התחתונה</li>
-			<li>❌ <strong>לסגירה:</strong> לחץ על ה-X בפינת החלון</li>
-			<li>📱 <strong>מסך מגע:</strong> כל הפעולות נתמכות במסך מגע</li>
+			<li>🖱️ <strong>{TEXTS.TEST_BOARD_INSTRUCTION_MOVE_LABEL}</strong> {TEXTS.TEST_BOARD_INSTRUCTION_MOVE_DESC}</li>
+			<li>📏 <strong>{TEXTS.TEST_BOARD_INSTRUCTION_RESIZE_LABEL}</strong> {TEXTS.TEST_BOARD_INSTRUCTION_RESIZE_DESC}</li>
+			<li>❌ <strong>{TEXTS.TEST_BOARD_INSTRUCTION_CLOSE_LABEL}</strong> {TEXTS.TEST_BOARD_INSTRUCTION_CLOSE_DESC}</li>
+			<li>📱 <strong>{TEXTS.TEST_BOARD_INSTRUCTION_TOUCH_LABEL}</strong> {TEXTS.TEST_BOARD_INSTRUCTION_TOUCH_DESC}</li>
 		</ul>
 	</div>
 
 	<!-- תוכן דוגמה -->
 	<div class="demo-content">
-		<h2>תוכן הדף הראשי</h2>
-		<p>החלון צף מעל התוכן הזה ולא חוסם אותו.</p>
-		<p>אפשר להזיז את החלון לכל מקום על המסך.</p>
+		<h2>{TEXTS.TEST_BOARD_DEMO_TITLE}</h2>
+		<p>{TEXTS.TEST_BOARD_DEMO_P1}</p>
+		<p>{TEXTS.TEST_BOARD_DEMO_P2}</p>
 		<div class="placeholder-box">
-			<p>זהו אזור לדוגמה - יכול להיות כאן לוח פעילות TEACCH או כל תוכן אחר</p>
+			<p>{TEXTS.TEST_BOARD_DEMO_PLACEHOLDER}</p>
 		</div>
 	</div>
 </div>

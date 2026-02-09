@@ -42,7 +42,7 @@
   }
 
   function deleteUser(id: string) {
-      if (confirm('למחוק את המשתמש? פעולה זו תמחק גם את כל הרשימות שלו!')) {
+      if (confirm(TEXTS.DELETE_USER_CONFIRM)) {
           userStore.deleteUser(id);
       }
   }

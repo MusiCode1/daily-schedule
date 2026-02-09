@@ -1,7 +1,7 @@
 import { globalState } from './globalState.svelte';
 import type { List, Task } from '../types';
 import { createDefaultLists } from '../data/defaults';
-import { TEXTS } from '../services/language';
+import { TEXTS } from '$lib/data/texts';
 
 export class ListStore {
 	getUserLists(userId: string, includeHidden: boolean = false): List[] {
@@ -109,7 +109,7 @@ export class ListStore {
 
 		const duplicatedList: List = {
 			id: newId,
-			name: `${originalList.name} (עותק)`,
+			name: `${originalList.name}${TEXTS.LIST_COPY_SUFFIX}`,
 			tasks: duplicatedTasks,
 			greeting: originalList.greeting,
 			logo: originalList.logo,

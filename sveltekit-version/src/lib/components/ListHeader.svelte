@@ -1,5 +1,6 @@
 <script lang="ts">
   import ImageDisplay from './ImageDisplay.svelte';
+  import { TEXTS } from '$lib/services/language';
 
   // Props
   let { logo = '', title = '', description = '' }: {
@@ -12,7 +13,7 @@
 <div class="list-header">
   {#if logo}
     <div class="logo-large">
-      <ImageDisplay imageSrc={logo} alt={title || 'לוגו'} />
+      <ImageDisplay imageSrc={logo} alt={title || TEXTS.LOGO_ALT} />
     </div>
   {/if}
   

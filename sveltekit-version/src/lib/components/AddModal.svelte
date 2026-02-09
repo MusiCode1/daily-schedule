@@ -29,9 +29,8 @@
       communicationBoardUrl = (taskToEdit as any).communicationBoardUrl || '';
       isChangeTask = !!(taskToEdit as any).changeType;
       changeType = (taskToEdit as any).changeType || 'cancelled';
-      // נסה למצוא אם זו פעילות מוכרת
-      const found = ACTIVITIES.find(a => a.name === taskName);
-      if (found) selectedActivityId = found.id;
+      // במצב עריכה, לא נבחר פעילות אוטומטית - נאפשר עריכה חופשית
+      selectedActivityId = null;
     } else if (isOpen && !taskToEdit) {
       // ניקוי רק אם נפתח במצב חדש
     }
@@ -68,6 +67,17 @@
     taskName = activity.name;
     imageSrc = `/images/activities/${activity.image}`;
   }
+
+  // ניקוי בחירת פעילות כשמשנים את השם ידנית
+  function handleNameInput() {
+    // אם השם השתנה ולא תואם לפעילות הנבחרת, נבטל את הבחירה
+    if (selectedActivityId) {
+      const selectedActivity = ACTIVITIES.find(a => a.id === selectedActivityId);
+      if (selectedActivity && taskName !== selectedActivity.name) {
+        selectedActivityId = null;
+      }
+    }
+  }
 </script>
 
 {#if isOpen}
@@ -81,7 +91,7 @@
           type="button"
           class="toggle-activities-btn"
           onclick={() => isActivitiesExpanded = !isActivitiesExpanded}
-          title={isActivitiesExpanded ? 'כווץ רשת פעילויות' : 'הרחב רשת פעילויות'}
+          title={isActivitiesExpanded ? TEXTS.COLLAPSE_ACTIVITIES_GRID : TEXTS.EXPAND_ACTIVITIES_GRID}
         >
           {isActivitiesExpanded ? '▼' : '◀'}
         </button>
@@ -109,6 +119,7 @@
             id="taskName"
             type="text"
             bind:value={taskName}
+            oninput={handleNameInput}
             class="input"
             placeholder={TEXTS.CHOOSE_OR_TYPE}
             required

@@ -62,7 +62,7 @@
   }
   
   function deleteList(listId: string) {
-      if (confirm('למחוק את הרשימה?')) {
+      if (confirm(TEXTS.DELETE_LIST_CONFIRM)) {
            listStore.deleteList(managedUserId, listId);
       }
   }
@@ -109,9 +109,9 @@
 </script>
 
 <div class="header-row">
-    <h2>{TEXTS.LIST_MANAGEMENT}</h2>
+    <h2 class="page-header">{TEXTS.LIST_MANAGEMENT}</h2>
     <div class="user-select-control">
-        <span>עבור:</span>
+        <span>{TEXTS.FOR_USER_LABEL}</span>
         <select bind:value={managedUserId}>
             {#each userStore.users as user}
                 <option value={user.id}>{user.name}</option>
@@ -139,7 +139,7 @@
                 </h3>
                 <div class="list-meta">
                     <span class="greeting-badge">"{list.greeting || ''}"</span>
-                    <span class="tasks-count">{list.tasks.length} משימות</span>
+                    <span class="tasks-count">{TEXTS.TASKS_COUNT(list.tasks.length)}</span>
                 </div>
             </div>
             <div class="list-actions">
@@ -245,15 +245,6 @@
   .lists-grid {
     @apply grid gap-5 w-full;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  }
-  
-  /* שאר הסגנונות */
-  h2 {
-    @apply text-2xl font-bold text-slate-700 m-0;
-  }
-
-  .header-row {
-    @apply flex justify-between items-center mb-8 border-b border-slate-100 pb-6 flex-wrap gap-4;
   }
 
   .user-select-control {

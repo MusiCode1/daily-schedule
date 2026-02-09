@@ -5,6 +5,7 @@ import { audioService } from './audio';
 import { type AudioSegment } from './audioSequencer';
 import { ACTIVITIES } from '$lib/data/defaults';
 import { LanguageService } from './language';
+import { TEXTS } from '$lib/data/texts';
 
 export const boostService = {
 	getRandomBoost(gender: Gender): string {
@@ -17,7 +18,7 @@ export const boostService = {
 		} else if (boost.gendered) {
 			text = boost.gendered[gender];
 		} else {
-			text = 'כל הכבוד!'; // Fallback
+			text = TEXTS.WELL_DONE; // Fallback
 		}
 
 		// ניגון אודיו ספציפי

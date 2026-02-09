@@ -2,10 +2,11 @@
   import { dbImage } from '$lib/actions/dbImage';
   import { imageStore } from '$lib/stores/imageStore.svelte';
   import type { ImageCropData } from '$lib/types';
+  import { TEXTS } from '$lib/services/language';
 
   let {
     imageSrc,
-    alt = "תמונה",
+    alt = TEXTS.IMAGE_ALT_GENERIC,
     className = "",
     rounded = false,
     onload,

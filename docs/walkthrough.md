@@ -1,5 +1,73 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-09 11:40
+
+### אכיפת כללי טקסטים (SSOT) ותיקוני UI נקודתיים
+
+ביצענו מעבר רוחבי כדי להוציא טקסטים קשיחים מקומפוננטות/Controllers ולהשתמש ב-`src/lib/data/texts.ts` כמקור אמת יחיד, תוך מעבר לשימוש בקומפוננטות CSS קיימות במקומות שניתן.
+
+#### מה בוצע?
+
+**1. ריכוז טקסטים**
+
+- הוחלפו טקסטים קשיחים ב-UI (כותרות, tooltips, confirm/alert, aria-label, alt) לשימוש ב-`TEXTS`.
+- עודכנו Controllers/Services (למשל גיבוי, ניהול רשימות, הודעות שינוי) להשתמש בטקסטים מתוך `texts.ts`.
+
+**2. שימוש בקומפוננטות CSS קיימות**
+
+- הוחלפו כפתורים/שדות/קבוצות טופס מקומיים לשימוש ב-`.btn`, `.input`, `.form-group`, `.modal-actions` וכו' כשאפשר.
+
+**קבצים מרכזיים ששונו**:
+
+- `sveltekit-version/src/lib/data/texts.ts`
+- `sveltekit-version/src/routes/+layout.svelte`
+- `sveltekit-version/src/routes/+page.svelte`
+- `sveltekit-version/src/routes/privacy/+page.svelte`
+- `sveltekit-version/src/routes/test-board/+page.svelte`
+- `sveltekit-version/src/routes/settings/lists/+page.svelte`
+- `sveltekit-version/src/routes/settings/people/+page.svelte`
+- `sveltekit-version/src/routes/settings/users/+page.svelte`
+- `sveltekit-version/src/lib/components/*` (מספר רכיבים: Image*, People*, TaskRow, FloatingIframe, ListHeader, CelebrationModal ועוד)
+- `sveltekit-version/src/lib/logic/*` ו-`sveltekit-version/src/lib/services/*` (עדכוני טקסטים)
+
+#### בדיקות שבוצעו
+
+- ✅ `npx tsc -p tsconfig.json --noEmit` עבר.
+- ⚠️ `npm run check` נכשל בסביבה זו עם `spawn EPERM` (esbuild).
+
+## 2026-02-04 13:00
+
+### הוספת מצב הפניה (Redirect Mode) לפתרון בעיות קיוסק
+
+הטמענו מנגנון התחברות חלופי המבוסס על הפניה מלאה (Full Page Redirect) במקום חלון קופץ (Popup), כדי לאפשר התחברות ל-Google Drive בדפדפני קיוסק ו-WebViews שחוסמים פופ-אפים.
+
+#### מה בוצע?
+
+**1. שירות גוגל (`googleDriveService.ts`)**
+
+- **פונקציית `signInWithRedirect`**: בונה URL ל-OAuth 2.0 ומבצעת הפניה (`window.location.href`).
+- **זיהוי חזרה מ-Redirect**: פונקציית `checkRedirectCallback` (נקראת ב-`initialize`) בודקת אם יש `access_token` ב-URL Hash, שומרת אותו ב-Session ומנקה את ה-URL.
+
+**2. בקרת גיבוי (`backupController.svelte.ts`)**
+
+- נוסף משתנה `useRedirectMode` (נשמר ב-`localStorage`).
+- פונקציית `signIn` עודכנה לבדוק את המצב ולבחור בין `signInWithRedirect` לבין `signIn` (Popup).
+
+**3. ממשק משתמש (`GoogleDriveBackup.svelte`)**
+
+- נוסף צ'קבוקס "מצב הפניה (Redirect Mode)" תחת ההגדרות המתקדמות, עם הסבר קצר.
+- עדכון התרגומים ב-`texts.ts` לתמיכה באפשרות החדשה.
+
+**קבצים ששונו**:
+
+- `src/lib/services/googleDriveService.ts`
+- `src/lib/logic/backupController.svelte.ts`
+- `src/lib/components/GoogleDriveBackup.svelte`
+- `src/lib/data/texts.ts`
+- `docs/features-status.md`
+
+---
+
 ## 2026-02-04 12:15
 
 ### הוספת לחצן מסך מלא ועדכוני תכנון

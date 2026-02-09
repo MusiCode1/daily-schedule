@@ -6,6 +6,7 @@ import { globalState } from '../stores/globalState.svelte'; // For listening to 
 import { GOOGLE_CLIENT_ID } from '../config';
 import { setSyncStatus, resetSyncStatus } from '../stores/syncStore';
 import type { AppState, List, Task, UserProfile } from '../types';
+import { TEXTS } from '$lib/data/texts';
 
 export class BackupController {
 	// State
@@ -25,13 +26,10 @@ export class BackupController {
 
 	// Config
 	customClientId = $state('');
+	useRedirectMode = $state(false);
 
 	// Timers
 	private autoBackupTimeout: ReturnType<typeof setTimeout> | null = null;
-
-	// אנו מאזינים לשינויים ב-persistence דרך עטיפה או פשוט מניחים שהמשתמש יקרא לזה
-	// אך כדי לעשות זאת אוטומטית, נצטרך להתממשק למקום שבו שומרים.
-	// כרגע נספק פונקציה `notifyChange()` שנקרא לה מ-persistence.ts
 
 	// Conflict State
 	conflictState: {
@@ -66,8 +64,6 @@ export class BackupController {
 		this.loadLocalSettings();
 	}
 
-	// ... (loadLocalSettings, saveLocalSettings, initialize, signIn, signOut, loadUserInfo stay same)
-
 	private loadLocalSettings() {
 		if (typeof localStorage !== 'undefined') {
 			const savedClientId = localStorage.getItem('google_client_id_override');
@@ -75,6 +71,9 @@ export class BackupController {
 
 			const savedAuto = localStorage.getItem('auto_backup_enabled');
 			if (savedAuto !== null) this.isAutoBackupEnabled = savedAuto === 'true';
+
+			const savedRedirect = localStorage.getItem('use_redirect_mode');
+			if (savedRedirect !== null) this.useRedirectMode = savedRedirect === 'true';
 
 			// Load Sync State
 			let dId = localStorage.getItem('device_id');
@@ -117,6 +116,7 @@ export class BackupController {
 			else localStorage.removeItem('google_client_id_override');
 
 			localStorage.setItem('auto_backup_enabled', String(this.isAutoBackupEnabled));
+			localStorage.setItem('use_redirect_mode', String(this.useRedirectMode));
 		}
 	}
 
@@ -126,7 +126,14 @@ export class BackupController {
 
 	signIn() {
 		this.saveLocalSettings(); // שמור הגדרות לפני התחברות (למקרה של CLient ID חדש)
-		// ייתכן שנצטרך לאתחל מחדש אם ה-Client ID השתנה
+
+		if (this.useRedirectMode) {
+			// התחברות עם הפניה (למצבי קיוסק)
+			googleDriveService.signInWithRedirect(this.customClientId || GOOGLE_CLIENT_ID);
+			return;
+		}
+
+		// ברירת מחדל: התחברות רגילה (Popup)
 		googleDriveService.initialize(this.customClientId || GOOGLE_CLIENT_ID).then(() => {
 			googleDriveService.signIn();
 		});
@@ -270,7 +277,7 @@ export class BackupController {
 				}
 			}
 
-			this.statusMessage = 'מכין נתונים לגיבוי...';
+			this.statusMessage = TEXTS.PREPARING_BACKUP;
 			// הכנת הנתונים לגיבוי כולל תמונות
 			const backupDataStr = await this.prepareBackupData();
 
@@ -290,11 +297,11 @@ export class BackupController {
 			};
 			const finalData = JSON.stringify(state);
 
-			this.statusMessage = 'מעלה ל-Google Drive...';
-			setSyncStatus('uploading', 'מעלה גיבוי ל-Google Drive...', 0);
+			this.statusMessage = TEXTS.UPLOADING_TO_DRIVE;
+			setSyncStatus('uploading', TEXTS.UPLOADING_BACKUP_TO_DRIVE, 0);
 
 			await googleDriveService.backup(finalData, 'DailyScheduleBackup', (progress) => {
-				setSyncStatus('uploading', 'מעלה גיבוי ל-Google Drive...', progress);
+				setSyncStatus('uploading', TEXTS.UPLOADING_BACKUP_TO_DRIVE, progress);
 			});
 
 			// Update local state on success
@@ -318,7 +325,7 @@ export class BackupController {
 		} catch (e: any) {
 			console.error('Backup failed', e);
 			this.status = 'error';
-			this.errorMessage = e.message || 'Backup failed';
+			this.errorMessage = TEXTS.ERROR_GENERIC;
 			this.statusMessage = '';
 			resetSyncStatus();
 		}
@@ -326,13 +333,13 @@ export class BackupController {
 
 	async downloadLocalBackup() {
 		try {
-			this.statusMessage = 'מכין קובץ להורדה...';
+			this.statusMessage = TEXTS.PREPARING_DOWNLOAD_FILE;
 			const data = await this.prepareBackupData();
 			this.downloadFile(data, 'daily_schedule_backup.json');
 			this.statusMessage = '';
 		} catch (e) {
 			console.error('Failed to download local backup', e);
-			alert('שגיאה ביצירת קובץ הגיבוי');
+			alert(TEXTS.CREATING_BACKUP_FILE_ERROR);
 			this.statusMessage = '';
 		}
 	}
@@ -340,12 +347,12 @@ export class BackupController {
 	async downloadRemoteBackup(fileId: string) {
 		try {
 			this.status = 'restoring';
-			this.statusMessage = 'מוריד קובץ מ-Google Drive...';
+			this.statusMessage = TEXTS.DOWNLOADING_FILE_FROM_DRIVE;
 
 			const data = await googleDriveService.restore(fileId);
 			if (!data) throw new Error('Empty backup');
 
-			this.statusMessage = 'יוצר קובץ להורדה...';
+			this.statusMessage = TEXTS.CREATING_DOWNLOAD_FILE;
 			const json = JSON.stringify(data, null, 2);
 			this.downloadFile(json, 'remote_backup.json');
 			this.status = 'idle';
@@ -353,9 +360,9 @@ export class BackupController {
 		} catch (e) {
 			console.error('Failed to download remote backup', e);
 			this.status = 'error';
-			this.errorMessage = 'הורדה נכשלה';
+			this.errorMessage = TEXTS.DOWNLOAD_FAILED;
 			this.statusMessage = '';
-			alert('שגיאה בהורדת הקובץ');
+			alert(TEXTS.DOWNLOADING_FILE_ERROR);
 		}
 	}
 
@@ -542,23 +549,23 @@ export class BackupController {
 
 	async restoreFromFile(fileId: string) {
 		this.status = 'restoring';
-		this.statusMessage = 'מתחיל תהליך שחזור...';
+		this.statusMessage = TEXTS.STARTING_RESTORE;
 		try {
-			this.statusMessage = 'מוריד קובץ גיבוי...';
-			setSyncStatus('downloading', 'מוריד נתונים מהענן...', 0);
+			this.statusMessage = TEXTS.DOWNLOADING_BACKUP_FILE;
+			setSyncStatus('downloading', TEXTS.DOWNLOADING_FROM_CLOUD, 0);
 			const data = await googleDriveService.restore(fileId, (progress) => {
-				setSyncStatus('downloading', 'מוריד נתונים מהענן...', progress);
+				setSyncStatus('downloading', TEXTS.DOWNLOADING_FROM_CLOUD, progress);
 			});
 			// בדיקת תקינות בסיסית
 			if (!data || !data.users) throw new Error('Invalid backup file');
 
 			// חילוץ תמונות ל-IndexedDB למניעת קריסת Quota
 			console.log('Extracting images to IndexedDB...');
-			this.statusMessage = 'מחלץ ושומר תמונות (זה עשוי לקחת רגע)...';
+			this.statusMessage = TEXTS.EXTRACTING_IMAGES;
 			const cleanData = await this.extractImagesFromState(data);
 
 			// שמירה ל-LocalStorage
-			this.statusMessage = 'שומר נתונים ומרענן...';
+			this.statusMessage = TEXTS.SAVING_AND_REFRESHING;
 			localStorage.setItem('daily-schedule-data', JSON.stringify(cleanData));
 
 			console.log('Restored data metadata:', cleanData.syncMetadata);
@@ -591,7 +598,7 @@ export class BackupController {
 		} catch (e: any) {
 			console.error('Restore failed', e);
 			this.status = 'error';
-			this.errorMessage = 'Restore failed';
+			this.errorMessage = TEXTS.ERROR_GENERIC;
 			this.statusMessage = '';
 			resetSyncStatus();
 		}

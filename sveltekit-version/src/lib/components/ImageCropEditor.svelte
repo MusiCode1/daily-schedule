@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { ImageCropData } from '$lib/types';
+  import { untrack } from 'svelte';
+  import { TEXTS } from '$lib/services/language';
 
   let {
     imageSrc,
@@ -58,6 +60,7 @@
 
   // התחל גרירה
   function startDrag(e: MouseEvent | TouchEvent) {
+    e.preventDefault();
     isDragging = true;
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
@@ -71,6 +74,8 @@
   function handleDrag(e: MouseEvent | TouchEvent) {
     if (!isDragging || !containerRef || !imageNaturalWidth || !imageNaturalHeight) return;
     
+    e.preventDefault();
+    
     const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
     const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
     
@@ -81,34 +86,23 @@
     const containerWidth = containerRef.offsetWidth;
     const containerHeight = containerRef.offsetHeight;
     
-    // Scale מוחלט (יחסי לתמונה המקורית)
-    const actualScale = minScale * crop.scale;
+    // המרה ישירה לאחוזים - ללא כפל ב-scale
+    const deltaXPercent = (deltaX / containerWidth) * 100;
+    const deltaYPercent = (deltaY / containerHeight) * 100;
     
-    const deltaXPercent = (deltaX / containerWidth) * 100 * actualScale;
-    const deltaYPercent = (deltaY / containerHeight) * 100 * actualScale;
+    // חישוב הגודל המוצג בפועל לכל ממד (תומך בתמונות לא ריבועיות!)
+    // ה-CSS קובע: min-width: 100% וגם min-height: 100%
+    // לכן הגודל המוצג הוא: Math.max(containerSize, naturalSize * minScale * crop.scale)
+    const scaledWidth = imageNaturalWidth * minScale * crop.scale;
+    const scaledHeight = imageNaturalHeight * minScale * crop.scale;
     
-    // חישוב גבולות הזזה בהתאם ליחס התמונה והזום
-    const imageAspectRatio = imageNaturalWidth / imageNaturalHeight;
+    // הגודל בפועל (אחרי min-width/min-height)
+    const actualDisplayedWidth = Math.max(scaledWidth, containerWidth);
+    const actualDisplayedHeight = Math.max(scaledHeight, containerHeight);
     
-    // חישוב גודל התמונה המוצגת ביחס לקונטיינר
-    let displayedWidth: number, displayedHeight: number;
-    if (imageAspectRatio > 1) {
-      // תמונה רחבה
-      displayedHeight = containerHeight;
-      displayedWidth = displayedHeight * imageAspectRatio;
-    } else {
-      // תמונה גבוהה או ריבועית
-      displayedWidth = containerWidth;
-      displayedHeight = displayedWidth / imageAspectRatio;
-    }
-    
-    // חישוב הגבולות עם הזום
-    const scaledWidth = displayedWidth * actualScale;
-    const scaledHeight = displayedHeight * actualScale;
-    
-    // חישוב הטווח המותר להזזה (באחוזים)
-    const maxMoveX = Math.max(0, (scaledWidth - containerWidth) / 2);
-    const maxMoveY = Math.max(0, (scaledHeight - containerHeight) / 2);
+    // חישוב הטווח המותר להזזה בכל ממד (באחוזים)
+    const maxMoveX = Math.max(0, (actualDisplayedWidth - containerWidth) / 2);
+    const maxMoveY = Math.max(0, (actualDisplayedHeight - containerHeight) / 2);
     
     const minX = 50 - (maxMoveX / containerWidth) * 100;
     const maxX = 50 + (maxMoveX / containerWidth) * 100;
@@ -129,6 +123,47 @@
     const newScale = Math.max(1.0, Math.min(3.0, crop.scale + delta));
     crop.scale = newScale;
   }
+
+  // בדיקת גבולות אחרי שינוי scale - מתקן מיקום שיצא מהגבולות
+  $effect(() => {
+    // מאזין רק ל-scale (לא ל-x/y) כדי לא ליצור לופ בזמן גרירה
+    const currentScale = crop.scale;
+    
+    // קוראים את השאר ב-untrack כדי שלא ייגרמו להפעלה מחדש
+    untrack(() => {
+      if (!containerRef || !imageNaturalWidth || !imageNaturalHeight) return;
+      
+      const containerWidth = containerRef.offsetWidth;
+      const containerHeight = containerRef.offsetHeight;
+      
+      // חישוב הגודל המוצג בפועל לכל ממד (תומך בתמונות לא ריבועיות!)
+      const scaledWidth = imageNaturalWidth * minScale * currentScale;
+      const scaledHeight = imageNaturalHeight * minScale * currentScale;
+      
+      // הגודל בפועל (אחרי min-width/min-height)
+      const actualDisplayedWidth = Math.max(scaledWidth, containerWidth);
+      const actualDisplayedHeight = Math.max(scaledHeight, containerHeight);
+      
+      // חישוב הטווח המותר להזזה בכל ממד
+      const maxMoveX = Math.max(0, (actualDisplayedWidth - containerWidth) / 2);
+      const maxMoveY = Math.max(0, (actualDisplayedHeight - containerHeight) / 2);
+      
+      // חישוב גבולות באחוזים
+      const minX = 50 - (maxMoveX / containerWidth) * 100;
+      const maxX = 50 + (maxMoveX / containerWidth) * 100;
+      const minY = 50 - (maxMoveY / containerHeight) * 100;
+      const maxY = 50 + (maxMoveY / containerHeight) * 100;
+      
+      // תיקון המיקום אם יצא מהגבולות
+      const currentX = crop.x;
+      const currentY = crop.y;
+      
+      if (currentX < minX || currentX > maxX || currentY < minY || currentY > maxY) {
+        crop.x = Math.max(minX, Math.min(maxX, currentX));
+        crop.y = Math.max(minY, Math.min(maxY, currentY));
+      }
+    });
+  });
 
   // גלגלת עכבר לזום
   function handleWheel(e: WheelEvent) {
@@ -158,8 +193,8 @@
 <div class="crop-editor-overlay">
   <div class="crop-editor">
     <div class="crop-header">
-      <h3>התאמת תמונה</h3>
-      <p>גרור להזזה, השתמש בכפתורים לזום</p>
+      <h3>{TEXTS.IMAGE_CROP_TITLE}</h3>
+      <p>{TEXTS.IMAGE_CROP_INSTRUCTIONS}</p>
     </div>
 
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
@@ -176,7 +211,7 @@
       <img
         bind:this={imageRef}
         src={imageSrc}
-        alt="עריכת תמונה"
+        alt={TEXTS.IMAGE_EDIT_ALT}
         class="crop-image"
         style:transform="translate(-50%, -50%) scale({minScale * crop.scale})"
         style:left="{crop.x}%"
@@ -199,16 +234,16 @@
       </div>
       
       <button type="button" onclick={resetCrop} class="reset-btn">
-        🔄 איפוס
+        🔄 {TEXTS.RESET}
       </button>
     </div>
 
     <div class="crop-actions">
       <button type="button" onclick={oncancel} class="btn-cancel">
-        ביטול
+        {TEXTS.CANCEL}
       </button>
       <button type="button" onclick={confirm} class="btn-confirm">
-        ✓ אישור
+        ✓ {TEXTS.CONFIRM}
       </button>
     </div>
   </div>

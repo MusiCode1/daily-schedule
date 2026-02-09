@@ -3,6 +3,7 @@
 	import { elasticOut } from 'svelte/easing';
 	import type { CelebrationData } from '$lib/logic/tasksBoard.svelte';
 	import ImageDisplay from './ImageDisplay.svelte';
+	import { TEXTS } from '$lib/services/language';
 
 	let {
 		isOpen = false,
@@ -45,7 +46,7 @@
 
 				<!-- חלק 1: סיימת את... + כרטיסייה -->
 				<h2 class="top-text">
-					{data.gender === 'boy' ? 'סיימת את' : 'סיימת את'}
+					{TEXTS.FINISHED_PREFIX(data.gender)}
 				</h2>
 
 				<div class="task-card main-card">
@@ -68,7 +69,7 @@
 				<!-- חלק 3: המשימה הבאה -->
 				{#if data.nextTask}
 					<div class="next-task-container" transition:fade={{ delay: 500 }}>
-						<p class="now-text">עכשיו,</p>
+						<p class="now-text">{TEXTS.NOW_PREFIX}</p>
 						<div class="task-card next-card">
 							{#if data.nextTask.image}
 								<div class="card-image">
@@ -83,7 +84,7 @@
 					</div>
 				{:else}
 					<div class="all-done">
-						<p>סיימת את כל המשימות!</p>
+						<p>{TEXTS.ALL_DONE_MESSAGE}</p>
 					</div>
 				{/if}
 			{:else}

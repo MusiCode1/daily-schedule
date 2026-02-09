@@ -1,6 +1,7 @@
 <script lang="ts">
   import { peopleStore } from '$lib/stores/peopleStore.svelte';
   import ImageDisplay from './ImageDisplay.svelte';
+  import { TEXTS } from '$lib/services/language';
 
   // Props
   let {
@@ -21,8 +22,8 @@
 
 <div class="people-display">
   <div class="header-row">
-    <h3 class="title">מי יהיה איתנו היום?</h3>
-    <button class="toggle-btn" onclick={ontoggle} title={isVisible ? 'הסתר' : 'הצג'}>
+    <h3 class="title">{TEXTS.WHO_WILL_BE_WITH_US}</h3>
+    <button class="toggle-btn" onclick={ontoggle} title={isVisible ? TEXTS.HIDE : TEXTS.SHOW}>
       {#if isVisible}
         👁️
       {:else}

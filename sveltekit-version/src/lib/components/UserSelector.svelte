@@ -17,10 +17,10 @@
 	<header class="app-header">
 		<div class="brand-bubble">
 			<div class="title-stack">
-				<span>סדר יום</span>
-				<span class="highlight">ויזואלי</span>
+				<span>{TEXTS.APP_TITLE_PART1}</span>
+				<span class="highlight">{TEXTS.APP_TITLE_PART2}</span>
 			</div>
-			<img src={favicon} alt="צוהר הלב" class="app-logo" />
+			<img src={favicon} alt={TEXTS.APP_LOGO_ALT} class="app-logo" />
 		</div>
 	</header>
 	
