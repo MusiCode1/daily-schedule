@@ -1,5 +1,26 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-10 11:25
+
+### סידור כרונולוגי של יומן הפיתוח
+
+סידרנו את הקובץ `walkthrough.md` בסדר כרונולוגי יורד (מהחדש לישן) באמצעות סקריפט Python ייעודי, כדי להקל על המעקב אחר ההיסטוריה של הפרויקט.
+
+#### מה בוצע?
+
+**1. אוטומציה של סידור הקובץ**
+
+- נכתב והורץ סקריפט `reorder_walkthrough.py` שפירק את הקובץ לפי רשומות תאריך (`## YYYY-MM-DD HH:MM`).
+- בוצע מיון של הרשומות לפי תאריך בסדר יורד.
+- הקובץ נבנה מחדש עם מפרידים (`---`) בין הרשומות.
+
+**2. ניקוי ותחזוקה**
+
+- נוצר גיבוי לפני השינוי (`walkthrough.md.bak`) שנמחק לאחר אימות ההצלחה.
+- הסקריפט נמחק לאחר השימוש.
+
+---
+
 ## 2026-02-10 01:21
 
 ### שדרוג מערכת TTS: ריבוי גרסאות ואוטומציה
@@ -32,31 +53,93 @@
 - **Vite Plugin לרישום**: בחרנו לייצר את ה-Registry בזמן Build/Dev כדי להימנע מרישום ידני כפול ולמנוע שגיאות של קבצים חסרים. הקוד בקלינט מקבל JSON מוכן ופשוט.
 - **שימוש ב-IDs**: המעבר משימוש בשמות קבצים לשימוש ב-IDs לוגיים (כמו `PRAISE_ALUF_BOY`) מאפשר להחליף את קבצי האודיו "מאחורי הקלעים" בלי לשנות את הקוד הצרכני.
 
-## 2026-02-09 14:41
+---
 
-### אימוץ פרימיטיבי UI במסך המשימות (Board)
+## 2026-02-10 01:03
 
-- הוספנו עטיפות דקות ייעודיות למסך הלוח ב-`sveltekit-version/src/lib/components/board/*` (BoardIconButton, BoardActionCard, BoardFabAddButton) כדי לשמור על המבנה וה-classes הקיימים.
-- `sveltekit-version/src/routes/+page.svelte` עבר להשתמש בעטיפות, והוגדרו ה-styles הרלוונטיים כ-`:global(...)` כדי שיעבדו גם דרך גבולות קומפוננטה (Scoped styles).
-- `sveltekit-version/src/lib/components/TaskRow.svelte` עבר להשתמש ב-`ActionButton` לפריטי עריכה (מחק/ערוך) עם class ייעודי `task-row-action-btn`, וה-CSS עודכן ל-`:global(...)` כדי לא לשבור עיצוב.
-- נוספו צילומי מסך לפני/אחרי: `before-board.png`, `after-board.png`.
+### Drive Backup V2 (אינקרמנטלי) + איחוד state פר-מכשיר + מיגרציות ובדיקות
+
+מימשנו גיבוי Drive V2 שמעלה `assets` כקבצים נפרדים (עם dedupe) ומפצל בין `content` ל-`progress`, כך ששינוי `isDone` לא גורר העלאה מחדש של כל התמונות. בנוסף איחדנו את כל מפתחות ה-localStorage ה"חיצוניים" לאובייקט אחד פר-מכשיר (`daily-schedule-device-state`) עם מיגרציה ובדיקות fixtures.
+
+---
+
+#### מה בוצע?
+
+**1. Drive Backup V2**
+
+- פיצול מבנה הגיבוי ב-Drive ל-`daily_schedule_manifest.json` (commit marker), `daily_schedule_content.json`, `daily_schedule_progress.json`, `daily_schedule_assets.json` + תיקיית `assets/`.
+- אלגוריתם גיבוי/שחזור V2: כתיבת manifest אחרונה, העלאת assets אינקרמנטלית עם dedupe לפי `sha256:<hex>`, ושחזור שמוריד רק נכסים שחסרים מקומית.
+- **קבצים**: `sveltekit-version/src/lib/services/drive/driveBackupV2.ts`, `sveltekit-version/src/lib/services/drive/backupPayloads.ts`, `sveltekit-version/src/lib/services/drive/crypto.ts`, `sveltekit-version/src/lib/services/drive/types.ts`, `sveltekit-version/src/lib/services/drive/constants.ts`.
+
+**2. פירוק שירות Drive לחלקים רעיוניים**
+
+- הוצאנו Auth לשירות ייעודי (`googleAuthService`) והפרדנו API/HTTP/Repo.
+- **קבצים**: `sveltekit-version/src/lib/services/drive/googleAuthService.ts`, `sveltekit-version/src/lib/services/drive/driveFilesApi.ts`, `sveltekit-version/src/lib/services/drive/driveHttpClient.ts`, `sveltekit-version/src/lib/services/drive/dailyScheduleBackupRepo.ts`.
+
+**3. איחוד מפתחות localStorage פר-מכשיר**
+
+- כל מפתחות ה"metadata" (device/auth/UI/cache) אוחדו תחת `daily-schedule-device-state` עם מיגרציה חד-פעמית שמוחקת legacy keys.
+- מצב ה-floating board הועבר ל-`deviceState.settings.ui.floatingBoard` (per-device).
+- **קבצים**: `sveltekit-version/src/lib/stores/deviceState.ts`, `sveltekit-version/src/lib/services/floatingBoardState.ts`.
+
+**4. מיגרציות + fixtures**
+
+- פיצול `migration.ts` לפונקציה נפרדת לכל גרסה (v2..v14) + runner.
+- יצירת fixtures לגרסאות ישנות + בדיקות שרצות על כולן.
+- **קבצים**: `sveltekit-version/src/lib/services/migration.ts`, `sveltekit-version/src/lib/services/migrations/fixtures/state/`, `sveltekit-version/src/lib/services/migrations/state.migration.test.ts`.
+
+**5. בדיקות**
+
+- בדיקות Unit/Integration ל-Drive V2 כולל manifest-last, progress-only, dedupe, restore-only-missing, ו-fallback ל-cache IDs מיושן.
+- **קבצים**: `sveltekit-version/src/lib/services/drive/driveBackupV2.integration.test.ts`, `sveltekit-version/src/lib/services/drive/dailyScheduleBackupRepo.cache.test.ts`.
+
+**6. כלי Debug לשליפת snapshot מהדפדפן**
+
+- דף debug שמייצא snapshot של `daily-schedule-data` + `daily-schedule-device-state` (עם redaction לטוקנים כברירת מחדל).
+- **קבצים**: `sveltekit-version/src/routes/debug/export/+page.svelte`.
+
+---
+
+#### החלטות ארכיטקטורה
+
+- **[Commit Marker]**: manifest הוא ה"קובץ הראשי" לקונפליקט-דיטקשן (`appProperties.writeId`) ולכן הוא תמיד נכתב אחרון.
+- **[Name Is Truth]**: חיפוש לפי שם ב-Drive הוא מקור האמת; cache של IDs הוא רק אופטימיזציה עם fallback לשם.
+- **[Per-Device State]**: `daily-schedule-device-state` נשאר מקומי ולא מסונכרן לגיבוי הענן (הוא תשתיתי/מכשירי).
+
+---
+
+#### מעקפים ופתרונות
+
+- **[Vitest/Node]**: הוספנו guard ב-`db.ts` כדי לא לנסות להפעיל IndexedDB בסביבות שאין `indexedDB` (למשל בדיקות Node עם mock של `browser=true`).
+
+---
+
+## 2026-02-09 18:26
+
+### ארגון Routes לקבוצות + העברת מסך הלוח ל-`/tasks` + הצמדת קומפוננטות לדף (Colocation)
+
+- מסך הלוח הועבר ל-`sveltekit-version/src/routes/(board)/tasks/+page.svelte` ונגיש כעת ב-`/tasks`.
+- דף השורש `sveltekit-version/src/routes/+page.svelte` משמש כ-Redirector קטן (Client-only) ל-`/tasks` או `/login` לפי `SessionController`, עם `goto(resolve(...))`.
+- מסכי ניהול הועברו לקבוצת `(admin)` תחת `sveltekit-version/src/routes/(admin)/settings/**` בלי שינוי כתובת.
+- `test-board` סווג כ-dev והועבר ל-`sveltekit-version/src/routes/(dev)/test-board/+page.svelte` (ללא שינוי URL).
+- קומפוננטות בלעדיות ללוח הוצמדו לדף תחת `sveltekit-version/src/routes/(board)/tasks/_components/**`, ועדכנו imports כך שקומפוננטות משותפות נשארות ב-`$lib/components/**`.
+- ניווטים "חזרה ללוח" עודכנו לעבוד מול `/tasks` (כולל login והגדרות), ו-`UserSelector` מבצע מעבר ל-`/tasks` מיד לאחר בחירת משתמש.
 
 #### בדיקות שבוצעו
 
-- `npm run check` ב-`sveltekit-version` עבר (0 errors). נשארו warnings קיימים ב-`AddModal.svelte` סביב `@reference/@apply`.
+- `bun run check` ב-`sveltekit-version` עבר (0 errors). נשארו warnings קיימים ב-`AddModal.svelte` סביב `@reference/@apply`.
 
-## 2026-02-09 15:42
+#### קבצים מרכזיים
 
-### יישור CelebrationModal לפרימיטיבים + שכבת חגיגיות
+- `sveltekit-version/src/routes/+page.svelte`
+- `sveltekit-version/src/routes/(board)/tasks/+page.svelte`
+- `sveltekit-version/src/routes/(board)/tasks/_components/*`
+- `sveltekit-version/src/routes/(admin)/settings/+layout.svelte`
+- `sveltekit-version/src/routes/(board)/login/+page.svelte`
+- `sveltekit-version/src/lib/components/UserSelector.svelte`
+- `docs/plans/board-route-groups-colocation.md`
 
-- `sveltekit-version/src/lib/components/CelebrationModal.svelte` עבר להשתמש ב-`ModalShell` ו-`Card` כדי לשבת על הבסיס העיצובי של המערכת (modals/cards ב-`components.css`).
-- הוספנו “skin” חגיגי מעל הבסיס באמצעות `overlayClass/contentClass` ו-`:global(...)` (כולל קונפטי עדין באמצעות pseudo-element) תוך שימוש בטוקנים (`--primary`, `--secondary`, `--shadow-xl`) במקום צבעים קשיחים.
-- נשמרה דרישת UX: כל קליק סוגר את המודאל (גם על התוכן).
-- נוספו צילומי מסך לפני/אחרי: `before-celebration.png`, `after-celebration.png`.
-
-#### בדיקות שבוצעו
-
-- `npm run check` ב-`sveltekit-version` עבר (0 errors). נשארו warnings קיימים ב-`AddModal.svelte` סביב `@reference/@apply`.
+---
 
 ## 2026-02-09 16:51
 
@@ -96,30 +179,37 @@
 - `sveltekit-version/src/lib/data/texts.ts`
 - `documentation/texts-audience-separation-plan.md`
 
-## 2026-02-09 18:26
+---
 
-### ארגון Routes לקבוצות + העברת מסך הלוח ל-`/tasks` + הצמדת קומפוננטות לדף (Colocation)
+## 2026-02-09 15:42
 
-- מסך הלוח הועבר ל-`sveltekit-version/src/routes/(board)/tasks/+page.svelte` ונגיש כעת ב-`/tasks`.
-- דף השורש `sveltekit-version/src/routes/+page.svelte` משמש כ-Redirector קטן (Client-only) ל-`/tasks` או `/login` לפי `SessionController`, עם `goto(resolve(...))`.
-- מסכי ניהול הועברו לקבוצת `(admin)` תחת `sveltekit-version/src/routes/(admin)/settings/**` בלי שינוי כתובת.
-- `test-board` סווג כ-dev והועבר ל-`sveltekit-version/src/routes/(dev)/test-board/+page.svelte` (ללא שינוי URL).
-- קומפוננטות בלעדיות ללוח הוצמדו לדף תחת `sveltekit-version/src/routes/(board)/tasks/_components/**`, ועדכנו imports כך שקומפוננטות משותפות נשארות ב-`$lib/components/**`.
-- ניווטים "חזרה ללוח" עודכנו לעבוד מול `/tasks` (כולל login והגדרות), ו-`UserSelector` מבצע מעבר ל-`/tasks` מיד לאחר בחירת משתמש.
+### יישור CelebrationModal לפרימיטיבים + שכבת חגיגיות
+
+- `sveltekit-version/src/lib/components/CelebrationModal.svelte` עבר להשתמש ב-`ModalShell` ו-`Card` כדי לשבת על הבסיס העיצובי של המערכת (modals/cards ב-`components.css`).
+- הוספנו “skin” חגיגי מעל הבסיס באמצעות `overlayClass/contentClass` ו-`:global(...)` (כולל קונפטי עדין באמצעות pseudo-element) תוך שימוש בטוקנים (`--primary`, `--secondary`, `--shadow-xl`) במקום צבעים קשיחים.
+- נשמרה דרישת UX: כל קליק סוגר את המודאל (גם על התוכן).
+- נוספו צילומי מסך לפני/אחרי: `before-celebration.png`, `after-celebration.png`.
 
 #### בדיקות שבוצעו
 
-- `bun run check` ב-`sveltekit-version` עבר (0 errors). נשארו warnings קיימים ב-`AddModal.svelte` סביב `@reference/@apply`.
+- `npm run check` ב-`sveltekit-version` עבר (0 errors). נשארו warnings קיימים ב-`AddModal.svelte` סביב `@reference/@apply`.
 
-#### קבצים מרכזיים
+---
 
-- `sveltekit-version/src/routes/+page.svelte`
-- `sveltekit-version/src/routes/(board)/tasks/+page.svelte`
-- `sveltekit-version/src/routes/(board)/tasks/_components/*`
-- `sveltekit-version/src/routes/(admin)/settings/+layout.svelte`
-- `sveltekit-version/src/routes/(board)/login/+page.svelte`
-- `sveltekit-version/src/lib/components/UserSelector.svelte`
-- `docs/plans/board-route-groups-colocation.md`
+## 2026-02-09 14:41
+
+### אימוץ פרימיטיבי UI במסך המשימות (Board)
+
+- הוספנו עטיפות דקות ייעודיות למסך הלוח ב-`sveltekit-version/src/lib/components/board/*` (BoardIconButton, BoardActionCard, BoardFabAddButton) כדי לשמור על המבנה וה-classes הקיימים.
+- `sveltekit-version/src/routes/+page.svelte` עבר להשתמש בעטיפות, והוגדרו ה-styles הרלוונטיים כ-`:global(...)` כדי שיעבדו גם דרך גבולות קומפוננטה (Scoped styles).
+- `sveltekit-version/src/lib/components/TaskRow.svelte` עבר להשתמש ב-`ActionButton` לפריטי עריכה (מחק/ערוך) עם class ייעודי `task-row-action-btn`, וה-CSS עודכן ל-`:global(...)` כדי לא לשבור עיצוב.
+- נוספו צילומי מסך לפני/אחרי: `before-board.png`, `after-board.png`.
+
+#### בדיקות שבוצעו
+
+- `npm run check` ב-`sveltekit-version` עבר (0 errors). נשארו warnings קיימים ב-`AddModal.svelte` סביב `@reference/@apply`.
+
+---
 
 ## 2026-02-09 14:29
 
@@ -128,6 +218,8 @@
 - נוסף מסמך ידע/החלטה: `docs/routing-spa-vs-hash.md`.
 - המסמך מסכם יתרונות/חסרונות של SPA (pathname + fallback) מול Hash routing ב־SvelteKit, ומותאם למצב הנוכחי בפרויקט (דאטה בצד לקוח, Google Drive בדפדפן).
 - הודגשה נקודת סיכון: התנגשות בין Hash routing לבין Google OAuth במצב Redirect, שמחזיר `access_token` ב־URL hash.
+
+---
 
 ## 2026-02-09 13:42
 
@@ -145,6 +237,8 @@
 #### בדיקות שבוצעו
 
 - `npm run check` ב-`sveltekit-version` עבר (0 errors). נשארו warnings קיימים ב-`AddModal.svelte` סביב `@reference/@apply`.
+
+---
 
 ## 2026-02-09 11:40
 
@@ -180,6 +274,8 @@
 
 - ✅ `npx tsc -p tsconfig.json --noEmit` עבר.
 - ⚠️ `npm run check` נכשל בסביבה זו עם `spawn EPERM` (esbuild).
+
+---
 
 ## 2026-02-04 13:00
 
@@ -1029,64 +1125,6 @@ select.input {
 - **`@import` בראש components.css**: הוספנו `@import './layout.css';` בשורה הראשונה של components.css כדי ש-Tailwind v4 CDN יעבד את הקובץ כראוי. בלי ה-import, Tailwind לא מזהה את ה-`@apply` directives.
 
 - **התנגשות `.empty-state` לא דורסת**: גילינו ש-`.empty-state` מופיע גם ב-settings.css וגם ב-+page.svelte, אבל ב-+page.svelte הוא ב-`<style>` scoped, כך שאין התנגשות בפועל. CSS Layers מבטיח שגם אם יש התנגשות, הקוד הישן תמיד ינצח.
-
----
-
-## 2026-01-19 23:35
-
-### הבהרה והחלה של כללי Tailwind CSS - גישה היברידית
-
-הבהרנו והחלנו את הכללים המדויקים לשימוש ב-Tailwind CSS בפרויקט, בדגש על מתי להשתמש ב-@apply ומתי ב-classes ישירות.
-
----
-
-#### מה בוצע?
-
-**1. הבהרת כללים ב-agent-guide.mdc**
-
-הוספנו סעיף "כלל קריטי - HTML vs `<style>`" שמבהיר את הכלל הזהב:
-
-- **אם אפשר לשים ב-HTML → תמיד Tailwind classes ישירות**
-- **אם חייבים `<style>` (nested, override) → תמיד @apply**
-
-הכלל הזהב: **כל Tailwind utility שנמצא ב-`<style>` חייב להיות דרך `@apply`!**
-
-- **קבצים ששונו**: `.cursor/rules/agent-guide.mdc`
-
-**2. תיקון users/+page.svelte לפי הכללים**
-
-המרנו את כל ה-CSS הרגיל ב-`<style>` tag ל-Tailwind @apply:
-
-```css
-/* לפני */
-.modal-content h3 {
-  text-align: center;
-  font-size: 1.5rem;
-  margin-bottom: 2rem;
-  color: #1e293b;
-}
-
-/* אחרי */
-@reference "tailwindcss";
-
-.modal-content h3 {
-  @apply text-center text-2xl mb-8 text-slate-800;
-}
-```
-
-- הוספנו `@reference "tailwindcss";` בראש ה-`<style>` tag
-- המרנו 3 CSS blocks (Avatar Override, Modal Width, Modal Header) ל-@apply
-- צמצמנו מ-19 שורות CSS ל-16 שורות (~16%)
-
-- **קבצים ששונו**: `sveltekit-version/src/routes/settings/users/+page.svelte`
-
----
-
-#### החלטות ארכיטקטורה
-
-- **שימוש ב-@apply בכל `<style>` tag**: החלטנו שכל Tailwind utility שנמצא ב-`<style>` חייב להיות דרך @apply, גם אם זה רק 1-2 classes. זה מבטיח עקביות ומאפשר ל-Tailwind לעבד את הקלאסים כראוי.
-
-- **CSS רגיל רק לדברים שלא-Tailwind**: משתמשים ב-CSS רגיל רק כשזה באמת לא ניתן להמרה ל-Tailwind (custom properties, animations מורכבות, וכו').
 
 ---
 
@@ -3224,6 +3262,121 @@ Theme Variations (.theme-*)
 
 ---
 
+## 2026-01-20 00:15
+
+### רשימות נעולות והעברת לוחות בין משתמשים
+
+יישום שני הפיצ'רים האחרונים מתוכנית הפיצ'רים: (1) מצב נעילה לרשימות - לחיצה על משימה רק משמיעה את שמה ללא חגיגה (שימושי לתרגול והכנה), (2) העברה או שכפול רשימות בין משתמשים שונים.
+
+---
+
+#### מה בוצע?
+
+**1. רשימות נעולות (Locked Lists)**
+
+הוספת מצב "נעילה" לרשימות, המיועד לתרגול והכנה ללא משוב מלא.
+
+**תכונות:**
+
+- שדה חדש `isLocked?: boolean` בממשק `List`
+- כשהרשימה נעולה: לחיצה על משימה רק משמיעה את שמה (TTS)
+- לא מסומנת כהושלמה, לא מופיע מודאל חגיגה, לא עוברים למשימה הבאה
+- שימושי לתרגול הילדים על הפעילויות לפני היום עצמו
+
+**ממשק:**
+
+- כפתור נעילה/שחרור (🔒/🔓) בפאנל הפעולות במסך הראשי
+- עיצוב אפור-כחול (`#64748b`) למראה ניטרלי
+- אינדיקטור ויזואלי: תג "🔒 (נעולה)" מתחת ל-ListSwitcher כשהרשימה נעולה
+- רשימות ברירת מחדל לא ניתנות לנעילה (חסימה ב-toggleListLock)
+
+**קבצים שהשתנו:**
+
+- `src/lib/types.ts` - הוספת `isLocked?: boolean` ל-`List`
+- `src/lib/logic/tasksBoard.svelte.ts` - בדיקת `isLocked` ב-`toggleTask()`, הוספת `playTaskName()`
+- `src/routes/+page.svelte` - כפתור נעילה/שחרור + תג ויזואלי + סטיילינג
+- `src/lib/stores/listStore.svelte.ts` - הוספת `toggleListLock()`
+- `src/lib/data/texts.ts` - טקסטים: `LOCK_LIST`, `UNLOCK_LIST`, `LOCKED_LIST`
+- `src/lib/services/migration.ts` - מיגרציה V9→V10: `isLocked: false` לרשימות קיימות
+- `src/lib/data/defaults.ts` - עדכון גרסה ל-10
+
+---
+
+**2. העברה/שכפול רשימות בין משתמשים (Copy/Move Lists)**
+
+מנגנון להעברה או שכפול רשימה ממשתמש אחד לאחר (למשל: העתקת לוח מתמר ליונתן).
+
+**תכונות:**
+
+- **שכפול (Copy)**: יוצר עותק של הרשימה אצל משתמש אחר, המקור נשאר
+- **העברה (Move)**: מעביר את הרשימה למשתמש אחר ומוחק את המקור
+- העתקה עמוקה של כל המשימות עם IDs חדשים
+- איפוס אוטומטי של `isDone` בעותק (משימות מתחילות "טרי")
+- השמירה על כל השדות: `title`, `description`, `peopleIds`, `isLocked`, `logo`, `greeting`
+
+**ממשק:**
+
+- כפתור "העבר/שכפל למשתמש" בדף ניהול רשימות (`/settings/lists`)
+- `UserPickerModal` - מודאל בחירת משתמש יעד:
+  - רשת משתמשים עם אווטארים (סינון: רק משתמשים אחרים)
+  - checkbox "העבר (במקום לשכפל)" - עם רקע צהוב אזהרה
+  - כפתור דינמי: "שכפל" או "העבר" בהתאם לבחירה
+- אייקון העברה (חיצים בכל הכיוונות) בכפתור הפעולה
+
+**קובץ חדש:**
+
+- `src/lib/components/UserPickerModal.svelte` - מודאל בחירה מלא עם נגישות (a11y)
+
+**קבצים שהשתנו:**
+
+- `src/lib/stores/listStore.svelte.ts` - הוספת `copyListToUser()` - פונקציה מלאה להעתקה/העברה
+- `src/routes/settings/lists/+page.svelte` - אינטגרציה: state, פונקציות (`openUserPicker`, `handleUserSelected`), כפתור, סטיילינג
+- `src/lib/data/texts.ts` - טקסטים: `COPY_TO_USER`, `COPY_LIST_TO_USER`, `MOVE_INSTEAD_OF_COPY`, `COPY`, `MOVE`
+
+---
+
+#### החלטות ארכיטקטורה
+
+**רשימות נעולות:**
+
+- **מיקום הבדיקה**: החלטנו לבדוק `isLocked` **לפני** בדיקת `changeType` ב-`toggleTask()`, כי זה פשוט יותר - אם הרשימה נעולה, כל המשימות מתנהגות אותו דבר
+- **לא לנעול ברירת מחדל**: רשימות `isDefault` לא ניתנות לנעילה - הגנה מפני טעות של ההורה
+- **אינדיקטור בולט**: הצבנו את התג "נעולה" מיד אחרי ListSwitcher כדי שההורה יראה במבט ראשון שהרשימה במצב תרגול
+
+**העברה/שכפול:**
+
+- **IDs חדשים תמיד**: גם בשכפול, כל המשימות מקבלות IDs חדשים למניעת קונפליקטים
+- **איפוס isDone**: משימות בעותק מתחילות מחדש (לא מועתק הסטטוס "בוצע")
+- **שמירת כל השדות**: העתקה מלאה של `title`, `description`, `peopleIds`, `isLocked` - כך שלוח מוכן לאירוע ניתן להעתיק לכמה ילדים
+- **isDefault: false תמיד**: גם אם מעתיקים רשימת ברירת מחדל, העותק לא יהיה default (מונע בעיות)
+- **isHidden: false תמיד**: העותק תמיד גלוי, גם אם המקור מוסתר
+- **מחיקה בטוחה**: בהעברה (move), בודקים שנשארת לפחות רשימה אחת למשתמש המקור
+
+**UserPickerModal:**
+
+- **קומפוננטה גנרית**: ניתן לשימוש חוזר במקומות אחרים (לא רק רשימות)
+- **סינון אוטומטי**: `otherUsers` מסנן את המשתמש הנוכחי - לא ניתן להעתיק לעצמו
+- **איפוס state**: `$effect` מאפס את הבחירה בכל פתיחה של המודאל
+- **נגישות מלאה**: תמיכה ב-keyboard (Escape), role="dialog", tabindex
+
+---
+
+#### מעקפים ופתרונות
+
+**אזהרות a11y ב-UserPickerModal:**
+
+- **בעיה**: svelte-check הציג אזהרות על modal-overlay ו-modal-card
+- **פתרון**: הוספת `role="button"`, `role="dialog"`, `tabindex`, `onkeydown` לנגישות מלאה
+- **תוצאה**: 0 שגיאות, 0 אזהרות ב-svelte-check
+
+**שכפול vs העברה:**
+
+- **בעיה**: איך למנוע מחיקת הרשימה האחרונה בהעברה?
+- **פתרון**: בדיקת `globalState.state.lists[fromUserId].length > 1` לפני קריאה ל-`deleteList()`
+- **תוצאה**: המשתמש תמיד נשאר עם לפחות רשימה אחת
+
+---
+
 ## 2026-01-19 23:45
 
 ### מערכת עיצוב אחידה (Design System Demo)
@@ -3504,118 +3657,61 @@ Theme Variations (.theme-*)
 
 ---
 
-## 2026-01-20 00:15
+## 2026-01-19 23:35
 
-### רשימות נעולות והעברת לוחות בין משתמשים
+### הבהרה והחלה של כללי Tailwind CSS - גישה היברידית
 
-יישום שני הפיצ'רים האחרונים מתוכנית הפיצ'רים: (1) מצב נעילה לרשימות - לחיצה על משימה רק משמיעה את שמה ללא חגיגה (שימושי לתרגול והכנה), (2) העברה או שכפול רשימות בין משתמשים שונים.
+הבהרנו והחלנו את הכללים המדויקים לשימוש ב-Tailwind CSS בפרויקט, בדגש על מתי להשתמש ב-@apply ומתי ב-classes ישירות.
 
 ---
 
 #### מה בוצע?
 
-**1. רשימות נעולות (Locked Lists)**
+**1. הבהרת כללים ב-agent-guide.mdc**
 
-הוספת מצב "נעילה" לרשימות, המיועד לתרגול והכנה ללא משוב מלא.
+הוספנו סעיף "כלל קריטי - HTML vs `<style>`" שמבהיר את הכלל הזהב:
 
-**תכונות:**
+- **אם אפשר לשים ב-HTML → תמיד Tailwind classes ישירות**
+- **אם חייבים `<style>` (nested, override) → תמיד @apply**
 
-- שדה חדש `isLocked?: boolean` בממשק `List`
-- כשהרשימה נעולה: לחיצה על משימה רק משמיעה את שמה (TTS)
-- לא מסומנת כהושלמה, לא מופיע מודאל חגיגה, לא עוברים למשימה הבאה
-- שימושי לתרגול הילדים על הפעילויות לפני היום עצמו
+הכלל הזהב: **כל Tailwind utility שנמצא ב-`<style>` חייב להיות דרך `@apply`!**
 
-**ממשק:**
+- **קבצים ששונו**: `.cursor/rules/agent-guide.mdc`
 
-- כפתור נעילה/שחרור (🔒/🔓) בפאנל הפעולות במסך הראשי
-- עיצוב אפור-כחול (`#64748b`) למראה ניטרלי
-- אינדיקטור ויזואלי: תג "🔒 (נעולה)" מתחת ל-ListSwitcher כשהרשימה נעולה
-- רשימות ברירת מחדל לא ניתנות לנעילה (חסימה ב-toggleListLock)
+**2. תיקון users/+page.svelte לפי הכללים**
 
-**קבצים שהשתנו:**
+המרנו את כל ה-CSS הרגיל ב-`<style>` tag ל-Tailwind @apply:
 
-- `src/lib/types.ts` - הוספת `isLocked?: boolean` ל-`List`
-- `src/lib/logic/tasksBoard.svelte.ts` - בדיקת `isLocked` ב-`toggleTask()`, הוספת `playTaskName()`
-- `src/routes/+page.svelte` - כפתור נעילה/שחרור + תג ויזואלי + סטיילינג
-- `src/lib/stores/listStore.svelte.ts` - הוספת `toggleListLock()`
-- `src/lib/data/texts.ts` - טקסטים: `LOCK_LIST`, `UNLOCK_LIST`, `LOCKED_LIST`
-- `src/lib/services/migration.ts` - מיגרציה V9→V10: `isLocked: false` לרשימות קיימות
-- `src/lib/data/defaults.ts` - עדכון גרסה ל-10
+```css
+/* לפני */
+.modal-content h3 {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  color: #1e293b;
+}
 
----
+/* אחרי */
+@reference "tailwindcss";
 
-**2. העברה/שכפול רשימות בין משתמשים (Copy/Move Lists)**
+.modal-content h3 {
+  @apply text-center text-2xl mb-8 text-slate-800;
+}
+```
 
-מנגנון להעברה או שכפול רשימה ממשתמש אחד לאחר (למשל: העתקת לוח מתמר ליונתן).
+- הוספנו `@reference "tailwindcss";` בראש ה-`<style>` tag
+- המרנו 3 CSS blocks (Avatar Override, Modal Width, Modal Header) ל-@apply
+- צמצמנו מ-19 שורות CSS ל-16 שורות (~16%)
 
-**תכונות:**
-
-- **שכפול (Copy)**: יוצר עותק של הרשימה אצל משתמש אחר, המקור נשאר
-- **העברה (Move)**: מעביר את הרשימה למשתמש אחר ומוחק את המקור
-- העתקה עמוקה של כל המשימות עם IDs חדשים
-- איפוס אוטומטי של `isDone` בעותק (משימות מתחילות "טרי")
-- השמירה על כל השדות: `title`, `description`, `peopleIds`, `isLocked`, `logo`, `greeting`
-
-**ממשק:**
-
-- כפתור "העבר/שכפל למשתמש" בדף ניהול רשימות (`/settings/lists`)
-- `UserPickerModal` - מודאל בחירת משתמש יעד:
-  - רשת משתמשים עם אווטארים (סינון: רק משתמשים אחרים)
-  - checkbox "העבר (במקום לשכפל)" - עם רקע צהוב אזהרה
-  - כפתור דינמי: "שכפל" או "העבר" בהתאם לבחירה
-- אייקון העברה (חיצים בכל הכיוונות) בכפתור הפעולה
-
-**קובץ חדש:**
-
-- `src/lib/components/UserPickerModal.svelte` - מודאל בחירה מלא עם נגישות (a11y)
-
-**קבצים שהשתנו:**
-
-- `src/lib/stores/listStore.svelte.ts` - הוספת `copyListToUser()` - פונקציה מלאה להעתקה/העברה
-- `src/routes/settings/lists/+page.svelte` - אינטגרציה: state, פונקציות (`openUserPicker`, `handleUserSelected`), כפתור, סטיילינג
-- `src/lib/data/texts.ts` - טקסטים: `COPY_TO_USER`, `COPY_LIST_TO_USER`, `MOVE_INSTEAD_OF_COPY`, `COPY`, `MOVE`
+- **קבצים ששונו**: `sveltekit-version/src/routes/settings/users/+page.svelte`
 
 ---
 
 #### החלטות ארכיטקטורה
 
-**רשימות נעולות:**
+- **שימוש ב-@apply בכל `<style>` tag**: החלטנו שכל Tailwind utility שנמצא ב-`<style>` חייב להיות דרך @apply, גם אם זה רק 1-2 classes. זה מבטיח עקביות ומאפשר ל-Tailwind לעבד את הקלאסים כראוי.
 
-- **מיקום הבדיקה**: החלטנו לבדוק `isLocked` **לפני** בדיקת `changeType` ב-`toggleTask()`, כי זה פשוט יותר - אם הרשימה נעולה, כל המשימות מתנהגות אותו דבר
-- **לא לנעול ברירת מחדל**: רשימות `isDefault` לא ניתנות לנעילה - הגנה מפני טעות של ההורה
-- **אינדיקטור בולט**: הצבנו את התג "נעולה" מיד אחרי ListSwitcher כדי שההורה יראה במבט ראשון שהרשימה במצב תרגול
-
-**העברה/שכפול:**
-
-- **IDs חדשים תמיד**: גם בשכפול, כל המשימות מקבלות IDs חדשים למניעת קונפליקטים
-- **איפוס isDone**: משימות בעותק מתחילות מחדש (לא מועתק הסטטוס "בוצע")
-- **שמירת כל השדות**: העתקה מלאה של `title`, `description`, `peopleIds`, `isLocked` - כך שלוח מוכן לאירוע ניתן להעתיק לכמה ילדים
-- **isDefault: false תמיד**: גם אם מעתיקים רשימת ברירת מחדל, העותק לא יהיה default (מונע בעיות)
-- **isHidden: false תמיד**: העותק תמיד גלוי, גם אם המקור מוסתר
-- **מחיקה בטוחה**: בהעברה (move), בודקים שנשארת לפחות רשימה אחת למשתמש המקור
-
-**UserPickerModal:**
-
-- **קומפוננטה גנרית**: ניתן לשימוש חוזר במקומות אחרים (לא רק רשימות)
-- **סינון אוטומטי**: `otherUsers` מסנן את המשתמש הנוכחי - לא ניתן להעתיק לעצמו
-- **איפוס state**: `$effect` מאפס את הבחירה בכל פתיחה של המודאל
-- **נגישות מלאה**: תמיכה ב-keyboard (Escape), role="dialog", tabindex
-
----
-
-#### מעקפים ופתרונות
-
-**אזהרות a11y ב-UserPickerModal:**
-
-- **בעיה**: svelte-check הציג אזהרות על modal-overlay ו-modal-card
-- **פתרון**: הוספת `role="button"`, `role="dialog"`, `tabindex`, `onkeydown` לנגישות מלאה
-- **תוצאה**: 0 שגיאות, 0 אזהרות ב-svelte-check
-
-**שכפול vs העברה:**
-
-- **בעיה**: איך למנוע מחיקת הרשימה האחרונה בהעברה?
-- **פתרון**: בדיקת `globalState.state.lists[fromUserId].length > 1` לפני קריאה ל-`deleteList()`
-- **תוצאה**: המשתמש תמיד נשאר עם לפחות רשימה אחת
+- **CSS רגיל רק לדברים שלא-Tailwind**: משתמשים ב-CSS רגיל רק כשזה באמת לא ניתן להמרה ל-Tailwind (custom properties, animations מורכבות, וכו').
 
 ---
 
@@ -3976,6 +4072,8 @@ interface Person {
 - הוספת שדות לכל רשימה קיימת:
   - `peopleIds?: string[]` - ערך ברירת מחדל: `undefined`
   - `isPeopleSectionVisible: boolean` - ערך ברירת מחדל: `true`
+
+---
 
 ## 2026-01-19 01:15
 
@@ -4583,6 +4681,8 @@ sveltekit-version/
   - הוחלפו קריאות `fetch` ידניות בשימוש ישיר ב-`gapi.client.drive.files.create` וב-`gapi.client.request`.
   - השינוי מבטיח תאימות טובה יותר לטיפוסים (Types) ומנצל את מנגנון הטיפול בטוקנים של הספרייה.
 
+---
+
 ## 2026-01-14 02:00
 
 ### סנכרון ופתרון קונפליקטים (Google Drive)
@@ -4609,6 +4709,8 @@ sveltekit-version/
 ### הערות טכניות
 
 - המנגנון מונע דריסה דורסנית של מידע במקרה שבו משתמש עובד במקביל (או שכח את האפליקציה פתוחה) במכשיר אחר.
+
+---
 
 ## 2026-01-14 01:50
 
@@ -4918,60 +5020,3 @@ sveltekit-version/
 ## [קודם] מיגרציה ל-Svelte 5 ולוקליזציה
 
 (ראה למטה לשינויים היסטוריים...)
-
-## 2026-02-10 01:03
-
-### Drive Backup V2 (אינקרמנטלי) + איחוד state פר-מכשיר + מיגרציות ובדיקות
-
-מימשנו גיבוי Drive V2 שמעלה `assets` כקבצים נפרדים (עם dedupe) ומפצל בין `content` ל-`progress`, כך ששינוי `isDone` לא גורר העלאה מחדש של כל התמונות. בנוסף איחדנו את כל מפתחות ה-localStorage ה"חיצוניים" לאובייקט אחד פר-מכשיר (`daily-schedule-device-state`) עם מיגרציה ובדיקות fixtures.
-
----
-
-#### מה בוצע?
-
-**1. Drive Backup V2**
-
-- פיצול מבנה הגיבוי ב-Drive ל-`daily_schedule_manifest.json` (commit marker), `daily_schedule_content.json`, `daily_schedule_progress.json`, `daily_schedule_assets.json` + תיקיית `assets/`.
-- אלגוריתם גיבוי/שחזור V2: כתיבת manifest אחרונה, העלאת assets אינקרמנטלית עם dedupe לפי `sha256:<hex>`, ושחזור שמוריד רק נכסים שחסרים מקומית.
-- **קבצים**: `sveltekit-version/src/lib/services/drive/driveBackupV2.ts`, `sveltekit-version/src/lib/services/drive/backupPayloads.ts`, `sveltekit-version/src/lib/services/drive/crypto.ts`, `sveltekit-version/src/lib/services/drive/types.ts`, `sveltekit-version/src/lib/services/drive/constants.ts`.
-
-**2. פירוק שירות Drive לחלקים רעיוניים**
-
-- הוצאנו Auth לשירות ייעודי (`googleAuthService`) והפרדנו API/HTTP/Repo.
-- **קבצים**: `sveltekit-version/src/lib/services/drive/googleAuthService.ts`, `sveltekit-version/src/lib/services/drive/driveFilesApi.ts`, `sveltekit-version/src/lib/services/drive/driveHttpClient.ts`, `sveltekit-version/src/lib/services/drive/dailyScheduleBackupRepo.ts`.
-
-**3. איחוד מפתחות localStorage פר-מכשיר**
-
-- כל מפתחות ה"metadata" (device/auth/UI/cache) אוחדו תחת `daily-schedule-device-state` עם מיגרציה חד-פעמית שמוחקת legacy keys.
-- מצב ה-floating board הועבר ל-`deviceState.settings.ui.floatingBoard` (per-device).
-- **קבצים**: `sveltekit-version/src/lib/stores/deviceState.ts`, `sveltekit-version/src/lib/services/floatingBoardState.ts`.
-
-**4. מיגרציות + fixtures**
-
-- פיצול `migration.ts` לפונקציה נפרדת לכל גרסה (v2..v14) + runner.
-- יצירת fixtures לגרסאות ישנות + בדיקות שרצות על כולן.
-- **קבצים**: `sveltekit-version/src/lib/services/migration.ts`, `sveltekit-version/src/lib/services/migrations/fixtures/state/`, `sveltekit-version/src/lib/services/migrations/state.migration.test.ts`.
-
-**5. בדיקות**
-
-- בדיקות Unit/Integration ל-Drive V2 כולל manifest-last, progress-only, dedupe, restore-only-missing, ו-fallback ל-cache IDs מיושן.
-- **קבצים**: `sveltekit-version/src/lib/services/drive/driveBackupV2.integration.test.ts`, `sveltekit-version/src/lib/services/drive/dailyScheduleBackupRepo.cache.test.ts`.
-
-**6. כלי Debug לשליפת snapshot מהדפדפן**
-
-- דף debug שמייצא snapshot של `daily-schedule-data` + `daily-schedule-device-state` (עם redaction לטוקנים כברירת מחדל).
-- **קבצים**: `sveltekit-version/src/routes/debug/export/+page.svelte`.
-
----
-
-#### החלטות ארכיטקטורה
-
-- **[Commit Marker]**: manifest הוא ה"קובץ הראשי" לקונפליקט-דיטקשן (`appProperties.writeId`) ולכן הוא תמיד נכתב אחרון.
-- **[Name Is Truth]**: חיפוש לפי שם ב-Drive הוא מקור האמת; cache של IDs הוא רק אופטימיזציה עם fallback לשם.
-- **[Per-Device State]**: `daily-schedule-device-state` נשאר מקומי ולא מסונכרן לגיבוי הענן (הוא תשתיתי/מכשירי).
-
----
-
-#### מעקפים ופתרונות
-
-- **[Vitest/Node]**: הוספנו guard ב-`db.ts` כדי לא לנסות להפעיל IndexedDB בסביבות שאין `indexedDB` (למשל בדיקות Node עם mock של `browser=true`).
