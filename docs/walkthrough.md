@@ -1,5 +1,39 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-16 23:31
+
+### תיקון PWA: כשל התקנת Service Worker במצב אופליין
+
+בוצע תיקון ממוקד ל-`Service Worker` לאחר שנמצא כשל install שגרם לכך שהמטמון הוקם ריק ולכן האפליקציה לא נשארה זמינה כשאין רשת.
+
+---
+
+#### מה בוצע?
+
+**1. תיקון רשימת precache כדי למנוע קריסת install**
+
+- עודכן `sveltekit-version/src/service-worker.ts`:
+  - נוספה פונקציית `normalizeCacheUrl(...)` לנרמול URL-ים באותו פורמט.
+  - נוספה לוגיקת `Set` ל-dedupe של רשימת ה-`precacheUrls`.
+  - נמנע מצב שבו אותו `manifest.webmanifest` נכנס פעמיים (עם/בלי `/` מוביל), מה שגרם ל-`Cache.addAll()` להיכשל.
+  - עודכנו שמות cache לגרסת `v2`:
+    - `pwa-precache-v2`
+    - `pwa-runtime-v2`
+
+---
+
+#### בדיקות שבוצעו
+
+- הורץ `npm run check` מתוך `sveltekit-version`:
+  - `svelte-check found 0 errors and 0 warnings`.
+- הורץ `npm run build` מתוך `sveltekit-version`.
+- בוצעה הרצה מקומית של Worker:
+  - `npx wrangler dev .svelte-kit/cloudflare/_worker.js --assets .svelte-kit/cloudflare --port 4176`
+- בוצעה בדיקת Playwright ממוקדת:
+  - לפני התיקון (בחקירה): `Service Worker` לא הגיע ל-`activated` או לא נשלט.
+  - אחרי התיקון: `Service Worker` בסטטוס `activated`, `controller: true`, ו-`pwa-precache-v2` עם `76` קבצים.
+  - תרחיש אופליין עבר בהצלחה (`offlineOpenOk: true`).
+
 ## 2026-02-16 18:31
 
 ### הוספת אינדיקטור סטטוס עגול בקצה השמאלי של שורת משימה

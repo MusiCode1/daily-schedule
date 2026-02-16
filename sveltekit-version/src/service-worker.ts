@@ -6,13 +6,19 @@ declare const self: ServiceWorkerGlobalScope & {
 	__WB_MANIFEST: Array<{ url: string; revision: string | null }>;
 };
 
-const PRECACHE_CACHE_NAME = 'pwa-precache-v1';
-const RUNTIME_CACHE_NAME = 'pwa-runtime-v1';
+const PRECACHE_CACHE_NAME = 'pwa-precache-v2';
+const RUNTIME_CACHE_NAME = 'pwa-runtime-v2';
 const STATIC_PREFIXES = ['/images/', '/sounds/', '/icons/'];
 
 const wbManifest = self.__WB_MANIFEST;
 const manifestEntries = Array.isArray(wbManifest) ? wbManifest : [];
-const precacheUrls = [...manifestEntries.map((entry) => entry.url), '/manifest.webmanifest'];
+const normalizeCacheUrl = (url: string): string => {
+	const resolved = new URL(url, self.location.origin);
+	return `${resolved.pathname}${resolved.search}`;
+};
+
+// נרמול + dedupe מונעים כשל install כשאותו URL מגיע בפורמטים שונים (עם/בלי / מוביל)
+const precacheUrls = [...new Set([...manifestEntries.map((entry) => entry.url), '/manifest.webmanifest'].map(normalizeCacheUrl))];
 
 self.addEventListener('install', (event) => {
 	event.waitUntil(
