@@ -1,5 +1,5 @@
 ---
-name: eleven
+name: eleven-v3-enhancing-input
 description: Enhance dialogue text for speech generation by adding expressive audio tags while preserving original meaning.
 ---
 

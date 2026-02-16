@@ -32,7 +32,11 @@ resources_playground/**
 
 temp
 temp/**
+tmp
+tmp/**
 .agent
+**/.obsidian/**
+.localappdata
 
 # Google Auth Test Reports
 scripts/google-auth-test-report.json
@@ -57,8 +61,7 @@ scripts/screenshots/
 *.zip
 *.rar
 *.7z
-**/.obsidian/**
-.localappdata
+
 
 # קבצים של עוזרי קוד
 # נחריג את כולם חוץ מקורסור שישמש כמקור.
@@ -66,4 +69,5 @@ scripts/screenshots/
 .agent
 
 .agents/skills/excalidraw-mcp
+
 
