@@ -1,5 +1,27 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-16 16:40
+
+### ייצוב תלויות סנכרון בתוך `sveltekit-version`
+
+בוצע יישור תלות `jsondiffpatch` כך שתוגדר בפרויקט האפליקציה עצמו (`sveltekit-version`) ולא תישען באופן סמוי על `node_modules` בשורש.
+
+---
+
+#### מה בוצע?
+
+- עודכן `sveltekit-version/package.json`:
+  - נוספה התלות `jsondiffpatch`.
+- עודכן `sveltekit-version/bun.lock`:
+  - ננעלו הרשומות המתאימות ל-`jsondiffpatch` ולתלות המשנה שלו.
+
+---
+
+#### בדיקות שבוצעו
+
+- הורץ `npm run check` מתוך `sveltekit-version`:
+  - `svelte-check found 0 errors and 0 warnings`.
+
 ## 2026-02-16 16:21
 
 ### החזרת שליטת "גיבוי אוטומטי" למסך `/settings/backup`
