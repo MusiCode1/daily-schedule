@@ -1,5 +1,40 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-17 00:32
+
+### Hardening נוסף ל-PWA אופליין בנתיב `/tasks`
+
+לאחר בדיקת אופליין אמיתית על `http://localhost:5174/tasks` נמצא שבחלק מהתרחישים עדיין מתקבלת תשובת `503 Offline`, למרות שה-Service Worker פעיל. הגורם היה היעדר fallback shell זמין לניווט כשאין cache-route מדויק.
+
+---
+
+#### מה בוצע?
+
+**1. הוספת shell fallbacks ל-precache**
+
+- עודכן `sveltekit-version/src/service-worker.ts`:
+  - נוספה רשימת `NAVIGATION_SHELL_FALLBACKS` עם:
+    - `/`
+    - `/login`
+  - הרשימה מוזרקת ל-`precacheUrls` אחרי נרמול ודדופליקציה.
+
+**2. fallback ניווט קשיח יותר בזמן אופליין**
+
+- עודכן מסלול ה-fallback ב-`networkFirst`:
+  - ניסיון ראשון: `caches.match('/login')`
+  - ניסיון שני: `caches.match('/')`
+  - ורק אם שניהם לא זמינים מוחזר `503 Offline`.
+
+---
+
+#### בדיקות שבוצעו
+
+- בדיקת Playwright ממוקדת על `http://localhost:5174/tasks`:
+  - לפני: גוף תשובה `"Offline"` במסלול אופליין.
+  - אחרי: מוצג shell תקין של מסך הכניסה גם באופליין.
+- בדיקת precache:
+  - נצפו כניסות `/`, `/login`, `/manifest.webmanifest` ב-`pwa-precache-v2`.
+
 ## 2026-02-16 23:31
 
 ### תיקון PWA: כשל התקנת Service Worker במצב אופליין

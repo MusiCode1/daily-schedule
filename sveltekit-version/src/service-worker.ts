@@ -9,6 +9,7 @@ declare const self: ServiceWorkerGlobalScope & {
 const PRECACHE_CACHE_NAME = 'pwa-precache-v2';
 const RUNTIME_CACHE_NAME = 'pwa-runtime-v2';
 const STATIC_PREFIXES = ['/images/', '/sounds/', '/icons/'];
+const NAVIGATION_SHELL_FALLBACKS = ['/', '/login'];
 
 const wbManifest = self.__WB_MANIFEST;
 const manifestEntries = Array.isArray(wbManifest) ? wbManifest : [];
@@ -18,7 +19,13 @@ const normalizeCacheUrl = (url: string): string => {
 };
 
 // נרמול + dedupe מונעים כשל install כשאותו URL מגיע בפורמטים שונים (עם/בלי / מוביל)
-const precacheUrls = [...new Set([...manifestEntries.map((entry) => entry.url), '/manifest.webmanifest'].map(normalizeCacheUrl))];
+const precacheUrls = [
+	...new Set(
+		[...manifestEntries.map((entry) => entry.url), '/manifest.webmanifest', ...NAVIGATION_SHELL_FALLBACKS].map(
+			normalizeCacheUrl
+		)
+	)
+];
 
 self.addEventListener('install', (event) => {
 	event.waitUntil(
@@ -81,7 +88,8 @@ const networkFirst = async (request: Request): Promise<Response> => {
 		const cached = await cache.match(request);
 		if (cached) return cached;
 
-		const shellFallback = await caches.match('/');
+		// fallback ל-shell מונע מסך שגיאה כשאין cache-route מדויק לניווט הנוכחי
+		const shellFallback = await caches.match('/login').then((match) => match ?? caches.match('/'));
 		if (shellFallback) return shellFallback;
 
 		return new Response('Offline', { status: 503, statusText: 'Offline' });
