@@ -7,6 +7,7 @@
   import UserPickerModal from '$lib/components/UserPickerModal.svelte';
   import { TEXTS } from '$lib/services/language';
   import { DEFAULT_LIST_IMAGE } from '$lib/config';
+  import { ActionButton, Button, Card } from '$lib/components/ui';
 
   // ניהול רשימות
   let managedUserId = $state('');
@@ -114,17 +115,17 @@
     <div class="user-select-control">
         <span>{TEXTS.FOR_USER_LABEL}</span>
         <select bind:value={managedUserId}>
-            {#each Object.values(userStore.users) as user}
+            {#each Object.values(userStore.users) as user (user.id)}
                 <option value={user.id}>{user.name}</option>
             {/each}
         </select>
     </div>
-    <button class="btn-primary" onclick={openAddList}>{TEXTS.NEW_LIST}</button>
+    <Button variant="primary" onclick={openAddList}>{TEXTS.NEW_LIST}</Button>
 </div>
 
 <div class="lists-grid">
     {#each listStore.getAllLists(managedUserId) as list (list.id)}
-        <div class="card list-card {list.id === listStore.getActiveList(managedUserId)?.id ? 'list-card-active' : ''} {list.isHidden ? 'list-card-hidden' : ''}">
+        <Card class="list-card {list.id === listStore.getActiveList(managedUserId)?.id ? 'list-card-active' : ''} {list.isHidden ? 'list-card-hidden' : ''}">
             <div class="list-icon">
                 <ImageDisplay 
                     imageSrc={list.logo || DEFAULT_LIST_IMAGE}
@@ -144,27 +145,27 @@
                 </div>
             </div>
             <div class="list-actions">
-                <button class="action-btn visibility" title={list.isHidden ? TEXTS.SHOW_LIST : TEXTS.HIDE_LIST} onclick={() => toggleListVisibility(list.id)}>
+                <ActionButton class="visibility" title={list.isHidden ? TEXTS.SHOW_LIST : TEXTS.HIDE_LIST} aria-label={list.isHidden ? TEXTS.SHOW_LIST : TEXTS.HIDE_LIST} onclick={() => toggleListVisibility(list.id)}>
                     {#if list.isHidden}
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                     {:else}
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
                     {/if}
-                </button>
-                <button class="action-btn duplicate" title={TEXTS.DUPLICATE} onclick={() => duplicateList(list.id)}>
+                </ActionButton>
+                <ActionButton class="duplicate" title={TEXTS.DUPLICATE} aria-label={TEXTS.DUPLICATE} onclick={() => duplicateList(list.id)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                </button>
-                <button class="action-btn transfer" title={TEXTS.COPY_TO_USER} onclick={() => openUserPicker(list.id)}>
+                </ActionButton>
+                <ActionButton class="transfer" title={TEXTS.COPY_TO_USER} aria-label={TEXTS.COPY_TO_USER} onclick={() => openUserPicker(list.id)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="m21 3-7 7"/><path d="m3 3 7 7"/><path d="M16 21h5v-5"/><path d="M8 21H3v-5"/><path d="m21 21-7-7"/><path d="m3 21 7-7"/></svg>
-                </button>
-                <button class="action-btn edit" title={TEXTS.EDIT} onclick={() => openListModal(list)}>
+                </ActionButton>
+                <ActionButton class="edit" title={TEXTS.EDIT} aria-label={TEXTS.EDIT} onclick={() => openListModal(list)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-                </button>
-                <button class="action-btn delete" title={TEXTS.DELETE} onclick={() => deleteList(list.id)}>
+                </ActionButton>
+                <ActionButton tone="danger" class="delete" title={TEXTS.DELETE} aria-label={TEXTS.DELETE} onclick={() => deleteList(list.id)}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-                </button>
+                </ActionButton>
             </div>
-        </div>
+        </Card>
     {/each}
 </div>
 
@@ -187,26 +188,26 @@
   @reference "tailwindcss";
   
   /* list-card - override מקומי */
-  .list-card {
+  :global(.list-card) {
     @apply border-2 p-5 gap-3 max-w-[250px] relative;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   }
   
-  .list-card:hover {
+  :global(.list-card:hover) {
     border-color: #cbd5e1;
     transform: translateY(-2px);
     box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.15);
   }
   
   /* list-card פעיל */
-  .list-card-active {
+  :global(.list-card-active) {
     @apply bg-indigo-50;
     border-color: #818cf8;
     box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.15);
   }
   
   /* list-card מוסתר */
-  .list-card-hidden {
+  :global(.list-card-hidden) {
     @apply opacity-60;
     border-style: dashed;
   }

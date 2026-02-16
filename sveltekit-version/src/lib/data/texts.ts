@@ -58,6 +58,9 @@ const TEXTS_ADMIN = {
 	LIST_MANAGEMENT: 'ניהול רשימות',
 	PEOPLE_MANAGEMENT: 'ניהול אנשים',
 	GENERAL_SETTINGS: 'הגדרות כלליות',
+	GENERAL_SYNC_ACTIVE_TITLE: '🔄 סנכרון אוטומטי פעיל',
+	GENERAL_SYNC_ACTIVE_DESCRIPTION: 'המערכת החדשה מסתנכרנת אוטומטית עם Google Drive ברקע.',
+	GENERAL_SYNC_ACTIVE_INFO: 'הגדרות סנכרון מתקדמות יתווספו בעתיד.',
 	NEW_USER: '+ משתמש חדש',
 	EDIT_USER: 'עריכת משתמש',
 	SAVE: 'שמור',
@@ -258,6 +261,13 @@ const TEXTS_ADMIN = {
 	TEST_BOARD_BOARD_MOTI: 'לוח למוטי',
 	TEST_BOARD_BOARD_MOISHI: 'לוח למוישי',
 	TEST_BOARD_BOARD_AVISHAI_FEELINGS: 'לוח רגשות לאבישי',
+	DEBUG_EXPORT_TITLE: 'ייצוא Snapshot מקומי (Debug)',
+	DEBUG_EXPORT_DESCRIPTION:
+		'המסך הזה מיועד לשליפת דוגמא חיה מהדפדפן לצורך בדיקות מיגרציה. כברירת מחדל אנחנו מסתירים טוקנים.',
+	DEBUG_EXPORT_UNKNOWN_ERROR: 'שגיאה לא ידועה',
+	DEBUG_EXPORT_INCLUDE_SENSITIVE: 'כלול מידע רגיש (טוקנים)',
+	DEBUG_EXPORT_DOWNLOAD_JSON: 'הורד קובץ JSON',
+	DEBUG_EXPORT_REFRESH: 'רענן',
 
 	// התראות / אישורים
 	DELETE_USER_CONFIRM: 'למחוק את המשתמש? פעולה זו תמחק גם את כל הרשימות שלו!',

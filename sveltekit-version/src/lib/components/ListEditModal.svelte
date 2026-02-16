@@ -3,6 +3,7 @@
   import ImageUploader from './ImageUploader.svelte';
   import PeoplePicker from './PeoplePicker.svelte';
   import { TEXTS } from '$lib/services/language';
+  import { Button, ModalShell, Textarea, TextInput } from '$lib/components/ui';
 
   // Props
   let { 
@@ -66,85 +67,60 @@
   }
 </script>
 
-{#if isOpen}
-  <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div class="modal-overlay" onclick={(e) => e.target === e.currentTarget && onclose()}>
-    <div class="modal-content" role="dialog" aria-modal="true">
-        <h3>{editingList ? TEXTS.EDIT_LIST : TEXTS.NEW_LIST}</h3>
-        <form onsubmit={handleSubmit}>
-          <div class="form-group">
-            <label for="list-name-input">{TEXTS.LIST_NAME}:</label>
-            <input id="list-name-input" type="text" class="input" bind:value={listForm.name} required />
-          </div>
-          
-          <div class="form-group">
-            <label for="list-greeting-input">{TEXTS.GREETING}:</label>
-            <input id="list-greeting-input" type="text" class="input" bind:value={listForm.greeting} placeholder={TEXTS.GREETING_PLACEHOLDER} />
-          </div>
-          
-          <div class="form-group">
-            <label for="list-title-input">{TEXTS.LIST_TITLE}:</label>
-            <input id="list-title-input" type="text" class="input" bind:value={listForm.title} placeholder={TEXTS.LIST_TITLE_PLACEHOLDER} />
-          </div>
-          
-          <div class="form-group">
-            <label for="list-description-input">{TEXTS.LIST_DESCRIPTION}:</label>
-            <textarea id="list-description-input" class="input" bind:value={listForm.description} placeholder={TEXTS.LIST_DESCRIPTION_PLACEHOLDER} rows="3"></textarea>
-          </div>
-          
-          <div class="form-group">
-            <label for="list-logo-input">{TEXTS.LOGO}:</label>
-            <ImageUploader
-              imageSrc={listImageSrc}
-              onchange={(src) => listImageSrc = src}
-            />
-          </div>
-          
-          <div class="form-group">
-            <PeoplePicker
-              selectedIds={selectedPeopleIds}
-              onchange={(ids) => (selectedPeopleIds = ids)}
-            />
-          </div>
-          
-          <div class="modal-actions">
-            <button type="button" class="btn btn-secondary" onclick={onclose}>{TEXTS.CANCEL}</button>
-            <button type="submit" class="btn">{TEXTS.SAVE}</button>
-          </div>
-        </form>
+<ModalShell open={isOpen} onClose={onclose} contentClass="list-edit-modal-content">
+  <h3 class="list-edit-modal-title">{editingList ? TEXTS.EDIT_LIST : TEXTS.NEW_LIST}</h3>
+  <form onsubmit={handleSubmit}>
+    <div class="form-group">
+      <label for="list-name-input">{TEXTS.LIST_NAME}:</label>
+      <TextInput id="list-name-input" bind:value={listForm.name} required />
     </div>
-  </div>
-{/if}
+    
+    <div class="form-group">
+      <label for="list-greeting-input">{TEXTS.GREETING}:</label>
+      <TextInput id="list-greeting-input" bind:value={listForm.greeting} placeholder={TEXTS.GREETING_PLACEHOLDER} />
+    </div>
+    
+    <div class="form-group">
+      <label for="list-title-input">{TEXTS.LIST_TITLE}:</label>
+      <TextInput id="list-title-input" bind:value={listForm.title} placeholder={TEXTS.LIST_TITLE_PLACEHOLDER} />
+    </div>
+    
+    <div class="form-group">
+      <label for="list-description-input">{TEXTS.LIST_DESCRIPTION}:</label>
+      <Textarea id="list-description-input" bind:value={listForm.description} placeholder={TEXTS.LIST_DESCRIPTION_PLACEHOLDER} rows={3} />
+    </div>
+    
+    <div class="form-group">
+      <label for="list-logo-input">{TEXTS.LOGO}:</label>
+      <ImageUploader
+        imageSrc={listImageSrc}
+        onchange={(src) => listImageSrc = src}
+      />
+    </div>
+    
+    <div class="form-group">
+      <PeoplePicker
+        selectedIds={selectedPeopleIds}
+        onchange={(ids) => (selectedPeopleIds = ids)}
+      />
+    </div>
+    
+    <div class="modal-actions">
+      <Button type="button" variant="secondary" onclick={onclose}>{TEXTS.CANCEL}</Button>
+      <Button type="submit">{TEXTS.SAVE}</Button>
+    </div>
+  </form>
+</ModalShell>
 
 <style>
-  /* Using global classes from components.css where possible */
-  
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(4px);
-  }
-
-  /* Specific overrides for ListEditModal specific size needs */
-  .modal-content {
-      width: 100%;
+  :global(.list-edit-modal-content) {
       max-width: 450px;
-      padding: 2.5rem;
       max-height: 90vh;
       overflow-y: auto;
-      text-align: right; /* Override default centered text in modals */
+      text-align: right;
   }
 
-  h3 {
+  .list-edit-modal-title {
     text-align: center;
     font-size: 1.5rem;
     margin-bottom: 2rem;
@@ -152,7 +128,6 @@
     font-weight: 700;
   }
   
-  /* Keeping only specific form logic */
   form {
     display: flex;
     flex-direction: column;

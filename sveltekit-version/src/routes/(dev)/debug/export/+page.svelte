@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { Button } from '$lib/components/ui';
+	import { TEXTS } from '$lib/services/language';
 
 	let includeSensitive = $state(false);
 	let snapshotText = $state('');
@@ -84,17 +86,16 @@
 		try {
 			buildSnapshot();
 		} catch (e: any) {
-			errorText = e?.message ? String(e.message) : 'שגיאה לא ידועה';
+			errorText = e?.message ? String(e.message) : TEXTS.DEBUG_EXPORT_UNKNOWN_ERROR;
 		}
 	});
 </script>
 
 <div class="p-6 max-w-4xl mx-auto space-y-4">
-	<h1 class="text-2xl font-bold">ייצוא Snapshot מקומי (Debug)</h1>
+	<h1 class="text-2xl font-bold">{TEXTS.DEBUG_EXPORT_TITLE}</h1>
 
 	<p class="text-sm text-slate-600">
-		המסך הזה מיועד לשליפת דוגמא חיה מהדפדפן לצורך בדיקות מיגרציה. כברירת מחדל אנחנו
-		מסתירים טוקנים.
+		{TEXTS.DEBUG_EXPORT_DESCRIPTION}
 	</p>
 
 	{#if errorText}
@@ -105,14 +106,14 @@
 
 	<label class="flex items-center gap-2 text-sm">
 		<input type="checkbox" bind:checked={includeSensitive} onchange={buildSnapshot} />
-		כלול מידע רגיש (טוקנים)
+		{TEXTS.DEBUG_EXPORT_INCLUDE_SENSITIVE}
 	</label>
 
 	<div class="flex gap-2">
-		<button class="btn btn-primary" type="button" onclick={downloadSnapshot} disabled={!snapshotText}>
-			הורד קובץ JSON
-		</button>
-		<button class="btn" type="button" onclick={buildSnapshot}>רענן</button>
+		<Button variant="primary" type="button" onclick={downloadSnapshot} disabled={!snapshotText}>
+			{TEXTS.DEBUG_EXPORT_DOWNLOAD_JSON}
+		</Button>
+		<Button type="button" onclick={buildSnapshot}>{TEXTS.DEBUG_EXPORT_REFRESH}</Button>
 	</div>
 
 	<textarea

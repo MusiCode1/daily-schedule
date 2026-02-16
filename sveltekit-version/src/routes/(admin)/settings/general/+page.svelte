@@ -6,9 +6,9 @@
 
 <div class="settings-group">
     <div class="placeholder-card">
-        <h3>🔄 סנכרון אוטומטי פעיל</h3>
-        <p>המערכת החדשה מסתנכרנת אוטומטית עם Google Drive ברקע.</p>
-        <p class="info">הגדרות סנכרון מתקדמות יתווספו בעתיד.</p>
+        <h3>{TEXTS.GENERAL_SYNC_ACTIVE_TITLE}</h3>
+        <p>{TEXTS.GENERAL_SYNC_ACTIVE_DESCRIPTION}</p>
+        <p class="info">{TEXTS.GENERAL_SYNC_ACTIVE_INFO}</p>
     </div>
 </div>
 

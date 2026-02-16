@@ -5591,3 +5591,59 @@ sveltekit-version/
 - הורץ `npx @sveltejs/mcp svelte-autofixer ...TaskRow.svelte --svelte-version 5`:
   - `issues: []`
   - `suggestions: []`
+
+---
+
+## 2026-02-16 23:18
+
+### סגירת הערות Review: פרימיטיבים, טקסטים ו-SSOT ב-CSS
+
+בוצע סבב תיקונים ממוקד להערות ה-review כדי ליישר את מסכי ההגדרות וה-debug לחוקי הפרויקט: שימוש בפרימיטיבים בלבד, ריכוז טקסטים ב-`texts.ts`, והסרת כפילות style מקומית.
+
+#### מה בוצע?
+
+**1. מעבר לפרימיטיבי UI במסך ניהול רשימות**
+
+- הוחלפו שימושים ישירים ב-`btn-primary`/`action-btn`/`card` לרכיבי `Button`/`ActionButton`/`Card`.
+- נוספו `aria-label` לכפתורי אייקונים במסך.
+- תוקן `#each` ללא key עבור רשימת המשתמשים.
+- **קבצים ששונו**: `sveltekit-version/src/routes/(admin)/settings/lists/+page.svelte`
+
+**2. מעבר לפרימיטיבים במודאל עריכת רשימה**
+
+- הוחלף shell מודאל ידני (`modal-overlay/modal-content`) ב-`ModalShell`.
+- שדות טופס הוחלפו ל-`TextInput`/`Textarea`.
+- כפתורי פעולה הוחלפו ל-`Button`.
+- selector של class שמוזרק דרך primitive הועבר ל-`:global(...)` כדי למנוע `unused selector`.
+- **קבצים ששונו**: `sveltekit-version/src/lib/components/ListEditModal.svelte`
+
+**3. ריכוז טקסטים קשיחים ב-SSOT**
+
+- הועברו טקסטים קשיחים ממסכי:
+  - `settings/general`
+  - `debug/export`
+  אל `src/lib/data/texts.ts`.
+- עודכנו הקומפוננטות להשתמש ב-`TEXTS.*`.
+- **קבצים ששונו**:
+  - `sveltekit-version/src/routes/(admin)/settings/general/+page.svelte`
+  - `sveltekit-version/src/routes/(dev)/debug/export/+page.svelte`
+  - `sveltekit-version/src/lib/data/texts.ts`
+
+**4. הסרת כפילות style ב-TaskRow**
+
+- הוסרו הגדרות מקומיות משוכפלות של `.status-indicator*` כדי להשאיר בעלות style בשכבה המשותפת.
+- נשמר רק style מינימלי לסימן (`task-status-glyph`) ברמת הקומפוננטה.
+- **קבצים ששונו**: `sveltekit-version/src/routes/(board)/tasks/_components/TaskRow.svelte`
+
+#### החלטות ארכיטקטורה
+
+- **[Primitives First]**: במסכי UI חדשים/מתוקנים עובדים דרך שכבת הפרימיטיבים בלבד כדי להימנע מ-API מקביל של classes ישירים.
+- **[Scoped vs Global]**: כאשר class עובר דרך primitive component ולא נצפה מקומית ע"י Svelte scoped CSS, משתמשים ב-`:global(...)` באופן ממוקד בלבד.
+
+#### בדיקות שבוצעו
+
+- הורץ `npx @sveltejs/mcp list-sections`.
+- הורץ `npx @sveltejs/mcp get-documentation "svelte/each,svelte/scoped-styles,svelte/global-styles"`.
+- הורץ `npx @sveltejs/mcp svelte-autofixer` על הקבצים שעודכנו (לא נותרו `issues` חוסמות).
+- הורץ `bun run check`:
+  - `svelte-check found 0 errors and 0 warnings`

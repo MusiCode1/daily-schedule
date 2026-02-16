@@ -144,9 +144,9 @@
         class:status-indicator-empty={!task.isDone && !isActive}
       >
         {#if task.isDone}
-          <span class="status-glyph">✓</span>
+          <span class="task-status-glyph">✓</span>
         {:else if isActive}
-          <span class="status-glyph">●</span>
+          <span class="task-status-glyph">●</span>
         {/if}
       </div>
     </div>
@@ -349,45 +349,10 @@
     flex-shrink: 0;
   }
 
-  .status-indicator {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    border: 3px solid #cbd5e1;
-    background: transparent;
-    color: #94a3b8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.25s ease;
-  }
-
-  .status-indicator-empty {
-    background: transparent;
-  }
-
-  .status-indicator-active {
-    background: var(--primary-accent, #6366f1);
-    border-color: #ffffff;
-    box-shadow: 0 6px 14px rgba(99, 102, 241, 0.35);
-    color: #ffffff;
-  }
-
-  .status-indicator-done {
-    background: var(--success-color, #22c55e);
-    border-color: var(--success-color, #22c55e);
-    box-shadow: 0 4px 10px rgba(34, 197, 94, 0.25);
-    color: #ffffff;
-  }
-
-  .status-glyph {
+  .task-status-glyph {
     line-height: 1;
     font-size: 1.2rem;
     font-weight: 800;
-  }
-
-  .status-indicator-active .status-glyph {
-    font-size: 1.35rem;
   }
 
   /* כפתור מחיקה */
