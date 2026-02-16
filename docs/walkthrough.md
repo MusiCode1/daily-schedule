@@ -1,5 +1,25 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-16 16:44
+
+### עדכון `.gitignore` להחרגת תיקיית `.claude`
+
+בוצע עדכון קטן לקובץ ההחרגות כדי למנוע מעקב Git אחרי קבצי סביבת עבודה מקומיים של Claude.
+
+---
+
+#### מה בוצע?
+
+- עודכן `.gitignore`:
+  - נוספה ההחרגה `.claude`.
+
+---
+
+#### בדיקות שבוצעו
+
+- הורץ `npm run check` מתוך `sveltekit-version`:
+  - `svelte-check found 0 errors and 0 warnings`.
+
 ## 2026-02-16 16:40
 
 ### ייצוב תלויות סנכרון בתוך `sveltekit-version`

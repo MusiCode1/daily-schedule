@@ -67,7 +67,9 @@ scripts/screenshots/
 # נחריג את כולם חוץ מקורסור שישמש כמקור.
 .qoder
 .agent
+.claude
 
 .agents/skills/excalidraw-mcp
+
 
 
