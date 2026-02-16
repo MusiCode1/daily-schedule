@@ -1,5 +1,5 @@
 // src/lib/data/defaults.ts
-import type { AppState, List } from '$lib/types';
+import type { AppState, List, UserProfile } from '$lib/types';
 
 export const ACTIVITIES = [
 	{ id: 'toilet', name: 'שירותים', image: 'activity_toilet.png' },
@@ -102,6 +102,69 @@ export const DEFAULT_LIST_DEFINITIONS = [
 	}
 ];
 
+type UsersList = Record<string, UserProfile>;
+
+const DEFAULT_USERS: UsersList = {
+	// object עם מפתח userId
+	u_ezra: {
+		id: 'u_ezra',
+		name: 'עזרא',
+		gender: 'boy',
+		avatar: '/images/users/ezra.png',
+		themeColor: '#4169E1',
+		theme: 'theme-focus'
+	},
+	u_tzofia: {
+		id: 'u_tzofia',
+		name: 'צופיה',
+		gender: 'girl',
+		avatar: '/images/users/tzofia.png',
+		themeColor: '#FF69B4',
+		theme: 'theme-playful'
+	},
+	u_adam: {
+		id: 'u_adam',
+		name: 'אדם',
+		gender: 'boy',
+		avatar: '/images/users/adam.png',
+		themeColor: '#32CD32',
+		theme: 'theme-gradient'
+	}
+};
+
+const DEFAULT_USERS_BAR: UsersList = {
+	u_tamar: {
+		id: 'u_tamar',
+		name: 'תמר',
+		gender: 'girl',
+		avatar: '/images/users/tamar.png',
+		themeColor: '#FF69B4'
+		//theme: 'theme-playful'
+	},
+	u_yonatan: {
+		id: 'u_yonatan',
+		name: 'יונתן',
+		gender: 'boy',
+		avatar: '/images/users/yehonatan.png',
+		themeColor: '#4169E1'
+		//theme: 'theme-focus'
+	},
+	u_ariel: {
+		id: 'u_ariel',
+		name: 'אריאל',
+		gender: 'boy',
+		avatar: '/images/users/ariel.png',
+		themeColor: '#32CD32'
+		//theme: 'theme-gradient'
+	}
+};
+
+const LISTS_BAR = {
+	u_tamar: createDefaultLists(),
+	u_yonatan: createDefaultLists(),
+	u_ariel: createDefaultLists()
+};
+
 // Helper to create initial lists for a user
 export function createDefaultLists(): { [listId: string]: List } {
 	const listsArray = DEFAULT_LIST_DEFINITIONS.map((def) => {
@@ -143,38 +206,8 @@ export function createDefaultLists(): { [listId: string]: List } {
 
 export const INITIAL_STATE: AppState = {
 	version: 15, // עדכון גרסה!
-	users: {
-		// object עם מפתח userId
-		u_ezra: {
-			id: 'u_ezra',
-			name: 'עזרא',
-			gender: 'boy',
-			avatar: '/images/users/ezra.png',
-			themeColor: '#4169E1',
-			theme: 'theme-focus'
-		},
-		u_tzofia: {
-			id: 'u_tzofia',
-			name: 'צופיה',
-			gender: 'girl',
-			avatar: '/images/users/tzofia.png',
-			themeColor: '#FF69B4',
-			theme: 'theme-playful'
-		},
-		u_adam: {
-			id: 'u_adam',
-			name: 'אדם',
-			gender: 'boy',
-			avatar: '/images/users/adam.png',
-			themeColor: '#32CD32',
-			theme: 'theme-gradient'
-		}
-	},
-	lists: {
-		u_ezra: createDefaultLists(),
-		u_tzofia: createDefaultLists(),
-		u_adam: createDefaultLists()
-	},
+	users: DEFAULT_USERS_BAR,
+	lists: LISTS_BAR,
 	images: {}, // מאגר מטאדטה של תמונות
 	people: {
 		// object עם מפתח personId
