@@ -122,12 +122,13 @@ export class TasksBoardController {
 
 	async playChangeAnnouncement(task: Task) {
 		if (!this.currentUser) return;
+		const narrationSession = ttsService.createPlaybackSession('CHANGE_LABEL');
 
 		// השמעת הודעת שינוי: "שינוי! היום אין [משימה]!"
 		const sequence = [
-			ttsService.getAudioSegment('CHANGE_LABEL', TEXTS.CHANGE_LABEL),
-			ttsService.getAudioSegment('TODAY_NO', TEXTS.TODAY_NO),
-			ttsService.getAudioSegment(task.id, task.name)
+			ttsService.getAudioSegment('CHANGE_LABEL', TEXTS.CHANGE_LABEL, narrationSession),
+			ttsService.getAudioSegment('TODAY_NO', TEXTS.TODAY_NO, narrationSession),
+			ttsService.getAudioSegment(task.id, task.name, narrationSession)
 		];
 
 		await audioSequencer.playSequence(sequence);

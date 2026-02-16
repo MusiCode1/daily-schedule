@@ -1,5 +1,56 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-16 16:57
+
+### תיקון TTS: רישום שמות במרשם + נעילת קריין לכל הקראה
+
+בוצע תיקון ממוקד למערכת ה‑TTS כדי להבטיח ששמות משתמשים ייקלטו במרשם הקבצים, ושבכל רצף הקראה לא יהיה ערבוב בין קריינים שונים.
+
+---
+
+#### מה בוצע?
+
+**1. רישום שמות (`names/*.mp3`) ב‑TTS Registry**
+
+- עודכן `sveltekit-version/plugins/tts-scanner.ts`:
+  - נוספה לוגיקה שמוסיפה קבצי שמות ל־`files` עבור כל הגדרת `NAME_*` כאשר קובץ קיים תחת `static/sounds/names/`.
+  - כל שם נרשם תחת כל `voice` שקיים במערכת, כדי שייבחר גם תחת נעילת קריין.
+- נוצר מחדש `sveltekit-version/src/lib/data/tts-registry.json` באמצעות build.
+
+**2. נעילת קריין ברמת רצף הקראה**
+
+- עודכן `sveltekit-version/src/lib/services/tts.ts`:
+  - נוספה ישות `TtsPlaybackSession` עם `voice` נעול.
+  - נוספה `createPlaybackSession(seedAssetId?)` לקיבוע הקריין כבר בתחילת הרצף.
+  - `getTtsFile` ו־`getAudioSegment` קיבלו `session` אופציונלי ובוחרים קבצים רק מהקריין הנעול.
+  - כשאין קובץ לקריין הנעול עבור מזהה מסוים, יש fallback ל־runtime TTS (ללא ערבוב קריינים מוקלטים).
+
+**3. חיבור נעילת הקריין לזרימות ההקראה**
+
+- עודכן `sveltekit-version/src/lib/services/language.ts`:
+  - כל רצף משוב נבנה עם `narrationSession` אחיד אחד.
+- עודכן `sveltekit-version/src/lib/logic/tasksBoard.svelte.ts`:
+  - `playChangeAnnouncement()` משתמש באותו `narrationSession` לכל הסגמנטים ברצף.
+
+**4. בדיקות יחידה**
+
+- נוסף `sveltekit-version/tests/unit/services/tts.test.ts`:
+  - וידוא ששמות (`NAME_*`) נפתרים לקבצים מוקלטים מהמרשם.
+  - וידוא שהקראה רציפה נשארת על קריין אחד.
+  - וידוא fallback ל־TTS כשאין הקלטה לקריין הנעול.
+
+---
+
+#### בדיקות שבוצעו
+
+- הורץ `npm run build` מתוך `sveltekit-version` (כולל יצירה מחדש של `tts-registry.json`).
+- הורץ `npm run check` מתוך `sveltekit-version`:
+  - `svelte-check found 0 errors and 0 warnings`.
+- הורץ `npx @sveltejs/mcp svelte-autofixer ./src/lib/logic/tasksBoard.svelte.ts --svelte-version 5`:
+  - `issues: []`, `suggestions: []`.
+- הורץ `npx vitest run tests/unit/services/tts.test.ts`:
+  - `3 passed`.
+
 ## 2026-02-16 16:44
 
 ### עדכון `.gitignore` להחרגת תיקיית `.claude`

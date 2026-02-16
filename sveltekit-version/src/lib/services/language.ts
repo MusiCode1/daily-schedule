@@ -16,6 +16,8 @@ export const LanguageService = {
 	): { text: string; sequence: Array<{ type: 'file' | 'tts'; content: string }>; praise: string } {
 		const sequence: Array<{ type: 'file' | 'tts'; content: string }> = [];
 		const fullTextParts: string[] = [];
+		const prefixId = gender === 'boy' ? 'FINISHED_OPT_BOY' : 'FINISHED_OPT_GIRL';
+		const narrationSession = ttsService.createPlaybackSession(prefixId);
 
 		// --- חלק 0: שם המשתמש ("יונתן!") ---
 		// מיפוי שמות ל-TTS IDs
@@ -29,7 +31,7 @@ export const LanguageService = {
 		const nameId = nameMap[userName];
 
 		if (nameId) {
-			sequence.push(ttsService.getAudioSegment(nameId, userName));
+			sequence.push(ttsService.getAudioSegment(nameId, userName, narrationSession));
 		} else {
 			// fallback ל-TTS רגיל אם השם לא במיפוי
 			sequence.push({ type: 'tts', content: userName });
@@ -39,8 +41,7 @@ export const LanguageService = {
 
 		// --- חלק 1: "סיימת את [משימה]" ---
 		// "סיימת את..."
-		const prefixId = gender === 'boy' ? 'FINISHED_OPT_BOY' : 'FINISHED_OPT_GIRL';
-		sequence.push(ttsService.getAudioSegment(prefixId, 'סיימת'));
+		sequence.push(ttsService.getAudioSegment(prefixId, 'סיימת', narrationSession));
 
 		const taskName = task.name;
 		fullTextParts.push(TEXTS.FINISHED_TASK(gender, taskName));
@@ -48,7 +49,7 @@ export const LanguageService = {
 		// שם המשימה (קובץ או TTS)
 		const taskAudioId = this.findActivityIdByName(taskName);
 		if (taskAudioId) {
-			sequence.push(ttsService.getAudioSegment(taskAudioId, taskName));
+			sequence.push(ttsService.getAudioSegment(taskAudioId, taskName, narrationSession));
 		} else {
 			sequence.push({ type: 'tts', content: taskName });
 		}
@@ -65,7 +66,7 @@ export const LanguageService = {
 
 		if (boostRequestFile) {
 			// boostRequestFile is now an ID
-			sequence.push(ttsService.getAudioSegment(boostRequestFile, boostText));
+			sequence.push(ttsService.getAudioSegment(boostRequestFile, boostText, narrationSession));
 		}
 
 		// --- חלק 3: המשימה הבאה או סיום הכל ---
@@ -75,14 +76,14 @@ export const LanguageService = {
 			// Using NOW_LABEL or legacy 'now.mp3' if mapped.
 			// Registry has 'NOW_PREFIX' -> 'now_prefix.mp3'.
 			// Let's use 'NOW_PREFIX' (עכשיו,)
-			sequence.push(ttsService.getAudioSegment('NOW_PREFIX', 'עכשיו'));
+			sequence.push(ttsService.getAudioSegment('NOW_PREFIX', 'עכשיו', narrationSession));
 
 			fullTextParts.push(TEXTS.NOW_NEXT(nextTaskName));
 
 			// שם המשימה הבאה
 			const nextId = this.findActivityIdByName(nextTaskName);
 			if (nextId) {
-				sequence.push(ttsService.getAudioSegment(nextId, nextTaskName));
+				sequence.push(ttsService.getAudioSegment(nextId, nextTaskName, narrationSession));
 			} else {
 				sequence.push({ type: 'tts', content: nextTaskName });
 			}
@@ -114,7 +115,9 @@ export const LanguageService = {
 			// { id: 'ALL_DONE_MESSAGE', text: 'סיימת את כל המשימות להיום!', baseFilename: 'all_done_boy.mp3' }
 			// So it only has the boy version defined.
 			// I will use it for now.
-			sequence.push(ttsService.getAudioSegment('ALL_DONE_MESSAGE', TEXTS.ALL_DONE_MESSAGE));
+			sequence.push(
+				ttsService.getAudioSegment('ALL_DONE_MESSAGE', TEXTS.ALL_DONE_MESSAGE, narrationSession)
+			);
 			fullTextParts.push(`. ${TEXTS.ALL_DONE_MESSAGE}`);
 		}
 

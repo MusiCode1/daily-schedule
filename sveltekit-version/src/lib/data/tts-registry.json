@@ -1334,21 +1334,73 @@
   {
     "id": "NAME_TAMAR",
     "text": "תמר",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/names/tamar.mp3",
+        "voice": "hope",
+        "version": "names",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/names/tamar.mp3",
+        "voice": "river",
+        "version": "names",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "NAME_YONATAN",
     "text": "יונתן",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/names/yonatan.mp3",
+        "voice": "hope",
+        "version": "names",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/names/yonatan.mp3",
+        "voice": "river",
+        "version": "names",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "NAME_ARIEL",
     "text": "אריאל",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/names/ariel.mp3",
+        "voice": "hope",
+        "version": "names",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/names/ariel.mp3",
+        "voice": "river",
+        "version": "names",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "NAME_AVISHAI",
     "text": "אבישי",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/names/avishai.mp3",
+        "voice": "hope",
+        "version": "names",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/names/avishai.mp3",
+        "voice": "river",
+        "version": "names",
+        "take": "t1"
+      }
+    ]
   }
 ]

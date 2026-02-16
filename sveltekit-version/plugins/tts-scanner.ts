@@ -19,6 +19,33 @@ interface TtsAsset {
 	files: TtsFile[];
 }
 
+function appendNameFiles(
+	definitionId: string,
+	baseFilename: string,
+	soundsPath: string,
+	variationDirs: Array<{ name: string; voice: string; version: string; take: string }>,
+	files: TtsFile[]
+) {
+	if (!definitionId.startsWith('NAME_')) return;
+
+	const namesFilePath = path.join(soundsPath, 'names', baseFilename);
+	if (!fs.existsSync(namesFilePath)) return;
+
+	// קבצי שמות יושמעו לכל קריין כדי למנוע fallback ל-TTS.
+	// בפועל זה אותו קובץ, אך הוא נרשם תחת כל voice קיים.
+	const uniqueVoices = Array.from(new Set(variationDirs.map((dir) => dir.voice)));
+	const voicesToUse = uniqueVoices.length > 0 ? uniqueVoices : ['default'];
+
+	for (const voice of voicesToUse) {
+		files.push({
+			path: `/sounds/names/${baseFilename}`,
+			voice,
+			version: 'names',
+			take: 't1'
+		});
+	}
+}
+
 function scanTtsFiles(): TtsAsset[] {
 	const registry: TtsAsset[] = [];
 
@@ -47,7 +74,7 @@ function scanTtsFiles(): TtsAsset[] {
 			}
 			return null;
 		})
-		.filter(Boolean);
+		.filter((dir): dir is { name: string; voice: string; version: string; take: string } => !!dir);
 
 	for (const def of TTS_DEFINITIONS) {
 		const files: TtsFile[] = [];
@@ -66,6 +93,8 @@ function scanTtsFiles(): TtsAsset[] {
 				});
 			}
 		}
+
+		appendNameFiles(def.id, def.baseFilename, soundsPath, variationDirs, files);
 
 		// 2. (Optional) Check for legacy root files?
 		// Current decision: Only scan structured folders based on plan.

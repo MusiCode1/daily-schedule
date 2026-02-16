@@ -15,24 +15,53 @@ interface TtsAsset {
 	files: TtsFile[];
 }
 
+export interface TtsPlaybackSession {
+	voice: string | null;
+}
+
 // Cast registry to typed array
 const assets = registry as TtsAsset[];
 
 export const ttsService = {
+	createPlaybackSession(seedAssetId?: string): TtsPlaybackSession {
+		const session: TtsPlaybackSession = { voice: null };
+
+		// נועל קריין כבר בתחילת רצף, כדי למנוע ערבוב קולות.
+		if (seedAssetId) {
+			this.getTtsFile(seedAssetId, session);
+		}
+
+		return session;
+	},
+
 	/**
 	 * Returns a random file path for the given asset ID, or null if none found.
 	 * The path returned is relative to /sounds/ (without the prefix),
 	 * ready for audioSequencer.
 	 */
-	getTtsFile(assetId: string): string | null {
+	getTtsFile(assetId: string, session?: TtsPlaybackSession): string | null {
 		const asset = assets.find((a) => a.id === assetId);
 		if (!asset || asset.files.length === 0) {
 			return null;
 		}
 
-		// Random selection of take/voice
-		const randomIndex = Math.floor(Math.random() * asset.files.length);
-		const selectedFile = asset.files[randomIndex];
+		let candidateFiles = asset.files;
+
+		// אם יש סשן עם קריין נעול - בוחרים רק ממנו.
+		if (session?.voice) {
+			candidateFiles = asset.files.filter((file) => file.voice === session.voice);
+			if (candidateFiles.length === 0) {
+				return null;
+			}
+		}
+
+		const randomIndex = Math.floor(Math.random() * candidateFiles.length);
+		const selectedFile = candidateFiles[randomIndex];
+
+		// קיבוע הקריין הראשון שנבחר לרצף כולו.
+		if (session && !session.voice) {
+			session.voice = selectedFile.voice;
+		}
 
 		// Remove '/sounds/' prefix as audioSequencer adds it
 		return selectedFile.path.replace(/^\/sounds\//, '');
@@ -50,8 +79,8 @@ export const ttsService = {
 	 * returning an AudioSegment for the sequencer.
 	 * Prefers a recorded file (random take), falls back to Web Speech API.
 	 */
-	getAudioSegment(assetId: string, fallbackText: string): AudioSegment {
-		const file = this.getTtsFile(assetId);
+	getAudioSegment(assetId: string, fallbackText: string, session?: TtsPlaybackSession): AudioSegment {
+		const file = this.getTtsFile(assetId, session);
 		if (file) {
 			return { type: 'file', content: file };
 		}
