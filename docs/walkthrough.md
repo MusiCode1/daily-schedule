@@ -1,5 +1,64 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-16 15:21
+
+### תיקון אזהרות CSS ב-`AddModal.svelte` (`@reference` / `@apply`)
+
+תוקנו אזהרות `svelte-check` שנבעו משימוש ב-PostCSS directives בתוך `<style>` רגיל בקומפוננטת הוספת משימה.
+
+---
+
+#### מה בוצע?
+
+- עודכן תגית ה-style ב-`sveltekit-version/src/routes/(board)/tasks/_components/AddModal.svelte`:
+  - מ-`<style>`
+  - ל-`<style type="text/postcss">`
+
+---
+
+#### בדיקות שבוצעו
+
+- הורץ `npx @sveltejs/mcp svelte-autofixer src/routes/(board)/tasks/_components/AddModal.svelte --svelte-version 5`:
+  - ללא issues/suggestions.
+- הורץ `npm run check`:
+  - `svelte-check found 0 errors and 0 warnings`.
+
+## 2026-02-16 15:06
+
+### תיקון שגיאות צד לקוח במסך `/settings/backup`
+
+בוצע ניפוי שגיאות בדפדפן עבור מסך הגיבוי, זוהתה קריסת `DataCloneError` ב-`SyncController` ותוקנה יחד עם קשיחות רישום Service Worker בסביבת פיתוח.
+
+---
+
+#### מה בוצע?
+
+**1. תיקון `DataCloneError` ב-SyncController**
+
+- עודכן `sveltekit-version/src/lib/logic/syncController.svelte.ts`:
+  - נוספה פונקציית עזר `cloneAppState` המבוססת על `$state.snapshot(...)`.
+  - הוחלפו כל הקריאות ל-`structuredClone(...)` על state ריאקטיבי לקריאות בטוחות דרך `cloneAppState(...)`.
+  - `localState` לסנכרון נלקח כ-snapshot כדי למנוע העברת proxy לשכבת הסנכרון.
+
+**2. תיקון קריסת Service Worker בזמן רישום**
+
+- עודכן `sveltekit-version/src/service-worker.ts`:
+  - נוסף fallback בטוח ל-`self.__WB_MANIFEST` כשהוא לא מוזרק בסביבת פיתוח.
+  - נשמר מופע יחיד של `self.__WB_MANIFEST` בקוד כדי להתאים לדרישת `injectManifest` בזמן `build`.
+  - נמנעה קריסת הערכת סקריפט של `service-worker.js`.
+
+---
+
+#### בדיקות שבוצעו
+
+- בוצעה בדיקת Playwright ממוקדת ל-`http://localhost:5173/settings/backup`:
+  - לפני התיקון: `DataCloneError` ב-`SyncController.loadLocalState` + כשל רישום Service Worker.
+  - אחרי התיקון: ללא `pageErrors`, ללא `consoleErrors`, ללא `requestFailures`.
+- הורץ `npx @sveltejs/mcp svelte-autofixer src/lib/logic/syncController.svelte.ts --svelte-version 5`:
+  - ללא issues/suggestions.
+- הורץ `npm run check`:
+  - 0 שגיאות, 3 אזהרות CSS קיימות ב-`AddModal.svelte` (לא קשורות לשינוי).
+
 ## 2026-02-16 14:28
 
 ### הפרדת בדיקות מתיקיית הקוד (`tests/` מחוץ ל-`src`)

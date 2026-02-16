@@ -185,7 +185,7 @@
   </div>
 </div>
 
-<style>
+<style type="text/postcss">
   @reference "tailwindcss";
 
   .modal-overlay {
