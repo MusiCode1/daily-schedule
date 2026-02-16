@@ -15,7 +15,7 @@ export const LanguageService = {
 		nextTask?: Task // Changed from string
 	): { text: string; sequence: Array<{ type: 'file' | 'tts'; content: string }>; praise: string } {
 		const sequence: Array<{ type: 'file' | 'tts'; content: string }> = [];
-		let fullTextParts: string[] = [];
+		const fullTextParts: string[] = [];
 
 		// --- חלק 0: שם המשתמש ("יונתן!") ---
 		// מיפוי שמות ל-TTS IDs

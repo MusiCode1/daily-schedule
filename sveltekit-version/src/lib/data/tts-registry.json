@@ -10,6 +10,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/who_is_playing.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/who_is_playing.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -82,6 +88,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/aluf.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/aluf.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -97,6 +109,12 @@
         "path": "/sounds/hope-v0.2-t1/alufa.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/alufa.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -118,6 +136,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/well_done_all_boy.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/well_done_all_boy.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -136,6 +160,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/all_done_boy.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/all_done_boy.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -151,6 +181,12 @@
         "path": "/sounds/hope-v0.2-t1/good_luck.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/good_luck.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -187,6 +223,12 @@
         "path": "/sounds/hope-v0.2-t1/finished_boy.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/finished_boy.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -370,6 +412,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/toilet.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/toilet.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -385,6 +433,12 @@
         "path": "/sounds/hope-v0.2-t1/breakfast.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/breakfast.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -406,6 +460,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/lunch.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/lunch.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -421,6 +481,12 @@
         "path": "/sounds/hope-v0.2-t1/dinner.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/dinner.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -442,6 +508,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/brushing_teeth.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/brushing_teeth.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -457,6 +529,12 @@
         "path": "/sounds/hope-v0.2-t1/shower.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/shower.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -478,6 +556,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/getting_dressed.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/getting_dressed.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -493,6 +577,12 @@
         "path": "/sounds/hope-v0.2-t1/going_to_car.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/going_to_car.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -514,6 +604,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/play_time.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/play_time.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -529,6 +625,12 @@
         "path": "/sounds/hope-v0.2-t1/sleep_time.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/sleep_time.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -550,6 +652,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/tablet.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/tablet.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -565,6 +673,12 @@
         "path": "/sounds/hope-v0.2-t1/lesson.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/lesson.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -586,6 +700,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/playground.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/playground.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -601,6 +721,12 @@
         "path": "/sounds/hope-v0.2-t1/arts_and_crafts.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/arts_and_crafts.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -622,6 +748,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/medicine.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/medicine.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -637,6 +769,12 @@
         "path": "/sounds/hope-v0.2-t1/grandparents.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/grandparents.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -658,6 +796,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/prayer.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/prayer.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -673,6 +817,12 @@
         "path": "/sounds/hope-v0.2-t1/box_work.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/box_work.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -694,6 +844,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/yard.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/yard.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -709,6 +865,12 @@
         "path": "/sounds/hope-v0.2-t1/animal_therapy.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/animal_therapy.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -820,6 +982,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/list_morning.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/list_morning.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -835,6 +1003,12 @@
         "path": "/sounds/hope-v0.2-t1/good_morning.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/good_morning.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -856,6 +1030,12 @@
         "take": "t1"
       },
       {
+        "path": "/sounds/river-v0.1-t1/list_afternoon.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      },
+      {
         "path": "/sounds/river-v0.2-t2/list_afternoon.mp3",
         "voice": "river",
         "version": "v0.2",
@@ -871,6 +1051,12 @@
         "path": "/sounds/hope-v0.2-t1/good_afternoon.mp3",
         "voice": "hope",
         "version": "v0.2",
+        "take": "t1"
+      },
+      {
+        "path": "/sounds/river-v0.1-t1/good_afternoon.mp3",
+        "voice": "river",
+        "version": "v0.1",
         "take": "t1"
       },
       {
@@ -992,67 +1178,158 @@
   {
     "id": "SETTINGS_TITLE",
     "text": "הגדרות מערכת",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/river-v0.1-t1/settings_title.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "SAVE",
     "text": "שמור",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/river-v0.1-t1/save.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "ASITA_ZE_BOY",
     "text": "עשית את זה!",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/river-v0.1-t1/asita_ze_boy.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "ASITA_ZE_GIRL",
     "text": "עשית את זה!",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/river-v0.1-t1/asita_ze_girl.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "EIZE_KEF",
     "text": "איזה כיף!",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/river-v0.1-t1/eize_kef.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "NEHEDAR",
     "text": "ילד נהדר",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/river-v0.1-t1/nehedar.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "NEHEDERET",
     "text": "ילדה נהדרת",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/river-v0.1-t1/nehederet.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "MEULE",
     "text": "מעולה!",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/river-v0.1-t1/meule.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "YOFI",
     "text": "יופי!",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/river-v0.1-t1/yofi.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "FINISHED_OPT_BOY",
     "text": "סיימת",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/river-v0.1-t1/finished_opt_boy.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "FINISHED_OPT_GIRL",
     "text": "סיימת",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/river-v0.1-t1/finished_opt_girl.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "FINISHED_TASK_BOY",
     "text": "כל הכבוד סיימת הכל (בן)",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/river-v0.1-t1/finished_task_boy.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "FINISHED_TASK_GIRL",
     "text": "כל הכבוד סיימת הכל (בת)",
-    "files": []
+    "files": [
+      {
+        "path": "/sounds/river-v0.1-t1/finished_task_girl.mp3",
+        "voice": "river",
+        "version": "v0.1",
+        "take": "t1"
+      }
+    ]
   },
   {
     "id": "NAME_TAMAR",
