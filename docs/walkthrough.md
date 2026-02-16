@@ -1,5 +1,37 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-16 18:31
+
+### הוספת אינדיקטור סטטוס עגול בקצה השמאלי של שורת משימה
+
+בוצע עדכון ל־`TaskRow` כך שיופיע אינדיקטור סטטוס עקבי לפי הדוגמה ב־`docs/design_demo.html`: מצב ריק למשימה שלא הושלמה, `V` למשימה שהושלמה, ו־`●` למשימה הנוכחית.
+
+---
+
+#### מה בוצע?
+
+**1. עדכון מבנה שורת משימה**
+
+- עודכן `sveltekit-version/src/routes/(board)/tasks/_components/TaskRow.svelte`:
+  - הוסר הסימון הישן של `✓ בוצע` מתוך תוכן המשימה.
+  - נוספה יחידת `task-status-slot` בקצה השמאלי של הכרטיס.
+  - נוספו מצבי אינדיקטור:
+    - `status-indicator-empty` למשימה רגילה
+    - `status-indicator-active` למשימה נוכחית (`●`)
+    - `status-indicator-done` למשימה שהושלמה (`V`)
+
+**2. עיצוב והתאמות RTL**
+
+- נשמרה פריסת RTL קיימת, כך שהאינדיקטור מוצג בקצה השמאלי של השורה ללא שינוי בלוגיקת גרירה/עריכה.
+
+---
+
+#### בדיקות שבוצעו
+
+- הורץ `npx @sveltejs/mcp svelte-autofixer "sveltekit-version/src/routes/(board)/tasks/_components/TaskRow.svelte" --svelte-version 5`:
+  - `issues: []`
+  - `suggestions: []`
+
 ## 2026-02-16 16:57
 
 ### תיקון TTS: רישום שמות במרשם + נעילת קריין לכל הקראה
@@ -5540,3 +5572,22 @@ sveltekit-version/
 
 - **[Migration Scope]**: מיגרציות משנות מבנה ושדות קיימים בלבד, ולא מזריקות נתוני ברירת מחדל חדשים.
 - **[History Reconstruction]**: שחזור state מבוסס שרשרת הורים בלבד כדי לשמר נכונות בענפים מקבילים.
+
+## 2026-02-16 19:08
+
+### תיקון סימון סטטוס: "וי" במקום האות V
+
+עודכן אינדיקטור הסטטוס של משימה שהושלמה כך שיוצג סימון "וי" אמיתי (`✓`) במקום האות הלטינית `V`.
+
+---
+
+#### מה בוצע?
+
+- עודכן `sveltekit-version/src/routes/(board)/tasks/_components/TaskRow.svelte`:
+  - `status-indicator-done` מציג כעת `✓`.
+
+#### בדיקות שבוצעו
+
+- הורץ `npx @sveltejs/mcp svelte-autofixer ...TaskRow.svelte --svelte-version 5`:
+  - `issues: []`
+  - `suggestions: []`
