@@ -3,10 +3,23 @@ import { ttsScannerPlugin } from './plugins/tts-scanner';
 import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { SvelteKitPWA } from '@vite-pwa/sveltekit';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit(), devtoolsJson(), ttsScannerPlugin()],
+	plugins: [
+		tailwindcss(),
+		sveltekit(),
+		SvelteKitPWA({
+			strategies: 'injectManifest',
+			srcDir: 'src',
+			filename: 'service-worker.ts',
+			injectRegister: false,
+			manifest: false
+		}),
+		devtoolsJson(),
+		ttsScannerPlugin()
+	],
 
 	server: {
 		allowedHosts: true
@@ -31,7 +44,7 @@ export default defineConfig({
 						instances: [{ browser: 'chromium', headless: true }]
 					},
 
-					include: ['src/**/*.svelte.{test,spec}.{js,ts}'],
+					include: ['tests/component/**/*.{test,spec}.{js,ts}'],
 					exclude: ['src/lib/server/**']
 				}
 			},
@@ -42,8 +55,10 @@ export default defineConfig({
 				test: {
 					name: 'server',
 					environment: 'node',
-					include: ['src/**/*.{test,spec}.{js,ts}'],
-					exclude: ['src/**/*.svelte.{test,spec}.{js,ts}']
+					include: [
+						'tests/unit/**/*.{test,spec}.{js,ts}',
+						'tests/integration/**/*.{test,spec}.{js,ts}'
+					]
 				}
 			}
 		]

@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { INITIAL_STATE } from '$lib/data/defaults';
-import { backupToDriveV2, restoreFromDriveV2, type BackupV2Db, type BackupV2Repo } from './driveBackupV2';
-import type { Sha256 } from './types';
+import {
+	backupToDriveV2,
+	restoreFromDriveV2,
+	type BackupV2Db,
+	type BackupV2Repo
+} from '$lib/services/drive/driveBackupV2';
+import type { Sha256 } from '$lib/services/drive/types';
 
 function deepClone<T>(v: T): T {
 	return JSON.parse(JSON.stringify(v)) as T;
@@ -29,7 +34,8 @@ function makeInMemoryRepo(): BackupV2Repo & {
 		manifestFileId: 'file:manifest',
 		contentFileId: 'file:content',
 		progressFileId: 'file:progress',
-		assetsIndexFileId: 'file:assetsIndex'
+		assetsIndexFileId: 'file:assetsIndex',
+		historyFileId: 'file:history'
 	};
 
 	return {
@@ -76,6 +82,19 @@ function makeInMemoryRepo(): BackupV2Repo & {
 			const blob = assetStore.get(fileId);
 			if (!blob) throw new Error(`Missing asset file ${fileId}`);
 			return blob;
+		},
+
+		async readHistoryJson() {
+			const historyFileId = ids.historyFileId;
+			if (!store.has(historyFileId)) {
+				return null;
+			}
+			return deepClone(store.get(historyFileId));
+		},
+
+		async writeHistoryJson(data: any) {
+			const historyFileId = ids.historyFileId;
+			store.set(historyFileId, deepClone(data));
 		}
 	};
 }

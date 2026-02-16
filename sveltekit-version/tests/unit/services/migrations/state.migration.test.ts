@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { migrationService } from '../migration';
+import { migrationService } from '$lib/services/migration';
 import { INITIAL_STATE } from '$lib/data/defaults';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -15,7 +15,7 @@ function loadFixtureJson(filePath: string) {
 
 describe('State Migration Fixtures', () => {
 	it('should migrate all fixtures to the latest AppState version', () => {
-		const fixturesDir = path.join(__dirname, 'fixtures', 'state');
+		const fixturesDir = path.resolve(__dirname, '../../../fixtures/state');
 		const fixtureFiles = fs
 			.readdirSync(fixturesDir)
 			.filter((f) => f.toLowerCase().endsWith('.json'))
@@ -49,4 +49,3 @@ describe('State Migration Fixtures', () => {
 		}
 	});
 });
-

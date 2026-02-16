@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sha256Blob, sha256String, stableStringify } from './crypto';
+import { sha256Blob, sha256String, stableStringify } from '$lib/services/drive/crypto';
 
 describe('Drive V2 crypto helpers', () => {
 	it('stableStringify should be deterministic regardless of key order', () => {
@@ -33,4 +33,3 @@ describe('Drive V2 crypto helpers', () => {
 		expect(h1.startsWith('sha256:')).toBe(true);
 	});
 });
-

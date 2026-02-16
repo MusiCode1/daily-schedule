@@ -1,5 +1,265 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-16 14:28
+
+### הפרדת בדיקות מתיקיית הקוד (`tests/` מחוץ ל-`src`)
+
+בוצעה העברה של כלל בדיקות ה-Unit/Integration/Component מתחת ל-`sveltekit-version/src` לתיקיית `sveltekit-version/tests`, כולל Fixtures, ועדכון קונפיגורציית Vitest כך שהרצת הבדיקות מתבצעת רק מהמבנה החדש.
+
+---
+
+#### מה בוצע?
+
+**1. העברת קבצי בדיקות למבנה חדש**
+
+- נוצר מבנה תיקיות:
+  - `sveltekit-version/tests/unit`
+  - `sveltekit-version/tests/integration`
+  - `sveltekit-version/tests/component`
+  - `sveltekit-version/tests/fixtures/state`
+- הועברו כל קבצי `*.test.ts` / `*.spec.ts` מ-`src` לתיקיות המתאימות.
+- הועברו Fixtures של מיגרציות מ-`src/lib/services/migrations/fixtures/state` אל `tests/fixtures/state`.
+
+**2. עדכון importים לאחר המעבר**
+
+- הוחלפו importים יחסיים ל-importים דרך alias `'$lib/...'` היכן שנדרש.
+- עודכן נתיב ה-import של בדיקת הקומפוננטה לטעינה של `src/routes/(board)/tasks/+page.svelte` מהמיקום החדש.
+- עודכן נתיב טעינת ה-fixtures ב-`state.migration.test.ts` למבנה החדש.
+
+**3. עדכון קונפיגורציית Vitest**
+
+- עודכן `sveltekit-version/vite.config.ts`:
+  - פרויקט `client` מריץ רק `tests/component/**/*`.
+  - פרויקט `server` מריץ רק `tests/unit/**/*` ו-`tests/integration/**/*`.
+- המשמעות: בדיקות חדשות לא נאספות יותר מתוך `src`.
+
+**4. עדכון מסמך תוכנית הבדיקות**
+
+- עודכן `docs/plans/project-testing-plan.md` עם סעיף "מבנה תיקיות בדיקות (בפועל)" והעיקרון שקוד מוצר נשאר ב-`src` ובדיקות ב-`tests`.
+
+---
+
+#### בדיקות שבוצעו
+
+- הורצה הפקודה: `npm run test:unit -- --run` מתוך `sveltekit-version`.
+- תוצאת הרצה:
+  - ✅ הטסטים נאספו והורצו מהמיקום החדש (`tests/**`) כמצופה.
+  - ⚠️ קיימים כשלים פונקציונליים במספר בדיקות קיימות (בעיקר Drive/Migration), שאינם נובעים מהעברת המיקום עצמה ודורשים טיפול נפרד.
+
+---
+
+## 2026-02-16 14:27
+
+### לוקליזציה של קומפוננטות ראוט `settings/backup`
+
+בוצעה העברה של קומפוננטה ייעודית לראוט הגיבוי מתיקיית `lib` לתיקיית הראוט עצמה, כדי לשמור בעלות מקומית וברורה של קבצי UI.
+
+---
+
+#### מה בוצע?
+
+- הועברה הקומפוננטה:
+  - מ-`sveltekit-version/src/lib/components/GoogleDriveBackup.svelte`
+  - אל-`sveltekit-version/src/routes/(admin)/settings/backup/_components/GoogleDriveBackup.svelte`
+- עודכן import ב-`sveltekit-version/src/routes/(admin)/settings/backup/+page.svelte` לייבוא מקומי (`./_components/...`).
+
+---
+
+#### בדיקות שבוצעו
+
+- ✅ `npm run check` עבר עם 0 שגיאות.
+- ⚠️ נותרו 3 אזהרות CSS קיימות ב-`AddModal.svelte` (לא קשורות לשינוי הזה).
+
+---
+
+## 2026-02-16 14:23
+
+### שחזור ממשק התחברות לגוגל + ראוט גיבוי ייעודי
+
+שוחזר ממשק ההתחברות ל-Google Drive לאחר שנמחק, ונבנה מחדש בהתאמה למנגנון הסנכרון החדש (History + Merge), כולל ראוט ייעודי תחת הגדרות.
+
+---
+
+#### מה בוצע?
+
+**1. יצירת בקר חדש למסך גיבוי/סנכרון**
+
+- נוצר `sveltekit-version/src/lib/logic/driveBackupSettings.svelte.ts`.
+- הבקר החדש מנהל:
+  - התחברות/התנתקות ל-Google Drive דרך `googleAuthService`.
+  - שמירת העדפות מקומיות (`Redirect Mode`, `Client ID` override) ב-`deviceState`.
+  - טריגר סנכרון ידני דרך `syncController.sync()`.
+  - טעינת פרטי משתמש וזמן גיבוי אחרון מהענן.
+
+**2. יצירת קומפוננטת גיבוי חדשה**
+
+- נוצר מחדש `sveltekit-version/src/lib/components/GoogleDriveBackup.svelte`.
+- הקומפוננטה מותאמת למנגנון החדש:
+  - מצב מנותק: כפתור התחברות + מתג `Redirect Mode` + הגדרת `Client ID`.
+  - מצב מחובר: פרטי משתמש, סטטוס סנכרון, זמן סנכרון אחרון, זמן גיבוי אחרון, פעולות "התנתק" ו-"סנכרן עכשיו".
+
+**3. יצירת ראוט חדש לגיבוי**
+
+- נוצר `sveltekit-version/src/routes/(admin)/settings/backup/+page.svelte`.
+- עודכן `sveltekit-version/src/routes/(admin)/settings/+layout.svelte`:
+  - נוספה לשונית חדשה `גיבוי` עם נתיב `/settings/backup`.
+
+**4. יישור טקסטים למקור אמת**
+
+- עודכן `sveltekit-version/src/lib/data/texts.ts` עם מפתחות טקסט חדשים למסך הגיבוי:
+  - `BACKUP_TAB`, `SYNC_NOW`, `SYNC_STATUS_LABEL`, `SYNC_STATUS_*`, `LAST_SYNC`.
+
+**5. תיקון קריטי ב-`syncController`**
+
+- עודכן `sveltekit-version/src/lib/logic/syncController.svelte.ts` כך ש:
+  - הסנכרון מדלג כשאין טוקן Google פעיל (במקום כשל מיידי).
+  - `restoreWithMerge` משתמש ב-`manifestFileId` אמיתי מתוך Drive (במקום מחרוזת ריקה).
+  - מתבצע upload רק כשיש צורך (שינויים מקומיים / merge / אין גיבוי ענן).
+  - מצב `No changes to backup` מטופל כהצלחה ולא ככשל.
+
+**6. יישור שירות היסטוריה לתרחיש Merge**
+
+- עודכן `sveltekit-version/src/lib/services/drive/driveBackupV2.ts`:
+  - נוספה תמיכה ב-`forceSnapshot` ב-`backupWithHistory`, כדי לשמור עקביות היסטוריית סנכרון אחרי merge.
+
+---
+
+#### בדיקות שבוצעו
+
+- ✅ `npm run check` (ב-`sveltekit-version`) עבר בהצלחה עם 0 שגיאות.
+- ⚠️ נשארו 3 אזהרות CSS קיימות ב-`AddModal.svelte` (`@reference`/`@apply`) שאינן קשורות לשינוי.
+- ✅ בוצע `svelte-autofixer` על קבצי Svelte/`.svelte.ts` ששונו ללא issues/suggestions.
+
+---
+
+## 2026-02-16 14:10
+
+### כתיבת תוכנית בדיקות לפרויקט
+
+נוצר מסמך בדיקות רוחבי לפרויקט, שמגדיר אסטרטגיית בדיקות מדורגת (Static/Unit/Integration/Component/E2E/ידני), שערי שחרור, מטריצת כיסוי לפי תחומי מוצר, ותיעדוף הרחבת כיסוי בדיקות.
+
+---
+
+#### מה בוצע?
+
+**1. יצירת מסמך תוכנית בדיקות**
+
+- נוצר המסמך `docs/plans/project-testing-plan.md`.
+- המסמך כולל:
+  - מטרות איכות ברמת מוצר.
+  - היקף בדיקות In/Out.
+  - פירמידת בדיקות מלאה לפי שכבות.
+  - מטריצת כיסוי לפי תחומים קריטיים (Tasks/Users/Drive/PWA/מיגרציות).
+  - Gate ברור לפני Release.
+  - תדירות הרצה מומלצת ו-Backlog להשלמת כיסוי.
+
+**2. התאמה לתשתית הקיימת בפועל**
+
+- התוכנית נכתבה בהתאמה לכלי הפרויקט הקיימים:
+  - `npm run check`
+  - `npm run lint`
+  - `npm run test:unit`
+  - `npm run test:e2e`
+- בוצע יישור להחלטות ותשתיות שכבר קיימות במסמכים קודמים (Drive V2, PWA, נהלי Release).
+
+---
+
+#### החלטות ארכיטקטורה
+
+- **Risk-Based Testing**: הוגדרה עדיפות בדיקות לפי אזורי סיכון (לוח משימות, מיגרציות, גיבוי Drive, PWA) כדי למקסם ערך בזמן פיתוח נתון.
+- **Layered Quality Gates**: הוגדר Gate שחרור מדורג (Static -> Unit -> E2E -> Manual Smoke) כדי לצמצם רגרסיות לפני פריסה.
+
+---
+
+## 2026-02-16 13:12
+
+### התחלת יישום PWA במסלול ספרייה (`@vite-pwa/sveltekit`)
+
+בוצעה אינטגרציה ראשונית של PWA בגישת `injectManifest`, כולל Service Worker מותאם, manifest סטטי, ואייקונים בסיסיים ב-`static`.
+
+---
+
+#### מה בוצע?
+
+**1. אינטגרציית Plugin ל-Vite**
+
+- נוסף `@vite-pwa/sveltekit` ל-`devDependencies`.
+- עודכן `sveltekit-version/vite.config.ts` לשימוש ב-`SvelteKitPWA` עם:
+  - `strategies: 'injectManifest'`
+  - `srcDir: 'src'`
+  - `filename: 'service-worker.ts'`
+  - `injectRegister: false`
+  - `manifest: false`
+
+**2. קבצי PWA בסיסיים**
+
+- נוצר `sveltekit-version/src/service-worker.ts` עם:
+  - Precache בסיסי דרך `__WB_MANIFEST`.
+  - ניקוי cache ישנים.
+  - Network-first לניווט.
+  - Stale-while-revalidate לתיקיות `images/sounds/icons`.
+- נוצר `sveltekit-version/static/manifest.webmanifest`.
+- נוספו אייקונים:
+  - `sveltekit-version/static/icons/icon.svg`
+  - `sveltekit-version/static/icons/icon-maskable.svg`
+- עודכן `sveltekit-version/src/app.html` עם:
+  - `<link rel="manifest" ...>`
+  - `<meta name="theme-color" ...>`
+
+**3. יישור מסמך התכנון להחלטה שנבחרה**
+
+- עודכן `docs/plans/pwa-implementation-plan.md` כך שהגישה המומלצת היא `@vite-pwa/sveltekit` (`injectManifest`) במקום SW מובנה בלבד.
+
+---
+
+#### מעקפים ופתרונות
+
+- **בדיקת Typecheck/Check**: `npm run check` נכשל כרגע בגלל חוסר בתלות `@vite-pwa/sveltekit` בסביבת העבודה המקומית (החבילה נוספה ל-`package.json` אך טרם הותקנה בפועל).
+- בנוסף הופיעו שגיאות TypeScript קיימות/לא קשורות בקבצי sync/drive שכבר היו ב-worktree.
+
+---
+
+## 2026-02-16 12:51
+
+### תכנון מפורט להפיכת המערכת ל-PWA
+
+נכתב מסמך תכנון מפורט ליישום PWA בפרויקט, כולל ניתוח פערים מול המצב הקיים, שלבי עבודה מדורגים, קבצים נדרשים לשינוי, אסטרטגיות Cache, בדיקות, סיכונים וקריטריוני הצלחה.
+
+---
+
+#### מה בוצע?
+
+**1. ניתוח פערים (Gap Analysis) למצב הנוכחי**
+
+- תועדו ממצאים מהקוד הקיים: היעדר `manifest.webmanifest`, היעדר `service-worker`, והיעדר סט אייקונים להתקנה.
+- תועד שה־`head` הנוכחי מכיל favicon בלבד, ללא קישור manifest וללא meta מתאים ל־PWA.
+
+**2. כתיבת מסמך תוכנית מפורט**
+
+- נוצר המסמך `docs/plans/pwa-implementation-plan.md`.
+- המסמך כולל:
+  - מטרות ולא-מטרות ל-MVP.
+  - החלטת ארכיטקטורה ראשונית (שעודכנה בהמשך ל-`@vite-pwa/sveltekit` במצב `injectManifest`).
+  - תוכנית יישום בשלבים (0-6) מה-Baseline ועד Rollout.
+  - פירוט קבצים חדשים וקבצים לעדכון.
+  - קריטריוני הצלחה, תוכנית בדיקות, סיכונים והחלטות פתוחות.
+
+**3. עדכון מעקב פיצ'רים**
+
+- עודכן `docs/features-status.md`:
+  - תאריך "עדכון אחרון" ל-`16/02/2026`.
+  - נוספה משימת PWA תחת "תאימות (Compatibility)".
+  - עודכן מונה הפיצ'רים המתוכננים.
+
+---
+
+#### החלטות ארכיטקטורה
+
+- **PWA בשלבים**: הוחלט לתכנן rollout מדורג כדי לצמצם סיכון, ולא לבצע מעבר חד בבת אחת.
+- **Service Worker ללא תלות נוספת (החלטה ראשונית)**: הומלץ בתחילה על `src/service-worker.ts` מובנה; בהמשך הוחלט לעבור למסלול `@vite-pwa/sveltekit` (`injectManifest`) כדי לצמצם boilerplate.
+
+---
+
 ## 2026-02-10 11:25
 
 ### סידור כרונולוגי של יומן הפיתוח

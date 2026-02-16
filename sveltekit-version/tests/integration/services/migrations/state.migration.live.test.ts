@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { migrationService } from '../migration';
+import { migrationService } from '$lib/services/migration';
 import { INITIAL_STATE } from '$lib/data/defaults';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -50,4 +50,3 @@ describe('State Migration (live snapshot, local only)', () => {
 		expect(typeof migrated.lastModified).toBe('number');
 	});
 });
-

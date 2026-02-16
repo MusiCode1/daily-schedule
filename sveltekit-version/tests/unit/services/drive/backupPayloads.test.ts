@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { INITIAL_STATE } from '$lib/data/defaults';
-import { buildContentPayload, buildProgressPayload, collectAssetIds } from './backupPayloads';
-import { CURRENT_BACKUP_SCHEMA_VERSION } from './constants';
+import {
+	buildContentPayload,
+	buildProgressPayload,
+	collectAssetIds
+} from '$lib/services/drive/backupPayloads';
+import { CURRENT_BACKUP_SCHEMA_VERSION } from '$lib/services/drive/constants';
 
 describe('Drive V2 backup payload builders', () => {
 	it('buildContentPayload should exclude progress/volatile fields', () => {
@@ -16,8 +20,9 @@ describe('Drive V2 backup payload builders', () => {
 
 		// בדיקה ש-isDone לא מופיע באף משימה
 		for (const userId of Object.keys(content.lists)) {
-			for (const list of content.lists[userId]) {
-				for (const task of list.tasks) {
+			const userLists = content.lists[userId];
+			for (const list of Object.values(userLists)) {
+				for (const task of Object.values((list as any).tasks) as any[]) {
 					expect('isDone' in task).toBe(false);
 				}
 			}
@@ -64,4 +69,3 @@ describe('Drive V2 backup payload builders', () => {
 		expect(ids.some((x) => x.startsWith('/images/'))).toBe(false);
 	});
 });
-

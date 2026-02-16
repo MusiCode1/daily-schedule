@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { migrationService } from './migration';
+import { migrationService } from '$lib/services/migration';
 
 describe('Auth Migration', () => {
 	// Fixture 1: לקוח קיים תקין
