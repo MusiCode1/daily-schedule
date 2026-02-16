@@ -25,6 +25,7 @@ export class DriveBackupSettingsController {
 
 	customClientId = $state('');
 	useRedirectMode = $state(false);
+	isAutoBackupEnabled = $state(true);
 
 	constructor() {
 		if (typeof window === 'undefined') return;
@@ -42,12 +43,14 @@ export class DriveBackupSettingsController {
 		const ds = deviceState.load();
 		this.customClientId = ds.drive.clientIdOverride || '';
 		this.useRedirectMode = ds.drive.useRedirectMode;
+		this.isAutoBackupEnabled = ds.drive.autoBackupEnabled;
 	}
 
 	saveLocalSettings() {
 		deviceState.update((draft) => {
 			draft.drive.clientIdOverride = this.customClientId || '';
 			draft.drive.useRedirectMode = this.useRedirectMode;
+			draft.drive.autoBackupEnabled = this.isAutoBackupEnabled;
 		});
 	}
 
@@ -113,7 +116,7 @@ export class DriveBackupSettingsController {
 		this.successMessage = '';
 
 		try {
-			await syncController.sync();
+			await syncController.sync({ manual: true });
 			const currentStatus = get(syncStatus);
 			if (currentStatus.status === 'error') {
 				throw new Error(currentStatus.errorMessage || 'Sync failed');

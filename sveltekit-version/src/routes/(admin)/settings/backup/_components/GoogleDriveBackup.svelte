@@ -122,6 +122,15 @@
 						{controller.isSyncingNow ? '...' : TEXTS.SYNC_NOW}
 					</button>
 				</div>
+
+				<label class="toggle-row">
+					<input
+						type="checkbox"
+						bind:checked={controller.isAutoBackupEnabled}
+						onchange={() => controller.saveLocalSettings()}
+					/>
+					<span>{TEXTS.AUTO_BACKUP}</span>
+				</label>
 			</div>
 		{/if}
 

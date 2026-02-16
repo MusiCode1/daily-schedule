@@ -1,5 +1,50 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-16 16:21
+
+### החזרת שליטת "גיבוי אוטומטי" למסך `/settings/backup`
+
+טופלה רגרסיה מהשדרוג האחרון: הטוגל לביטול גיבוי אוטומטי נעלם מה-UI, ומנגנון הסנכרון האוטומטי לא התחשב יותר ב-`autoBackupEnabled`.
+
+---
+
+#### מה בוצע?
+
+**1. שחזור הטוגל במסך הגיבוי**
+
+- עודכן `sveltekit-version/src/routes/(admin)/settings/backup/_components/GoogleDriveBackup.svelte`:
+  - הוחזר toggle של `{TEXTS.AUTO_BACKUP}` במצב מחובר.
+  - ה-toggle מחובר ל-`controller.isAutoBackupEnabled` ושומר דרך `controller.saveLocalSettings()`.
+
+**2. חיבור ההגדרה לבקר ההגדרות**
+
+- עודכן `sveltekit-version/src/lib/logic/driveBackupSettings.svelte.ts`:
+  - נוסף state: `isAutoBackupEnabled`.
+  - ההגדרה נטענת מ-`deviceState.drive.autoBackupEnabled`.
+  - ההגדרה נשמרת חזרה ל-`deviceState` בעת שינוי.
+  - `syncNow()` עבר לקריאה ידנית מפורשת: `syncController.sync({ manual: true })`.
+
+**3. אכיפת ההגדרה בבקר הסנכרון**
+
+- עודכן `sveltekit-version/src/lib/logic/syncController.svelte.ts`:
+  - נוספה בדיקת `isAutoBackupEnabled()`.
+  - `triggerSync()` מפסיק לתזמן סנכרון כאשר גיבוי אוטומטי כבוי.
+  - `sync()` תומך באופציה `manual` ומדלג על סנכרון אוטומטי כשכבוי.
+  - retry שומר על אופן ההפעלה המקורי (ידני/אוטומטי) דרך `this.sync(options)`.
+
+---
+
+#### בדיקות שבוצעו
+
+- הורץ `npx @sveltejs/mcp svelte-autofixer "src/routes/(admin)/settings/backup/_components/GoogleDriveBackup.svelte" --svelte-version 5`:
+  - ללא issues/suggestions.
+- הורץ `npx @sveltejs/mcp svelte-autofixer "src/lib/logic/driveBackupSettings.svelte.ts" --svelte-version 5`:
+  - ללא issues/suggestions.
+- הורץ `npx @sveltejs/mcp svelte-autofixer "src/lib/logic/syncController.svelte.ts" --svelte-version 5`:
+  - ללא issues/suggestions.
+- הורץ `npm run check`:
+  - `svelte-check found 0 errors and 0 warnings`.
+
 ## 2026-02-16 15:21
 
 ### תיקון אזהרות CSS ב-`AddModal.svelte` (`@reference` / `@apply`)

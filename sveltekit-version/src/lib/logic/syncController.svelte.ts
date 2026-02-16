@@ -17,6 +17,10 @@ const TAG = '[SyncController]';
 const DEBOUNCE_DELAY = 5000; // 5 שניות
 const MAX_RETRIES = 10;
 
+type SyncOptions = {
+	manual?: boolean;
+};
+
 function cloneAppState(state: AppState): AppState {
 	return $state.snapshot(state);
 }
@@ -59,6 +63,14 @@ export class SyncController {
 	}
 
 	/**
+	 * בדיקה האם גיבוי אוטומטי פעיל במכשיר הנוכחי
+	 */
+	private isAutoBackupEnabled(): boolean {
+		if (typeof window === 'undefined') return false;
+		return deviceState.load().drive.autoBackupEnabled;
+	}
+
+	/**
 	 * הגדרת טריגרים לסנכרון
 	 */
 	private setupTriggers() {
@@ -91,6 +103,14 @@ export class SyncController {
 	 * טריגר סנכרון מדחף (debounced)
 	 */
 	public triggerSync() {
+		if (!this.isAutoBackupEnabled()) {
+			if (this.debounceTimer) {
+				clearTimeout(this.debounceTimer);
+				this.debounceTimer = null;
+			}
+			return;
+		}
+
 		if (this.debounceTimer) {
 			clearTimeout(this.debounceTimer);
 		}
@@ -103,9 +123,15 @@ export class SyncController {
 	/**
 	 * סנכרון מיידי
 	 */
-	public async sync() {
+	public async sync(options: SyncOptions = {}) {
 		// בדיקת תנאים מקדימים
 		if (typeof window === 'undefined') return;
+		const isManual = options.manual === true;
+
+		if (!isManual && !this.isAutoBackupEnabled()) {
+			console.log(TAG, 'גיבוי אוטומטי כבוי - מדלג על סנכרון אוטומטי');
+			return;
+		}
 
 		if (!navigator.onLine) {
 			console.log(TAG, 'Offline - מדלג על סנכרון');
@@ -248,7 +274,7 @@ export class SyncController {
 				console.log(TAG, `ניסיון ${this.retryCount}/${MAX_RETRIES} בעוד ${delay}s`);
 
 				setTimeout(() => {
-					this.sync();
+					this.sync(options);
 				}, delay * 1000);
 			} else {
 				console.error(TAG, 'הגעתי ל-10 ניסיונות - מוותר');
