@@ -5,11 +5,13 @@ import {
 	DRIVE_BACKUP_FOLDER_NAME,
 	DRIVE_CONTENT_FILE_NAME,
 	DRIVE_MANIFEST_FILE_NAME,
-	DRIVE_PROGRESS_FILE_NAME
+	DRIVE_PROGRESS_FILE_NAME,
+	DRIVE_HISTORY_FILE_NAME
 } from './constants';
 import { driveFilesApi } from './driveFilesApi';
 import { driveHttpClient } from './driveHttpClient';
 import type { Sha256 } from './types';
+import type { SyncHistory } from '$lib/services/sync/types';
 
 function toAssetFileName(hash: Sha256): string {
 	// sha256:<hex> -> sha256_<hex>
@@ -33,6 +35,7 @@ export type DriveStructureIds = {
 	contentFileId: string;
 	progressFileId: string;
 	assetsIndexFileId: string;
+	historyFileId: string;
 };
 
 export const dailyScheduleBackupRepo = {
@@ -83,6 +86,7 @@ export const dailyScheduleBackupRepo = {
 		const contentFileId = await ensureJsonFile(cache.contentFileId, DRIVE_CONTENT_FILE_NAME);
 		const progressFileId = await ensureJsonFile(cache.progressFileId, DRIVE_PROGRESS_FILE_NAME);
 		const assetsIndexFileId = await ensureJsonFile(cache.assetsIndexFileId, DRIVE_ASSETS_INDEX_FILE_NAME);
+		const historyFileId = await ensureJsonFile(cache.historyFileId, DRIVE_HISTORY_FILE_NAME);
 
 		const ids: DriveStructureIds = {
 			backupFolderId,
@@ -90,7 +94,8 @@ export const dailyScheduleBackupRepo = {
 			manifestFileId,
 			contentFileId,
 			progressFileId,
-			assetsIndexFileId
+			assetsIndexFileId,
+			historyFileId
 		};
 
 		deviceState.update((draft) => {
@@ -100,6 +105,7 @@ export const dailyScheduleBackupRepo = {
 			draft.drive.v2Cache.contentFileId = ids.contentFileId;
 			draft.drive.v2Cache.progressFileId = ids.progressFileId;
 			draft.drive.v2Cache.assetsIndexFileId = ids.assetsIndexFileId;
+			draft.drive.v2Cache.historyFileId = ids.historyFileId;
 		});
 
 		return ids;
@@ -148,6 +154,18 @@ export const dailyScheduleBackupRepo = {
 		if (options?.appProperties) {
 			await driveFilesApi.updateFileMetadata(fileId, { appProperties: options.appProperties });
 		}
+	},
+
+	async readHistoryJson(historyFileId: string, onProgress?: (p: number) => void): Promise<SyncHistory> {
+		return await this.readJson(historyFileId, onProgress) as SyncHistory;
+	},
+
+	async writeHistoryJson(
+		historyFileId: string,
+		history: SyncHistory,
+		onProgress?: (p: number) => void
+	): Promise<void> {
+		await this.writeJson(historyFileId, history, { onProgress });
 	},
 
 	async uploadAsset(params: {

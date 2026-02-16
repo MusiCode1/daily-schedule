@@ -5339,3 +5339,66 @@ sveltekit-version/
 ## [קודם] מיגרציה ל-Svelte 5 ולוקליזציה
 
 (ראה למטה לשינויים היסטוריים...)
+
+---
+
+> [!NOTE]
+> 2026-02-16 15:32
+
+## ייצוב מיגרציות/Sync + תיקוני בדיקות
+
+בוצע סבב ייצוב ממוקד למסלולי מיגרציה, restore ו-history-merge, כולל התאמת טסטים למבנה הנתונים החדש (objects במקום arrays).
+
+### מה בוצע?
+
+**1. מיגרציות State**
+
+- עדכון `migration.ts` כך שמיגרציות `v12-v14` לא מזריקות יותר נתוני ברירת מחדל חדשים.
+- התאמה לעבודה בטוחה מול שני מבנים (`array` וגם `object`) כדי למנוע קריסות במסלולי שדרוג ישנים.
+- הוספת helper פנימי לנירמול איטרציה על מבנים מעורבים.
+
+**2. Restore ו-Drive Backup**
+
+- נירמול `users`/`people`/`lists`/`tasks` במסלול `restoreFromDriveV2` למבנה החדש.
+- שמירת `settings` מה-content המשוחזר עם fallback רק לשדות חסרים.
+- הוספת/יישור טיפוסי Repo חדשים למסלולי history (`historyFileId`, `readHistoryJson`, `writeHistoryJson`).
+
+**3. History Manager**
+
+- תיקון `reconstructState` כך שמוחלים deltas רק בשרשרת `parentWriteId` ולא לפי טווח אינדקסים כרונולוגי.
+- הוספת guard למחזור בשרשרת history + החזרת `null` כשיש שרשרת שבורה.
+
+**4. Bootstrap וניווט**
+
+- החזרת אתחול `googleAuthService.initialize()` ב-`+layout.svelte` כדי לאפשר שחזור סשן וסנכרון אוטומטי כבר בעליית האפליקציה.
+- טיפול ב-promise rejection של `goto('/login')` ב-`tasks/+page.svelte` כדי למנוע unhandled errors בריצות בדיקה.
+
+**5. בדיקות וקונפיג E2E**
+
+- עדכון טסטים ל-object-structure בקבצי migration/backup/drive integration.
+- הוספת טסט חדש ל-`historyManager` עבור branching + cycle guard.
+- עדכון `playwright.config.ts` (`baseURL`, `webServer`) והרצת `test:e2e` בהצלחה.
+
+### קבצים שנוצרו
+
+- `docs/plans/sync-migration-stabilization-checklist.md`
+- `sveltekit-version/tests/unit/services/sync/historyManager.test.ts`
+
+### קבצים ששונו
+
+- `sveltekit-version/src/lib/services/migration.ts`
+- `sveltekit-version/src/lib/services/drive/driveBackupV2.ts`
+- `sveltekit-version/src/lib/services/sync/historyManager.ts`
+- `sveltekit-version/src/routes/+layout.svelte`
+- `sveltekit-version/src/routes/(board)/tasks/+page.svelte`
+- `sveltekit-version/tests/unit/services/drive/backupPayloads.test.ts`
+- `sveltekit-version/tests/integration/services/drive/driveBackupV2.integration.test.ts`
+- `sveltekit-version/tests/unit/services/migrations/state.migration.test.ts`
+- `sveltekit-version/tests/integration/services/migrations/state.migration.live.test.ts`
+- `sveltekit-version/playwright.config.ts`
+- `sveltekit-version/e2e/demo.test.ts`
+
+### החלטות ארכיטקטורה
+
+- **[Migration Scope]**: מיגרציות משנות מבנה ושדות קיימים בלבד, ולא מזריקות נתוני ברירת מחדל חדשים.
+- **[History Reconstruction]**: שחזור state מבוסס שרשרת הורים בלבד כדי לשמר נכונות בענפים מקבילים.

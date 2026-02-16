@@ -12,6 +12,15 @@ function deepClone<T>(v: T): T {
 	return JSON.parse(JSON.stringify(v)) as T;
 }
 
+function getFirstIds(state: any) {
+	const firstUserId = Object.keys(state.users)[0];
+	const firstListId = Object.keys(state.lists[firstUserId])[0];
+	const firstTaskId = Object.keys(state.lists[firstUserId][firstListId].tasks)[0];
+	const firstPersonId = Object.keys(state.people)[0];
+
+	return { firstUserId, firstListId, firstTaskId, firstPersonId };
+}
+
 function makeInMemoryRepo(): BackupV2Repo & {
 	writes: Array<{ fileId: string; data: any; appProperties?: Record<string, string> }>;
 	assetUploads: Array<{ hash: Sha256; fileId: string; size: number }>;
@@ -140,7 +149,8 @@ describe('Drive Backup V2 integration (in-memory)', () => {
 		});
 
 		const state = deepClone(INITIAL_STATE);
-		state.users[0].avatar = 'idb:img-1';
+		const { firstUserId } = getFirstIds(state);
+		state.users[firstUserId].avatar = 'idb:img-1';
 		state.images['idb:img-1'] = { crop: { x: 1, y: 2, scale: 1.1 } };
 
 		const res = await backupToDriveV2({
@@ -192,7 +202,8 @@ describe('Drive Backup V2 integration (in-memory)', () => {
 		repo.assetUploads.length = 0;
 
 		const state2 = deepClone(state);
-		const t0 = state2.lists[state2.users[0].id][0].tasks[0];
+		const { firstUserId, firstListId, firstTaskId } = getFirstIds(state2);
+		const t0 = state2.lists[firstUserId][firstListId].tasks[firstTaskId];
 		t0.isDone = !t0.isDone;
 
 		await backupToDriveV2({
@@ -220,8 +231,9 @@ describe('Drive Backup V2 integration (in-memory)', () => {
 		});
 
 		const state = deepClone(INITIAL_STATE);
-		state.users[0].avatar = 'idb:img-a';
-		state.people[0].avatar = 'idb:img-b';
+		const { firstUserId, firstPersonId } = getFirstIds(state);
+		state.users[firstUserId].avatar = 'idb:img-a';
+		state.people[firstPersonId].avatar = 'idb:img-b';
 		state.images['idb:img-a'] = { crop: { x: 1, y: 2, scale: 1.1 } };
 		state.images['idb:img-b'] = { crop: { x: 3, y: 4, scale: 1.2 } };
 
@@ -258,11 +270,12 @@ describe('Drive Backup V2 integration (in-memory)', () => {
 		});
 
 		const state = deepClone(INITIAL_STATE);
-		state.users[0].avatar = 'idb:img-a';
-		state.people[0].avatar = 'idb:img-b';
+		const { firstUserId, firstListId, firstTaskId, firstPersonId } = getFirstIds(state);
+		state.users[firstUserId].avatar = 'idb:img-a';
+		state.people[firstPersonId].avatar = 'idb:img-b';
 		state.images['idb:img-a'] = { crop: { x: 1, y: 2, scale: 1.1 } };
 		state.images['idb:img-b'] = { crop: { x: 3, y: 4, scale: 1.2 } };
-		state.lists[state.users[0].id][0].tasks[0].isDone = true;
+		state.lists[firstUserId][firstListId].tasks[firstTaskId].isDone = true;
 
 		await backupToDriveV2({
 			state,
@@ -294,7 +307,12 @@ describe('Drive Backup V2 integration (in-memory)', () => {
 		expect(db2.saves.some((s) => s.id === 'idb:img-b')).toBe(true);
 
 		// progress applied
-		const task0 = restored.state.lists[restored.state.users[0].id][0].tasks[0];
+		const {
+			firstUserId: restoredUserId,
+			firstListId: restoredListId,
+			firstTaskId: restoredTaskId
+		} = getFirstIds(restored.state);
+		const task0 = restored.state.lists[restoredUserId][restoredListId].tasks[restoredTaskId];
 		expect(task0.isDone).toBe(true);
 	});
 });

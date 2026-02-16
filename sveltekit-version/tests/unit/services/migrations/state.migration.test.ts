@@ -31,10 +31,10 @@ describe('State Migration Fixtures', () => {
 			expect(migrated.version, `fixture ${fileName} should migrate to latest version`).toBe(
 				INITIAL_STATE.version
 			);
-			expect(Array.isArray(migrated.users), `fixture ${fileName} users should be array`).toBe(true);
+			expect(typeof migrated.users, `fixture ${fileName} users should be object`).toBe('object');
 			expect(typeof migrated.lists, `fixture ${fileName} lists should exist`).toBe('object');
 			expect(typeof migrated.images, `fixture ${fileName} images should exist`).toBe('object');
-			expect(Array.isArray(migrated.people), `fixture ${fileName} people should be array`).toBe(true);
+			expect(typeof migrated.people, `fixture ${fileName} people should be object`).toBe('object');
 			expect(typeof migrated.activeListId, `fixture ${fileName} activeListId should exist`).toBe(
 				'object'
 			);

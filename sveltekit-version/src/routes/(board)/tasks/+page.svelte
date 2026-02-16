@@ -55,7 +55,9 @@
 	onMount(() => {
 		isLoaded = true;
 		if (!session.currentUser) {
-			goto(resolve('/login'), { replaceState: true });
+			void goto(resolve('/login'), { replaceState: true }).catch((error) => {
+				console.warn('[TasksPage] navigation to /login failed', error);
+			});
 		}
 
 		function onFullScreenChange() {

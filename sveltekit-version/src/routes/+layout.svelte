@@ -4,9 +4,9 @@
 	import favicon from '$lib/assets/logo.svg';
 
 	import { onMount, onDestroy } from 'svelte';
-	import { backupController } from '$lib/logic/backupController.svelte';
 	import { userStore } from '$lib/stores/userStore.svelte';
 	import { TEXTS } from '$lib/services/language';
+	import { googleAuthService } from '$lib/services/drive/googleAuthService';
 	import type { ThemeType } from '$lib/types';
 
 	let { children } = $props();
@@ -15,18 +15,24 @@
 	$effect(() => {
 		const currentUser = userStore.currentUser;
 		const defaultTheme: ThemeType = 'theme-focus'; // ברירת מחדל: פוקוס
-		const theme = currentUser?.theme || defaultTheme;
+		const theme = currentUser?.theme;
+		const resolvedTheme: ThemeType =
+			theme === 'theme-playful' ||
+			theme === 'theme-gradient' ||
+			theme === 'theme-contrast' ||
+			theme === 'theme-focus'
+				? theme
+				: defaultTheme;
 
-		// ניקוי קלאסים של theme
-		document.body.classList.remove('theme-focus', 'theme-playful', 'theme-gradient', 'theme-contrast');
-		
-		// הוספת ה-theme החדש
-		document.body.classList.add(theme);
+		// השמה ישירה מונעת תלות בקריאות remove/add בתוך $effect
+		document.body.className = resolvedTheme;
 	});
 
 	onMount(() => {
-		// אתחול שירות הגיבוי (בדיקת חיבור קיים)
-		backupController.initialize();
+		// אתחול auth ב-bootstrap כדי לשחזר סשן קיים ולהפעיל סנכרון אוטומטי ברקע.
+		void googleAuthService.initialize().catch((error) => {
+			console.warn('[Layout] Google auth bootstrap failed', error);
+		});
 
 		// כלי דיבוג לקונסול - החלפת theme ידנית
 		(window as any).setAppTheme = (themeName: ThemeType) => {
@@ -41,7 +47,6 @@
 			delete (window as any).setAppTheme;
 		}
 	});
-	import SyncOverlay from '$lib/components/SyncOverlay.svelte';
 </script>
 
 <svelte:head>
@@ -55,5 +60,4 @@
 	/>
 </svelte:head>
 
-<SyncOverlay />
 {@render children()}

@@ -41,10 +41,10 @@ describe('State Migration (live snapshot, local only)', () => {
 		const migrated = migrationService.migrateState(fixture);
 
 		expect(migrated.version).toBe(INITIAL_STATE.version);
-		expect(Array.isArray(migrated.users)).toBe(true);
+		expect(typeof migrated.users).toBe('object');
 		expect(typeof migrated.lists).toBe('object');
 		expect(typeof migrated.images).toBe('object');
-		expect(Array.isArray(migrated.people)).toBe(true);
+		expect(typeof migrated.people).toBe('object');
 		expect(typeof migrated.activeListId).toBe('object');
 		expect(typeof migrated.settings?.lastActiveTime).toBe('number');
 		expect(typeof migrated.lastModified).toBe('number');

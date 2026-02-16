@@ -27,9 +27,9 @@ export type ManifestV2 = {
 export type ContentV2 = {
 	backupSchemaVersion: number;
 	appStateVersion: number;
-	users: any[];
-	people: any[];
-	lists: Record<string, any[]>;
+	users: any[]; // בגיבוי זה נשאר מערך (Object.values)
+	people: any[]; // בגיבוי זה נשאר מערך (Object.values)
+	lists: Record<string, Record<string, any>>; // objects של רשימות
 	images: Record<string, any>;
 	activeListId: Record<string, string>;
 	currentUserId: string | null;
