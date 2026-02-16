@@ -8,7 +8,7 @@ export class SessionController {
 	}
 
 	get users() {
-		return userStore.users;
+		return Object.values(userStore.users);
 	}
 
 	login(userId: string) {

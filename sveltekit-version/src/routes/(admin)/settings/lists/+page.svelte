@@ -19,8 +19,9 @@
   
   // אתחול managedUserId כשהמשתמשים נטענים או שהקומפוננטה עולה
   $effect(() => {
-      if (!managedUserId && userStore.users.length > 0) {
-          managedUserId = userStore.users[0].id;
+      const usersArray = Object.values(userStore.users);
+      if (!managedUserId && usersArray.length > 0) {
+          managedUserId = usersArray[0].id;
       }
   });
 
@@ -113,7 +114,7 @@
     <div class="user-select-control">
         <span>{TEXTS.FOR_USER_LABEL}</span>
         <select bind:value={managedUserId}>
-            {#each userStore.users as user}
+            {#each Object.values(userStore.users) as user}
                 <option value={user.id}>{user.name}</option>
             {/each}
         </select>
@@ -139,7 +140,7 @@
                 </h3>
                 <div class="list-meta">
                     <span class="greeting-badge">"{list.greeting || ''}"</span>
-                    <span class="tasks-count">{TEXTS.TASKS_COUNT(list.tasks.length)}</span>
+                    <span class="tasks-count">{TEXTS.TASKS_COUNT(Object.keys(list.tasks).length)}</span>
                 </div>
             </div>
             <div class="list-actions">

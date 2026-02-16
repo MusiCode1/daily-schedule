@@ -53,8 +53,12 @@ export class TasksBoardController {
 		return this.currentUser ? listStore.getActiveList(this.currentUser.id) : undefined;
 	}
 
-	get tasks() {
-		return this.activeList ? this.activeList.tasks : [];
+	/**
+	 * קבלת המשימות כמערך ממוין לפי order
+	 */
+	get tasks(): Task[] {
+		if (!this.activeList) return [];
+		return Object.values(this.activeList.tasks).sort((a, b) => a.order - b.order);
 	}
 
 	get greeting() {
@@ -97,19 +101,16 @@ export class TasksBoardController {
 
 		const nextTask = this.tasks[currentTaskIndex + 1];
 
-		const newTasks = this.tasks.map((t) => {
-			if (t.id === taskId) {
-				const isDone = !t.isDone;
-				if (isDone) {
-					// אנחנו קוראים לזה אבל לא מחכים לו כאן, כדי לא לעכב את עדכון ה-UI של ה-V
-					this.triggerCelebration(currentTask, nextTask);
-				}
-				return { ...t, isDone };
-			}
-			return t;
-		});
+		// עדכון המשימה ב-object
+		const updatedTask = { ...currentTask, isDone: !currentTask.isDone };
+		const newTasksObj = { ...this.activeList.tasks, [taskId]: updatedTask };
 
-		listStore.updateTasks(this.currentUser.id, this.activeList.id, newTasks);
+		if (updatedTask.isDone) {
+			// טריגר חגיגה (לא מחכים)
+			this.triggerCelebration(currentTask, nextTask);
+		}
+
+		listStore.updateTasks(this.currentUser.id, this.activeList.id, newTasksObj);
 	}
 
 	async playTaskName(task: Task) {
@@ -225,42 +226,59 @@ export class TasksBoardController {
 	}) {
 		if (!this.currentUser || !this.activeList) return;
 
-		let newTasks;
+		const tasksObj = { ...this.activeList.tasks };
+
 		if (this.taskToEdit) {
-			// עריכה
-			newTasks = this.tasks.map((t) => {
-				if (t.id === this.taskToEdit!.id) {
-					return {
-						...t,
-						name,
-						imageSrc,
-						communicationBoardUrl,
-						changeType
-					};
-				}
-				return t;
-			});
+			// עריכה - עדכון משימה קיימת
+			const existingTask = tasksObj[this.taskToEdit.id];
+			if (existingTask) {
+				tasksObj[this.taskToEdit.id] = {
+					...existingTask,
+					name,
+					imageSrc,
+					communicationBoardUrl,
+					changeType
+				};
+			}
 		} else {
-			// הוספה
+			// הוספה - משימה חדשה עם order מתאים
+			const maxOrder = Math.max(...Object.values(tasksObj).map((t) => t.order), -1);
 			const newTask: Task = {
 				id: crypto.randomUUID(),
 				name,
 				imageSrc,
 				isDone: false,
+				order: maxOrder + 1, // שדה order חדש!
 				communicationBoardUrl,
 				changeType
 			};
-			newTasks = [...this.tasks, newTask];
+			tasksObj[newTask.id] = newTask;
 		}
 
-		listStore.updateTasks(this.currentUser.id, this.activeList.id, newTasks);
+		listStore.updateTasks(this.currentUser.id, this.activeList.id, tasksObj);
 		this.closeAddModal();
 	}
 
 	deleteTask(taskId: string) {
 		if (!this.isEditMode || !this.currentUser || !this.activeList) return;
-		const newTasks = this.tasks.filter((t) => t.id !== taskId);
-		listStore.updateTasks(this.currentUser.id, this.activeList.id, newTasks);
+
+		const tasksObj = { ...this.activeList.tasks };
+		delete tasksObj[taskId];
+
+		// נורמליזציה של order (אופציונלי)
+		this.normalizeTaskOrder(tasksObj);
+
+		listStore.updateTasks(this.currentUser.id, this.activeList.id, tasksObj);
+	}
+
+	/**
+	 * נורמליזציה של order - מאפס את הסדר למספרים רציפים
+	 */
+	private normalizeTaskOrder(tasksObj: { [taskId: string]: Task }) {
+		const sortedTasks = Object.values(tasksObj).sort((a, b) => a.order - b.order);
+		sortedTasks.forEach((task, index) => {
+			task.order = index;
+		});
 	}
 
 	resetAllTasks() {

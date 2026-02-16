@@ -44,12 +44,18 @@ export class DragDropManager {
 		if (!currentUser || !activeList) return;
 
 		// עדכון אופטימי / Store
-		const tasks = this.getTasks();
+		const tasks = this.getTasks(); // מחזיר Task[] ממוין
 		const newTasks = [...tasks];
 		const [item] = newTasks.splice(this.draggedItemIndex, 1);
 		newTasks.splice(index, 0, item);
 
-		listStore.updateTasks(currentUser.id, activeList.id, newTasks);
+		// עדכון order והמרה בחזרה ל-object
+		const updatedTasksObj: { [taskId: string]: Task } = {};
+		newTasks.forEach((task, idx) => {
+			updatedTasksObj[task.id] = { ...task, order: idx };
+		});
+
+		listStore.updateTasks(currentUser.id, activeList.id, updatedTasksObj);
 		this.draggedItemIndex = index;
 	};
 

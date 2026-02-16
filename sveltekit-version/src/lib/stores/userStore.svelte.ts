@@ -11,11 +11,11 @@ export class UserStore {
 	}
 
 	get currentUser() {
-		return this.users.find((u) => u.id === this.currentUserId);
+		return this.currentUserId ? this.users[this.currentUserId] : undefined;
 	}
 
 	login(userId: string) {
-		const user = this.users.find((u) => u.id === userId);
+		const user = this.users[userId];
 		if (user) {
 			globalState.state.currentUserId = userId;
 			globalState.save();
@@ -37,7 +37,7 @@ export class UserStore {
 			themeColor: '#6366f1'
 		};
 
-		globalState.state.users.push(newUser);
+		globalState.state.users[id] = newUser; // object במקום push
 
 		// אתחול רשימות ברירת מחדל למשתמש החדש באמצעות listStore
 		// ייבוא דינמי תואם את אופן הפעולה של Svelte 5
@@ -49,15 +49,15 @@ export class UserStore {
 	}
 
 	updateUser(id: string, updates: Partial<UserProfile>) {
-		const userIndex = this.users.findIndex((u) => u.id === id);
-		if (userIndex !== -1) {
-			globalState.state.users[userIndex] = { ...this.users[userIndex], ...updates };
+		const user = this.users[id];
+		if (user) {
+			globalState.state.users[id] = { ...user, ...updates };
 			globalState.save();
 		}
 	}
 
 	deleteUser(id: string) {
-		globalState.state.users = this.users.filter((u) => u.id !== id);
+		delete globalState.state.users[id]; // delete במקום filter
 
 		if (this.currentUserId === id) {
 			this.logout();

@@ -103,36 +103,49 @@ export const DEFAULT_LIST_DEFINITIONS = [
 ];
 
 // Helper to create initial lists for a user
-export function createDefaultLists(): List[] {
-	const lists = DEFAULT_LIST_DEFINITIONS.map((def) => ({
-		id: def.id,
-		name: def.name,
-		logo: def.logo,
-		greeting: (def as any).greeting,
-		title: (def as any).title,
-		peopleIds: (def as any).peopleIds, // מיפוי אנשים
-		tasks: def.items
-			.map((item) => {
-				const activity = ACTIVITIES.find((a) => a.id === item.activityId);
-				if (!activity) return null;
+export function createDefaultLists(): { [listId: string]: List } {
+	const listsArray = DEFAULT_LIST_DEFINITIONS.map((def) => {
+		const tasks: { [taskId: string]: any } = {};
 
-				return {
-					id: crypto.randomUUID(),
-					name: activity.name,
-					imageSrc: `/images/activities/${activity.image}`,
-					isDone: false
-				};
-			})
-			.filter((t) => t !== null) as any[]
-	}));
+		def.items.forEach((item, index) => {
+			const activity = ACTIVITIES.find((a) => a.id === item.activityId);
+			if (!activity) return;
 
-	return lists;
+			const taskId = crypto.randomUUID();
+			tasks[taskId] = {
+				id: taskId,
+				name: activity.name,
+				imageSrc: `/images/activities/${activity.image}`,
+				isDone: false,
+				order: index // סדר לפי אינדקס המקורי
+			};
+		});
+
+		return {
+			id: def.id,
+			name: def.name,
+			logo: def.logo,
+			greeting: (def as any).greeting,
+			title: (def as any).title,
+			peopleIds: (def as any).peopleIds,
+			tasks // object
+		};
+	});
+
+	// המרה למבנה object
+	const listsObject: { [listId: string]: List } = {};
+	listsArray.forEach((list) => {
+		listsObject[list.id] = list;
+	});
+
+	return listsObject;
 }
 
 export const INITIAL_STATE: AppState = {
-	version: 14,
-	users: [
-		{
+	version: 15, // עדכון גרסה!
+	users: {
+		// object עם מפתח userId
+		u_ezra: {
 			id: 'u_ezra',
 			name: 'עזרא',
 			gender: 'boy',
@@ -140,7 +153,7 @@ export const INITIAL_STATE: AppState = {
 			themeColor: '#4169E1',
 			theme: 'theme-focus'
 		},
-		{
+		u_tzofia: {
 			id: 'u_tzofia',
 			name: 'צופיה',
 			gender: 'girl',
@@ -148,7 +161,7 @@ export const INITIAL_STATE: AppState = {
 			themeColor: '#FF69B4',
 			theme: 'theme-playful'
 		},
-		{
+		u_adam: {
 			id: 'u_adam',
 			name: 'אדם',
 			gender: 'boy',
@@ -156,21 +169,22 @@ export const INITIAL_STATE: AppState = {
 			themeColor: '#32CD32',
 			theme: 'theme-gradient'
 		}
-	],
+	},
 	lists: {
 		u_ezra: createDefaultLists(),
 		u_tzofia: createDefaultLists(),
 		u_adam: createDefaultLists()
 	},
 	images: {}, // מאגר מטאדטה של תמונות
-	people: [
-		{ id: 'p_father', name: 'אבא', avatar: '/images/people/father.png' },
-		{ id: 'p_mother', name: 'אמא', avatar: '/images/people/mother.png' },
-		{ id: 'p_uncle', name: 'דוד יאיר', avatar: '/images/people/uncle.png' },
-		{ id: 'p_aunt', name: 'דודה אפרת', avatar: '/images/people/aunt.png' },
-		{ id: 'p_grandfather', name: 'סבא', avatar: '/images/people/grandfather.png' },
-		{ id: 'p_grandmother', name: 'סבתא', avatar: '/images/people/grandmother.png' }
-	], // מאגר גלובלי של אנשים (צוות/משפחה)
+	people: {
+		// object עם מפתח personId
+		p_father: { id: 'p_father', name: 'אבא', avatar: '/images/people/father.png' },
+		p_mother: { id: 'p_mother', name: 'אמא', avatar: '/images/people/mother.png' },
+		p_uncle: { id: 'p_uncle', name: 'דוד יאיר', avatar: '/images/people/uncle.png' },
+		p_aunt: { id: 'p_aunt', name: 'דודה אפרת', avatar: '/images/people/aunt.png' },
+		p_grandfather: { id: 'p_grandfather', name: 'סבא', avatar: '/images/people/grandfather.png' },
+		p_grandmother: { id: 'p_grandmother', name: 'סבתא', avatar: '/images/people/grandmother.png' }
+	},
 	activeListId: {
 		u_ezra: 'morning_routine',
 		u_tzofia: 'morning_routine',
@@ -178,7 +192,8 @@ export const INITIAL_STATE: AppState = {
 	},
 	currentUserId: null,
 	settings: {
-		lastActiveTime: Date.now()
+		lastActiveTime: Date.now(),
+		childLockEnabled: false // חדש! מתג נעילת ילדים
 	},
 	lastModified: Date.now()
 };

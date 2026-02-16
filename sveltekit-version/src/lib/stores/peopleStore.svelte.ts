@@ -8,11 +8,11 @@ export class PeopleStore {
 	}
 
 	getAllPeople() {
-		return this.people;
+		return Object.values(this.people); // object → array
 	}
 
 	getPerson(id: string): Person | undefined {
-		return this.people.find((p) => p.id === id);
+		return this.people[id]; // גישה ישירה
 	}
 
 	addPerson(name: string, avatar: string): string {
@@ -23,17 +23,17 @@ export class PeopleStore {
 			avatar
 		};
 
-		globalState.state.people.push(newPerson);
+		globalState.state.people[id] = newPerson; // object במקום push
 		globalState.save();
 		return id;
 	}
 
 	updatePerson(id: string, updates: Partial<Omit<Person, 'id'>>) {
-		const personIndex = this.people.findIndex((p) => p.id === id);
-		if (personIndex !== -1) {
-			globalState.state.people[personIndex] = { 
-				...this.people[personIndex], 
-				...updates 
+		const person = this.people[id];
+		if (person) {
+			globalState.state.people[id] = {
+				...person,
+				...updates
 			};
 			globalState.save();
 		}
@@ -41,13 +41,14 @@ export class PeopleStore {
 
 	deletePerson(id: string) {
 		// מחיקת האיש מהמאגר
-		globalState.state.people = this.people.filter((p) => p.id !== id);
+		delete globalState.state.people[id]; // delete במקום filter
 
 		// ניקוי הפניות מכל הרשימות
 		const users = Object.keys(globalState.state.lists);
 		users.forEach((userId) => {
 			const userLists = globalState.state.lists[userId];
-			userLists.forEach((list) => {
+			Object.values(userLists).forEach((list) => {
+				// עכשיו userLists זה object, צריך Object.values()
 				if (list.peopleIds) {
 					list.peopleIds = list.peopleIds.filter((personId) => personId !== id);
 				}

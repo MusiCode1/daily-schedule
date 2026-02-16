@@ -55,7 +55,7 @@
 </div>
 
 <div class="users-grid">
-    {#each userStore.users as user (user.id)}
+    {#each Object.values(userStore.users) as user (user.id)}
         <Card class="user-card max-w-[280px]">
             <div class="avatar avatar-md">
                 {#if user.avatar}

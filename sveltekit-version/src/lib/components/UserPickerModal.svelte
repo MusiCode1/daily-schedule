@@ -16,7 +16,7 @@
 	let shouldMove = $state(false);
 
 	// סינון: הצג רק משתמשים אחרים (לא המשתמש הנוכחי)
-	const otherUsers = $derived(userStore.users.filter((u) => u.id !== currentUserId));
+	const otherUsers = $derived(Object.values(userStore.users).filter((u) => u.id !== currentUserId));
 
 	// איפוס בעת פתיחה
 	$effect(() => {

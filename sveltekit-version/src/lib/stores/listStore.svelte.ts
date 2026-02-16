@@ -4,108 +4,157 @@ import { createDefaultLists } from '../data/defaults';
 import { TEXTS } from '$lib/data/texts';
 
 export class ListStore {
+	/**
+	 * קבלת רשימות משתמש (ממוין לפי שם)
+	 */
 	getUserLists(userId: string, includeHidden: boolean = false): List[] {
-		// קריאה בלבד: אם אין רשימות, נחזיר סתם מערך ריק זמני
-		const lists = globalState.state.lists[userId] || [];
+		const listsObj = globalState.state.lists[userId] || {};
+		const lists = Object.values(listsObj);
 
 		if (includeHidden) {
-			return lists;
+			return lists.sort((a, b) => a.name.localeCompare(b.name));
 		}
-		return lists.filter((l) => !l.isHidden);
+		return lists.filter((l) => !l.isHidden).sort((a, b) => a.name.localeCompare(b.name));
 	}
 
+	/**
+	 * קבלת כל הרשימות (כולל מוסתרות)
+	 */
 	getAllLists(userId: string): List[] {
 		return this.getUserLists(userId, true);
 	}
 
+	/**
+	 * קבלת הרשימה הפעילה
+	 */
 	getActiveList(userId: string): List | undefined {
 		let activeId = globalState.state.activeListId[userId];
-		const lists = this.getUserLists(userId);
+		const listsObj = globalState.state.lists[userId] || {};
 
-		// קריאה בלבד: אם אין ID פעיל תקין, נחזיר את הראשון כברירת מחדל לתצוגה
-		if (!activeId && lists.length > 0) {
-			return lists[0];
+		// אם יש ID פעיל ורשימה קיימת - החזר אותה
+		if (activeId && listsObj[activeId]) {
+			return listsObj[activeId];
 		}
 
-		return lists.find((l) => l.id === activeId) || lists[0];
+		// אחרת, החזר את הראשונה
+		const lists = Object.values(listsObj);
+		return lists.length > 0 ? lists[0] : undefined;
 	}
 
+	/**
+	 * הגדרת רשימה פעילה
+	 */
 	setActiveList(userId: string, listId: string) {
 		globalState.state.activeListId[userId] = listId;
 		globalState.save();
 	}
 
+	/**
+	 * הוספת רשימה חדשה
+	 */
 	addList(userId: string, name: string) {
 		const id = crypto.randomUUID();
-		const newList: List = { id, name, greeting: TEXTS.DEFAULT_GREETING, tasks: [] };
+		const newList: List = {
+			id,
+			name,
+			greeting: TEXTS.DEFAULT_GREETING,
+			tasks: {} // object ריק במקום מערך!
+		};
 
 		if (!globalState.state.lists[userId]) {
-			globalState.state.lists[userId] = [];
+			globalState.state.lists[userId] = {};
 		}
 
-		globalState.state.lists[userId].push(newList);
+		globalState.state.lists[userId][id] = newList; // הוספה ל-object במקום push
 		this.setActiveList(userId, id);
 		globalState.save();
 		return id;
 	}
 
+	/**
+	 * מחיקת רשימה
+	 */
 	deleteList(userId: string, listId: string) {
-		if (!globalState.state.lists[userId]) return;
+		const listsObj = globalState.state.lists[userId];
+		if (!listsObj) return;
 
 		// לא לאפשר מחיקת הרשימה האחרונה
-		if (globalState.state.lists[userId].length <= 1) return;
+		if (Object.keys(listsObj).length <= 1) return;
 
-		globalState.state.lists[userId] = globalState.state.lists[userId].filter(
-			(l) => l.id !== listId
-		);
+		delete listsObj[listId]; // delete במקום filter
 
 		// אם מחקנו את הרשימה הפעילה, עבור לרשימה הראשונה
 		if (globalState.state.activeListId[userId] === listId) {
-			globalState.state.activeListId[userId] = globalState.state.lists[userId][0].id;
-			globalState.save();
-		} else {
-			globalState.save();
+			const remainingLists = Object.keys(listsObj);
+			if (remainingLists.length > 0) {
+				globalState.state.activeListId[userId] = remainingLists[0];
+			}
 		}
+
+		globalState.save();
 	}
 
+	/**
+	 * עדכון רשימה
+	 */
 	updateList(userId: string, listId: string, updates: Partial<List>) {
-		const list = globalState.state.lists[userId]?.find((l) => l.id === listId);
-		if (list) {
-			Object.assign(list, updates);
-			globalState.save();
-		}
+		const listsObj = globalState.state.lists[userId];
+		if (!listsObj || !listsObj[listId]) return;
+
+		const list = listsObj[listId];
+		Object.assign(list, updates);
+		globalState.save();
 	}
 
 	// -- ניהול משימות --
 
-	updateTasks(userId: string, listId: string, newTasks: Task[]) {
-		const list = globalState.state.lists[userId]?.find((l) => l.id === listId);
-		if (list) {
-			list.tasks = newTasks;
-			globalState.save();
-		}
-	}
+	/**
+	 * עדכון משימות (מקבל object)
+	 */
+	updateTasks(userId: string, listId: string, newTasks: { [taskId: string]: Task }) {
+		const listsObj = globalState.state.lists[userId];
+		if (!listsObj || !listsObj[listId]) return;
 
-	// פונקציית עזר לאתחול ברירות מחדל למשתמש חדש
-	initializeDefaultLists(userId: string) {
-		globalState.state.lists[userId] = createDefaultLists();
-		this.setActiveList(userId, globalState.state.lists[userId][0].id);
+		listsObj[listId].tasks = newTasks;
 		globalState.save();
 	}
 
-	// שכפול רשימה
-	duplicateList(userId: string, listId: string): string | null {
-		const originalList = globalState.state.lists[userId]?.find((l) => l.id === listId);
-		if (!originalList) return null;
+	/**
+	 * אתחול רשימות ברירת מחדל למשתמש חדש
+	 */
+	initializeDefaultLists(userId: string) {
+		// createDefaultLists() כבר מחזיר object, לא מערך
+		const defaultListsObj = createDefaultLists();
 
+		globalState.state.lists[userId] = defaultListsObj;
+		// קבלת ה-ID של הרשימה הראשונה
+		const firstListId = Object.keys(defaultListsObj)[0];
+		if (firstListId) {
+			this.setActiveList(userId, firstListId);
+		}
+		globalState.save();
+	}
+
+	/**
+	 * שכפול רשימה
+	 */
+	duplicateList(userId: string, listId: string): string | null {
+		const listsObj = globalState.state.lists[userId];
+		if (!listsObj || !listsObj[listId]) return null;
+
+		const originalList = listsObj[listId];
 		const newId = crypto.randomUUID();
 
 		// העתקה עמוקה של המשימות עם IDs חדשים
-		const duplicatedTasks: Task[] = originalList.tasks.map((task) => ({
-			...task,
-			id: crypto.randomUUID(),
-			isDone: false // אפס את הסטטוס של המשימות בעותק
-		}));
+		const duplicatedTasks: { [taskId: string]: Task } = {};
+		for (const task of Object.values(originalList.tasks)) {
+			const newTaskId = crypto.randomUUID();
+			duplicatedTasks[newTaskId] = {
+				...task,
+				id: newTaskId,
+				isDone: false // אפס את הסטטוס של המשימות בעותק
+			};
+		}
 
 		const duplicatedList: List = {
 			id: newId,
@@ -116,64 +165,78 @@ export class ListStore {
 			isDefault: false
 		};
 
-		if (!globalState.state.lists[userId]) {
-			globalState.state.lists[userId] = [];
-		}
-
-		globalState.state.lists[userId].push(duplicatedList);
+		listsObj[newId] = duplicatedList; // הוספה ל-object במקום push
 		globalState.save();
 
 		return newId;
 	}
 
-	// איפוס כל המשימות ברשימה
+	/**
+	 * איפוס כל המשימות ברשימה
+	 */
 	resetAllTasks(userId: string, listId: string) {
-		const list = globalState.state.lists[userId]?.find((l) => l.id === listId);
-		if (list) {
-			list.tasks.forEach((task) => {
-				task.isDone = false;
-			});
-			globalState.save();
+		const listsObj = globalState.state.lists[userId];
+		if (!listsObj || !listsObj[listId]) return;
+
+		const list = listsObj[listId];
+		for (const task of Object.values(list.tasks)) {
+			task.isDone = false;
 		}
+		globalState.save();
 	}
 
-	// החלפת מצב הצגה/הסתרה של רשימה
+	/**
+	 * החלפת מצב הצגה/הסתרה של רשימה
+	 */
 	toggleListVisibility(userId: string, listId: string) {
-		const list = globalState.state.lists[userId]?.find((l) => l.id === listId);
-		if (list) {
-			list.isHidden = !list.isHidden;
-			globalState.save();
-		}
+		const listsObj = globalState.state.lists[userId];
+		if (!listsObj || !listsObj[listId]) return;
+
+		const list = listsObj[listId];
+		list.isHidden = !list.isHidden;
+		globalState.save();
 	}
 
-	// החלפת מצב נעילה של רשימה (תרגול/הכנה)
+	/**
+	 * החלפת מצב נעילה של רשימה (תרגול/הכנה)
+	 */
 	toggleListLock(userId: string, listId: string) {
-		const list = globalState.state.lists[userId]?.find((l) => l.id === listId);
-		if (list && !list.isDefault) {
+		const listsObj = globalState.state.lists[userId];
+		if (!listsObj || !listsObj[listId]) return;
+
+		const list = listsObj[listId];
+		if (!list.isDefault) {
 			// לא לנעול רשימות ברירת מחדל
 			list.isLocked = !list.isLocked;
 			globalState.save();
 		}
 	}
 
-	// העברה/שכפול רשימה בין משתמשים
+	/**
+	 * העברה/שכפול רשימה בין משתמשים
+	 */
 	copyListToUser(
 		fromUserId: string,
 		toUserId: string,
 		listId: string,
 		shouldMove: boolean = false
 	): string | null {
-		const originalList = globalState.state.lists[fromUserId]?.find((l) => l.id === listId);
-		if (!originalList) return null;
+		const fromListsObj = globalState.state.lists[fromUserId];
+		if (!fromListsObj || !fromListsObj[listId]) return null;
 
+		const originalList = fromListsObj[listId];
 		const newId = crypto.randomUUID();
 
 		// העתקה עמוקה של המשימות עם IDs חדשים
-		const copiedTasks: Task[] = originalList.tasks.map((task) => ({
-			...task,
-			id: crypto.randomUUID(),
-			isDone: false // אפס את הסטטוס של המשימות בעותק
-		}));
+		const copiedTasks: { [taskId: string]: Task } = {};
+		for (const task of Object.values(originalList.tasks)) {
+			const newTaskId = crypto.randomUUID();
+			copiedTasks[newTaskId] = {
+				...task,
+				id: newTaskId,
+				isDone: false // אפס את הסטטוס של המשימות בעותק
+			};
+		}
 
 		const copiedList: List = {
 			id: newId,
@@ -191,13 +254,13 @@ export class ListStore {
 		};
 
 		if (!globalState.state.lists[toUserId]) {
-			globalState.state.lists[toUserId] = [];
+			globalState.state.lists[toUserId] = {};
 		}
 
-		globalState.state.lists[toUserId].push(copiedList);
+		globalState.state.lists[toUserId][newId] = copiedList; // הוספה ל-object במקום push
 
 		// אם זו העברה (לא שכפול) - מחיקת המקור
-		if (shouldMove && globalState.state.lists[fromUserId].length > 1) {
+		if (shouldMove && Object.keys(fromListsObj).length > 1) {
 			this.deleteList(fromUserId, listId);
 		}
 

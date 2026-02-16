@@ -24,6 +24,7 @@ export interface Task {
 	name: string;
 	imageSrc: string | null; // רק מזהה תמונה (idb:xxx או URL)
 	isDone: boolean;
+	order: number; // סדר מפורש (0, 1, 2...)
 	communicationBoardUrl?: string; // קישור ללוח תקשורת (אופציונלי)
 	changeType?: TaskChangeType; // סוג השינוי - משימה בוטלה או נוספה (אופציונלי)
 }
@@ -31,7 +32,7 @@ export interface Task {
 export interface List {
 	id: string;
 	name: string;
-	tasks: Task[];
+	tasks: { [taskId: string]: Task }; // object במקום מערך!
 	isDefault?: boolean;
 	logo?: string; // רק מזהה תמונה
 	greeting?: string;
@@ -70,15 +71,15 @@ export interface UserProfile {
 
 export interface AppState {
 	version: number;
-	users: UserProfile[];
+	users: { [userId: string]: UserProfile }; // object במקום מערך!
 
-	lists: { [userId: string]: List[] };
+	lists: { [userId: string]: { [listId: string]: List } }; // object של objects!
 
 	// מאגר מטאדטה של תמונות (מפתח = מזהה תמונה)
 	images: { [imageId: string]: ImageMetadata };
 
 	// מאגר גלובלי של אנשים (צוות/משפחה)
-	people: Person[];
+	people: { [personId: string]: Person }; // object במקום מערך!
 
 	// Track which list is active for each user
 	activeListId: { [userId: string]: string };
@@ -87,6 +88,7 @@ export interface AppState {
 
 	settings: {
 		lastActiveTime: number;
+		childLockEnabled: boolean; // חדש! מתג נעילת ילדים (ברירת מחדל: false)
 	};
 	lastModified: number;
 	syncMetadata?: SyncMetadata;
