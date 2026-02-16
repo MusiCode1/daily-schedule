@@ -53,6 +53,7 @@ const TEXTS_ADMIN = {
 	LISTS_TAB: 'רשימות',
 	PEOPLE_TAB: 'אנשים',
 	GENERAL_TAB: 'כללי',
+	BACKUP_TAB: 'גיבוי',
 	USER_MANAGEMENT: 'ניהול משתמשים',
 	LIST_MANAGEMENT: 'ניהול רשימות',
 	PEOPLE_MANAGEMENT: 'ניהול אנשים',
@@ -175,6 +176,13 @@ const TEXTS_ADMIN = {
 	RESTORE_SUCCESS: 'הנתונים שוחזרו בהצלחה! (נא לרענן)',
 	ERROR_GENERIC: 'אירעה שגיאה בחיבור או בפעולה',
 	CONNECTED_AS: 'מחובר כ:',
+	SYNC_NOW: 'סנכרן עכשיו',
+	SYNC_STATUS_LABEL: 'סטטוס סנכרון:',
+	SYNC_STATUS_SYNCED: 'מסונכרן',
+	SYNC_STATUS_SYNCING: 'מסנכרן...',
+	SYNC_STATUS_ERROR: 'שגיאה',
+	SYNC_STATUS_OFFLINE: 'לא מקוון',
+	LAST_SYNC: 'סנכרון אחרון:',
 	RESTORE_CONFIRM:
 		'האם אתה בטוח? פעולה זו תמחק את המידע הנוכחי במכשיר זה ותחליף אותו במידע מהגיבוי.',
 	// קונפליקט וסנכרון

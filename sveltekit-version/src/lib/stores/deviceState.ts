@@ -19,6 +19,7 @@ export type DriveV2Cache = {
 	contentFileId?: string;
 	progressFileId?: string;
 	assetsIndexFileId?: string;
+	historyFileId?: string; // חדש - לתמיכה ב-history.json
 	lastUploadedContentHash?: string;
 	lastUploadedProgressHash?: string;
 	lastUploadedAssetsHash?: string;
