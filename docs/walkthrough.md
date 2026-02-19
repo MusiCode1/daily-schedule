@@ -1,5 +1,64 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-19 21:55
+
+### תיקון באג: שינויים מקומיים לא מועלים לענן למרות ש-UI הציג "סנכרון הצליח"
+
+תחקור ותיקון באג קריטי בזרימת הסנכרון שגרם לכך ששינויים שנעשו במכשיר לא הועלו לגוגל דרייב, למרות שה-UI הציג "הצלחה" — וכתוצאה מכך המכשיר השני לא ראה את השינויים.
+
+---
+
+#### מה בוצע?
+
+**1. זיהוי הבאג - `syncController.svelte.ts`**
+
+הבאג היה בפונקציה `sync()` בכיתה `SyncController`. האלגוריתם:
+1. מבצע `restoreWithMerge` — אם `localWriteId === remoteWriteId` (מכשיר בסנכרון, אבל יש שינויים חדשים), מחזיר `localState` כמות שהוא.
+2. **הבאג**: הקוד עדכן `this.previousState = stateForUpload` **לפני** חישוב `hasLocalChanges`.
+3. כתוצאה: `calculateDelta(currentState, currentState) = null` → `hasLocalChanges = false` → `shouldUpload = false`.
+4. ה-UI הציג "סנכרון הצליח" — אבל שום דבר לא הועלה לענן!
+
+**2. התיקון - שורה אחת**
+
+שינוי התנאי ב-`syncController.svelte.ts`:
+```typescript
+// לפני:
+if (!restoreResult.merged) {
+    this.previousState = cloneAppState(stateForUpload);
+}
+
+// אחרי:
+if (!restoreResult.merged && shouldApplyRemoteState) {
+    this.previousState = cloneAppState(stateForUpload);
+}
+```
+`shouldApplyRemoteState` הוא `true` רק כשמשכנו state **חדש** מהענן (writeIds שונים). כך `previousState` לא מוחלף כשה-writeIds תואמים — ו-`calculateDelta` מגלה נכון שיש שינויים מקומיים.
+
+**3. בדיקות אינטגרציה - `tests/integration/services/sync/syncDecision.integration.test.ts`**
+
+נכתבו 2 בדיקות:
+- **בדיקה 1**: תרחיש הבאג — sync ראשון → שינוי מקומי → sync שני: מוודאת שהשינויים מזוהים ומועלים, ושמכשיר B רואה אותם.
+- **בדיקה 2**: תרחיש "pull only" (remote חדש יותר) — מוודאת ש-`previousState` מתעדכן נכון לאחר משיכה מהענן, כך שה-device לא מעלה בחינם בסנכרון הבא.
+
+- **קבצים ששונו**: `sveltekit-version/src/lib/logic/syncController.svelte.ts`
+- **קבצים שנוצרו**: `sveltekit-version/tests/integration/services/sync/syncDecision.integration.test.ts`
+
+---
+
+#### החלטות ארכיטקטורה
+
+- **תיקון minimal**: שינוי של תנאי אחד, ללא refactor. הלוגיקה הסביבתית נשמרת כמות שהיא.
+- **תיעוד הבאג בבדיקות**: הבדיקות כוללות הסבר מפורט של הסצנריו הבאגי כהגנה מפני רגרסיה עתידית.
+
+---
+
+#### מעקפים ופתרונות
+
+- **בעיה**: לא ניתן לבדוק `SyncController` ישירות בסביבת Node כי הוא משתמש ב-`$state.snapshot` של Svelte 5.
+  **פתרון**: הבדיקות בנויות ברמת הפונקציות הבסיסיות (`restoreWithMerge`, `calculateDelta`, `backupWithHistory`) ומדמות את ההחלטות הלוגיות של הקונטרולר.
+
+---
+
 ## 2026-02-16 18:31
 
 ### הוספת אינדיקטור סטטוס עגול בקצה השמאלי של שורת משימה

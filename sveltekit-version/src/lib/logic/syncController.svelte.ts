@@ -189,8 +189,10 @@ export class SyncController {
 				stateForUpload = restoreResult.state;
 				this.saveLastKnownWriteId(remoteWriteId);
 
-				// במקרה של pull מהענן בלבד, ה-baseline המקומי הוא state שהתקבל מהענן
-				if (!restoreResult.merged) {
+				// עדכן את previousState רק כשמשכנו state חדש מהענן (לא כשה-writeIds כבר תואמים).
+				// אם ה-writeIds תואמים, restoreWithMerge מחזיר את ה-localState כמות שהוא,
+				// כולל שינויים מקומיים שטרם הועלו - במקרה זה אסור לאפס את ה-baseline.
+				if (!restoreResult.merged && shouldApplyRemoteState) {
 					this.previousState = cloneAppState(stateForUpload);
 				}
 			} else {
