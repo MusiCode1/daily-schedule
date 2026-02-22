@@ -1,5 +1,35 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-22 13:45
+
+### הוספת בדיקות יחידה למנגנון הסנכרון (syncEngine + historyManager)
+
+נוספו 50 בדיקות יחידה לפונקציות הטהורות של מנגנון הסנכרון, המכסות את כל הלוגיקה המרכזית ללא תלות ב-I/O.
+
+---
+
+#### מה בוצע?
+
+- **קובץ חדש** `sveltekit-version/tests/unit/services/sync/syncEngine.test.ts` — 20 בדיקות:
+  - `calculateDelta`: זיהוי שינויים (שם, הוספה, מחיקה, order)
+  - `applyDelta`: החלת delta, round-trip, אי-מוטציה של base
+  - `threeWayMerge`: merge בלי שינויים, צד אחד, שני צדדים, שדות שונים, אותו שדה (last-write-wins), הוספת משימות במקביל, נורמליזציית order, tie-breaker לפי id
+  - `areStatesEqual`: השוואה תוך התעלמות מ-timestamps
+
+- **הרחבת** `sveltekit-version/tests/unit/services/sync/historyManager.test.ts` — מ-2 ל-30 בדיקות:
+  - `createEmptyHistory`: מבנה ברירת מחדל
+  - `appendToHistory`: הוספת snapshot, delta, סדר כרונולוגי
+  - `shouldCreateSnapshot`: genesis, ללא snapshot, פחות/בדיוק/מעל 20 deltas, איפוס אחרי snapshot שני
+  - `findEntryByWriteId`: מציאה לפי writeId, null עבור חסר
+  - `findCommonAncestor`: שרשרת לינארית, ענפים, writeId חסר, אותו writeId, שחזור state
+  - `mergeHistories`: entries חדשים, ללא כפילויות, מיון לפי timestamp, histories ריקים, max version
+  - `reconstructState` (הרחבה): snapshot ישיר, delta בודד, שרשרת 5 deltas, writeId חסר, delta ללא snapshot
+
+#### בדיקות שבוצעו
+
+- `npx vitest run tests/unit/services/sync/` — 50 בדיקות עברו (2 קבצים)
+- `npm run check` — 0 שגיאות, 0 אזהרות
+
 ## 2026-02-16 18:31
 
 ### הוספת אינדיקטור סטטוס עגול בקצה השמאלי של שורת משימה
