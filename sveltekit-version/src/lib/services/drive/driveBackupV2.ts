@@ -591,16 +591,16 @@ export async function restoreWithMerge(params: {
 			history = await params.repo.readHistoryJson(ids.historyFileId);
 			console.log(`${TAG} history loaded for merge`, { entries: history.entries.length });
 		} catch (e) {
-			console.warn(`${TAG} no history found, cannot perform 3-way merge. Using remote.`, e);
-			return { state: remoteState, manifest: remoteManifest, merged: false };
+			console.warn(`${TAG} no history found, cannot perform 3-way merge. Keeping local state.`, e);
+			return { state: params.localState!, manifest: remoteManifest, merged: true };
 		}
 
 		// 5. מצא common ancestor
 		const ancestor = findCommonAncestor(history, params.localWriteId, remoteWriteId);
 
 		if (!ancestor.found || !ancestor.state) {
-			console.warn(`${TAG} no common ancestor found, using remote`);
-			return { state: remoteState, manifest: remoteManifest, merged: false };
+			console.warn(`${TAG} no common ancestor found, keeping local state`);
+			return { state: params.localState!, manifest: remoteManifest, merged: true };
 		}
 
 		console.log(`${TAG} common ancestor found`, { writeId: ancestor.writeId });
