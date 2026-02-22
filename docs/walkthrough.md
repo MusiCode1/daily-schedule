@@ -1,5 +1,65 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-22 19:45
+
+### ריפקטור מרכזי: הפרדת סנכרון מ-Google Drive — ממשק SyncProvider גנרי
+
+הושלם ריפקטור ארכיטקטוני מלא שמנתק את לוגיקת הסנכרון מהתלות הישירה ב-Google Drive. כעת כל לוגיקת הסנכרון (merge, history, delta) מרוכזת ב-`syncOrchestrator` גנרי, ו-Google Drive הוא ספק אחד מתוך ממשק `SyncProvider` שניתן להרחבה.
+
+#### מה בוצע?
+
+**1. מבנה תיקיות חדש `src/lib/services/sync/`**
+
+- `engine/` — אלגוריתמים טהורים: `types.ts`, `syncEngine.ts`, `historyManager.ts` (הועברו מ-`sync/` ישירות)
+- `syncTypes.ts` — טיפוסים משותפים: `ContentV2`, `ProgressV2`, `ManifestV2`, `RemoteMetadata`, `SyncError`
+- `syncProvider.ts` — ממשק `SyncProvider` גנרי
+- `syncOrchestrator.ts` — לוגיקת `pull/merge/push` גנרית (מחולץ מ-`driveBackupV2.ts`)
+- `crypto.ts`, `payloads.ts` — כלי עזר משותפים (הועברו מ-`drive/`)
+- `providers/google-drive/` — מימוש Google Drive, כולל `googleDriveSyncProvider.ts`
+- `providers/file/` — מימוש ZIP: `fileSyncProvider.ts` (ייצוא/ייבוא)
+
+**2. `SyncProvider` Interface**
+
+ממשק גנרי עם: `initialize()` (lazy, ensureStructure), `isAvailable()` (async), `checkRemote()` (metadata זול בלבד), `pullContent/Progress/History/Assets()`, `writeContent/Progress/History/Assets()`, `commit()`.
+
+**3. `syncOrchestrator.ts`**
+
+- `pull()` — בדיקת remote, 3-way merge עם fallbacks בטוחים, נורמליזציה
+- `push()` — בניית payloads, חישוב hashes, history management (snapshot/delta), commit
+
+**4. `GoogleDriveSyncProvider`**
+
+עוטף את `dailyScheduleBackupRepo`. מימש hash caching (skip אם לא השתנה), מעדכן `deviceState.providers['google-drive']`.
+
+**5. `FileSyncProvider`**
+
+מממש `SyncProvider` לייצוא/ייבוא ZIP. `commit()` → מוריד ZIP דרך `<a download>`. `loadZip()` → טוען ZIP לזיכרון לצורך ייבוא.
+
+**6. `deviceState.ts` — V2 + מיגרציה**
+
+הוסף `providers['google-drive']` לcache ספציפי. מיגרציה אוטומטית V1→V2 (נשמר `drive.v2Cache` לתאימות לאחור). הקבצים הישנים ב-`drive/` ממשיכים לעבוד כ-re-exports.
+
+**7. `syncController.svelte.ts`**
+
+עודכן לעבוד עם `syncOrchestrator` + `googleDriveSyncProvider`. שומר:
+- Exponential backoff (1, 2, 4, 8… שניות), MAX_RETRIES=10
+- טיפול `auth` error ללא retry
+- `No changes to backup` → נחשב כהצלחה
+- `syncStore` integration מלא
+
+**8. טסטים**
+
+- 119/119 טסטים קיימים עוברים ללא שינוי
+- נוספו 8 טסטים חדשים ל-`syncOrchestrator.test.ts` (pull + push)
+- `jszip` הותקן כתלות חדשה
+
+#### החלטות ארכיטקטורה
+
+- **"Thin Provider with Smart Write"**: הספק מחליט פנימית אם צריך network call (hash cache), אבל הלוגיקה הגנרית (merge, history, normalization) נשארת ב-orchestrator
+- **FileSyncProvider כ-SyncProvider**: גם ספק ZIP מממש את הממשק המלא אם כי חלק מהמתודות הן no-op — מאפשר להשתמש בו עם אותו orchestrator
+- **תאימות לאחור**: קבצי `drive/` נשארו כ-re-exports כדי שכל הטסטים הקיימים יעברו ללא שינוי
+- **`deviceState` V2 עם שמירת `drive.v2Cache`**: במקום שבירת שינויים, הנתונים נשמרים בשני מקומות (providers + v2Cache) במהלך המעבר
+
 ## 2026-02-22 17:30
 
 ### תיקון באג סנכרון #2: אובדן נתונים כשאין Common Ancestor בהיסטוריה

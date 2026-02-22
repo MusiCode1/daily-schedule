@@ -3,7 +3,7 @@ import { migrationService, type GoogleAuthStorage } from '$lib/services/migratio
 
 export const DEVICE_STATE_STORAGE_KEY = 'daily-schedule-device-state';
 
-export const CURRENT_DEVICE_STATE_VERSION = 1 as const;
+export const CURRENT_DEVICE_STATE_VERSION = 2 as const;
 
 export type FloatingBoardPosition = {
 	top: number;
@@ -12,20 +12,21 @@ export type FloatingBoardPosition = {
 	height: number;
 };
 
-export type DriveV2Cache = {
+/** Cache ספציפי ל-Google Drive — fileIds ו-hashes לאינקרמנטליות */
+export type GoogleDriveProviderCache = {
 	backupFolderId?: string;
 	assetsFolderId?: string;
 	manifestFileId?: string;
 	contentFileId?: string;
 	progressFileId?: string;
 	assetsIndexFileId?: string;
-	historyFileId?: string; // חדש - לתמיכה ב-history.json
+	historyFileId?: string;
 	lastUploadedContentHash?: string;
 	lastUploadedProgressHash?: string;
 	lastUploadedAssetsHash?: string;
 };
 
-export type DeviceStateV1 = {
+export type DeviceStateV2 = {
 	version: typeof CURRENT_DEVICE_STATE_VERSION;
 	drive: {
 		deviceId: string;
@@ -34,12 +35,16 @@ export type DeviceStateV1 = {
 		autoBackupEnabled: boolean;
 		useRedirectMode: boolean;
 		clientIdOverride: string;
-		v2Cache: DriveV2Cache;
+		/** @deprecated השתמש ב-providers['google-drive'] במקום */
+		v2Cache: GoogleDriveProviderCache;
+	};
+	/** cache ספציפי לכל ספק — מפתח = provider.id */
+	providers: {
+		'google-drive'?: GoogleDriveProviderCache;
 	};
 	auth: {
 		googleAuthStorage: GoogleAuthStorage | null;
 	};
-	// הערה: זה intentionally לא AppState.settings. זה per-device UI/settings.
 	settings: {
 		ui: {
 			floatingBoard: FloatingBoardPosition;
@@ -47,7 +52,29 @@ export type DeviceStateV1 = {
 	};
 };
 
-export type DeviceState = DeviceStateV1;
+/** V1 — שמור לצורך מיגרציה */
+type DeviceStateV1 = {
+	version: 1;
+	drive: {
+		deviceId: string;
+		deviceName: string;
+		lastKnownWriteId: string | null;
+		autoBackupEnabled: boolean;
+		useRedirectMode: boolean;
+		clientIdOverride: string;
+		v2Cache: GoogleDriveProviderCache;
+	};
+	auth: {
+		googleAuthStorage: GoogleAuthStorage | null;
+	};
+	settings: {
+		ui: {
+			floatingBoard: FloatingBoardPosition;
+		};
+	};
+};
+
+export type DeviceState = DeviceStateV2;
 
 export type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
@@ -125,7 +152,7 @@ function validateFloatingBoardPosition(value: any): value is FloatingBoardPositi
 	);
 }
 
-function createDefaultDeviceState(userAgent: string): DeviceStateV1 {
+function createDefaultDeviceState(userAgent: string): DeviceStateV2 {
 	return {
 		version: CURRENT_DEVICE_STATE_VERSION,
 		drive: {
@@ -137,6 +164,7 @@ function createDefaultDeviceState(userAgent: string): DeviceStateV1 {
 			clientIdOverride: '',
 			v2Cache: {}
 		},
+		providers: {},
 		auth: {
 			googleAuthStorage: null
 		},
@@ -148,12 +176,20 @@ function createDefaultDeviceState(userAgent: string): DeviceStateV1 {
 	};
 }
 
-function normalizeDeviceStateV1(state: any, userAgent: string): DeviceStateV1 {
+function normalizeDeviceStateV2(state: any, userAgent: string): DeviceStateV2 {
 	const fallback = createDefaultDeviceState(userAgent);
-	const next: DeviceStateV1 = {
+	const driveCache =
+		typeof state?.drive?.v2Cache === 'object' && state.drive.v2Cache
+			? state.drive.v2Cache
+			: {};
+
+	const next: DeviceStateV2 = {
 		version: CURRENT_DEVICE_STATE_VERSION,
 		drive: {
-			deviceId: typeof state?.drive?.deviceId === 'string' && state.drive.deviceId ? state.drive.deviceId : fallback.drive.deviceId,
+			deviceId:
+				typeof state?.drive?.deviceId === 'string' && state.drive.deviceId
+					? state.drive.deviceId
+					: fallback.drive.deviceId,
 			deviceName:
 				typeof state?.drive?.deviceName === 'string' && state.drive.deviceName
 					? state.drive.deviceName
@@ -176,8 +212,10 @@ function normalizeDeviceStateV1(state: any, userAgent: string): DeviceStateV1 {
 				typeof state?.drive?.clientIdOverride === 'string'
 					? state.drive.clientIdOverride
 					: fallback.drive.clientIdOverride,
-			v2Cache: typeof state?.drive?.v2Cache === 'object' && state.drive.v2Cache ? state.drive.v2Cache : {}
+			v2Cache: driveCache
 		},
+		providers:
+			typeof state?.providers === 'object' && state.providers ? state.providers : {},
 		auth: {
 			googleAuthStorage: state?.auth?.googleAuthStorage ?? fallback.auth.googleAuthStorage
 		},
@@ -190,33 +228,77 @@ function normalizeDeviceStateV1(state: any, userAgent: string): DeviceStateV1 {
 		}
 	};
 
+	// סנכרון: אם providers['google-drive'] ריק אבל v2Cache מלא → מאכלס אוטומטית
+	if (!next.providers['google-drive'] && Object.keys(driveCache).length > 0) {
+		next.providers['google-drive'] = { ...driveCache };
+	}
+
 	return next;
+}
+
+/** מיגרציה מ-V1 ל-V2 (הוספת providers) */
+function migrateV1ToV2(v1: DeviceStateV1): DeviceStateV2 {
+	return {
+		version: CURRENT_DEVICE_STATE_VERSION,
+		drive: {
+			deviceId: v1.drive.deviceId,
+			deviceName: v1.drive.deviceName,
+			lastKnownWriteId: v1.drive.lastKnownWriteId,
+			autoBackupEnabled: v1.drive.autoBackupEnabled,
+			useRedirectMode: v1.drive.useRedirectMode,
+			clientIdOverride: v1.drive.clientIdOverride,
+			v2Cache: v1.drive.v2Cache
+		},
+		providers: {
+			'google-drive': v1.drive.v2Cache && Object.keys(v1.drive.v2Cache).length > 0
+				? { ...v1.drive.v2Cache }
+				: undefined
+		},
+		auth: {
+			googleAuthStorage: v1.auth.googleAuthStorage
+		},
+		settings: {
+			ui: {
+				floatingBoard: v1.settings.ui.floatingBoard
+			}
+		}
+	};
 }
 
 export function migrateDeviceStateInStorage(
 	storage: StorageLike,
 	options?: { userAgent?: string }
-): DeviceStateV1 {
+): DeviceStateV2 {
 	const userAgent = options?.userAgent ?? (typeof navigator !== 'undefined' ? navigator.userAgent : '');
 
 	const existingRaw = storage.getItem(DEVICE_STATE_STORAGE_KEY);
 	const existing = safeParseJson<any>(existingRaw);
 
-	// אם כבר קיים ומעודכן - רק normalize ושמור (למקרה שחסרים שדות).
+	// V2 קיים ותקין — רק normalize ושמור
 	if (existing && existing.version === CURRENT_DEVICE_STATE_VERSION) {
-		const normalized = normalizeDeviceStateV1(existing, userAgent);
+		const normalized = normalizeDeviceStateV2(existing, userAgent);
 		storage.setItem(DEVICE_STATE_STORAGE_KEY, JSON.stringify(normalized));
-		// ניקוי מפתחות ישנים (גם אם כבר היה device-state תקין) כדי להשאיר localStorage נקי.
 		for (const key of LEGACY_KEYS_TO_REMOVE) {
 			storage.removeItem(key);
 		}
 		return normalized;
 	}
 
-	// אחרת: נבנה default וננסה למזג אליו legacy keys.
+	// V1 → V2
+	if (existing && existing.version === 1) {
+		const v1 = normalizeV1ForMigration(existing, userAgent);
+		const v2 = migrateV1ToV2(v1);
+		const normalized = normalizeDeviceStateV2(v2, userAgent);
+		storage.setItem(DEVICE_STATE_STORAGE_KEY, JSON.stringify(normalized));
+		for (const key of LEGACY_KEYS_TO_REMOVE) {
+			storage.removeItem(key);
+		}
+		return normalized;
+	}
+
+	// אחרת: בנה default וממגר legacy keys
 	const next = createDefaultDeviceState(userAgent);
 
-	// Drive legacy
 	const legacyDeviceId = storage.getItem('device_id');
 	if (legacyDeviceId) next.drive.deviceId = legacyDeviceId;
 
@@ -232,7 +314,6 @@ export function migrateDeviceStateInStorage(
 	const legacyClientIdOverride = storage.getItem('google_client_id_override');
 	if (legacyClientIdOverride !== null) next.drive.clientIdOverride = legacyClientIdOverride;
 
-	// Auth legacy: google_auth_storage או gdrive_token
 	const legacyAuthStorageRaw = storage.getItem('google_auth_storage');
 	const legacyAuthStorage = safeParseJson<GoogleAuthStorage>(legacyAuthStorageRaw);
 	if (legacyAuthStorage && legacyAuthStorage.accessToken) {
@@ -244,7 +325,6 @@ export function migrateDeviceStateInStorage(
 		if (migratedAuth) next.auth.googleAuthStorage = migratedAuth;
 	}
 
-	// UI legacy: floating-board-state
 	const legacyFloatingRaw = storage.getItem('floating-board-state');
 	const legacyFloating = safeParseJson<any>(legacyFloatingRaw);
 	if (validateFloatingBoardPosition(legacyFloating)) {
@@ -253,7 +333,6 @@ export function migrateDeviceStateInStorage(
 
 	storage.setItem(DEVICE_STATE_STORAGE_KEY, JSON.stringify(next));
 
-	// ניקוי מפתחות ישנים (חד-פעמי)
 	for (const key of LEGACY_KEYS_TO_REMOVE) {
 		storage.removeItem(key);
 	}
@@ -261,12 +340,47 @@ export function migrateDeviceStateInStorage(
 	return next;
 }
 
-let cached: DeviceStateV1 | null = null;
+/** normalize partial V1 data (for migration path) */
+function normalizeV1ForMigration(state: any, userAgent: string): DeviceStateV1 {
+	const fallback = createDefaultDeviceState(userAgent);
+	return {
+		version: 1,
+		drive: {
+			deviceId: state?.drive?.deviceId || fallback.drive.deviceId,
+			deviceName: state?.drive?.deviceName || fallback.drive.deviceName,
+			lastKnownWriteId: state?.drive?.lastKnownWriteId ?? null,
+			autoBackupEnabled:
+				typeof state?.drive?.autoBackupEnabled === 'boolean'
+					? state.drive.autoBackupEnabled
+					: true,
+			useRedirectMode:
+				typeof state?.drive?.useRedirectMode === 'boolean'
+					? state.drive.useRedirectMode
+					: false,
+			clientIdOverride: state?.drive?.clientIdOverride || '',
+			v2Cache:
+				typeof state?.drive?.v2Cache === 'object' && state.drive.v2Cache
+					? state.drive.v2Cache
+					: {}
+		},
+		auth: {
+			googleAuthStorage: state?.auth?.googleAuthStorage ?? null
+		},
+		settings: {
+			ui: {
+				floatingBoard: validateFloatingBoardPosition(state?.settings?.ui?.floatingBoard)
+					? state.settings.ui.floatingBoard
+					: { ...DEFAULT_FLOATING_BOARD }
+			}
+		}
+	};
+}
+
+let cached: DeviceStateV2 | null = null;
 
 export const deviceState = {
-	load(): DeviceStateV1 {
+	load(): DeviceStateV2 {
 		if (!browser) {
-			// בצד השרת אין localStorage, נחזיר default "ריק".
 			return createDefaultDeviceState('');
 		}
 
@@ -277,21 +391,23 @@ export const deviceState = {
 		return migrated;
 	},
 
-	save(next: DeviceStateV1) {
+	save(next: DeviceStateV2) {
 		if (!browser) return;
 		cached = next;
 		localStorage.setItem(DEVICE_STATE_STORAGE_KEY, JSON.stringify(next));
 	},
 
-	update(mutator: (draft: DeviceStateV1) => void): DeviceStateV1 {
+	update(mutator: (draft: DeviceStateV2) => void): DeviceStateV2 {
 		const current = this.load();
-		// structuredClone קיים בדפדפנים מודרניים; fallback ל-JSON.
 		const draft =
 			typeof structuredClone === 'function'
 				? structuredClone(current)
-				: (JSON.parse(JSON.stringify(current)) as DeviceStateV1);
+				: (JSON.parse(JSON.stringify(current)) as DeviceStateV2);
 		mutator(draft);
-		const normalized = normalizeDeviceStateV1(draft, typeof navigator !== 'undefined' ? navigator.userAgent : '');
+		const normalized = normalizeDeviceStateV2(
+			draft,
+			typeof navigator !== 'undefined' ? navigator.userAgent : ''
+		);
 		this.save(normalized);
 		return normalized;
 	},
