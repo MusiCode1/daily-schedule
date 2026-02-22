@@ -1,5 +1,30 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-22 14:20
+
+### הוספת בדיקות יחידה לשכבת Backup ו-Store
+
+נוספו 39 בדיקות נוספות המכסות את שכבת הגיבוי עם mock repo ואת סטור הסנכרון.
+
+---
+
+#### מה בוצע?
+
+- **קובץ חדש** `sveltekit-version/tests/unit/services/sync/driveBackupV2.test.ts` — 21 בדיקות:
+  - `backupWithHistory`: גיבוי ראשון (snapshot), גיבוי שני (delta), forceSnapshot, אין שינויים (throws), snapshot אוטומטי אחרי 20 deltas, שמירת history ל-repo, writeId אחיד ב-manifest ובהיסטוריה
+  - `backupToDriveV2`: cache miss (כתיבה), cache hit (דילוג), manifest תמיד נכתב
+  - `restoreWithMerge`: ללא local, writeIds זהים, ללא history, ללא ancestor, merge מוצלח (שדות שונים), last-write-wins (שדה זהה)
+  - Mock repo פנימי ב-memory (`Map<string, any>`) ללא תלות ב-Google Drive
+
+- **קובץ חדש** `sveltekit-version/tests/unit/stores/syncStore.test.ts` — 18 בדיקות:
+  - `syncStarted`, `syncSucceeded`, `syncFailed`, `setOffline`, `resetSyncStatus`
+  - בדיקות רצף: Started→Succeeded, Started→Failed→Started, מספר Failed, Succeeded אחרי Failed
+
+#### בדיקות שבוצעו
+
+- `npx vitest run tests/unit/services/sync/driveBackupV2.test.ts tests/unit/stores/syncStore.test.ts` — 39 בדיקות עברו
+- `npm run check` — 0 שגיאות, 0 אזהרות
+
 ## 2026-02-22 13:45
 
 ### הוספת בדיקות יחידה למנגנון הסנכרון (syncEngine + historyManager)
