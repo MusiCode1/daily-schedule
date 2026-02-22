@@ -2,7 +2,8 @@ import { page } from 'vitest/browser';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-svelte';
 import { INITIAL_STATE } from '$lib/data/defaults';
-import { STORAGE_KEY } from '$lib/stores/persistence';
+
+const STORAGE_KEY = 'daily-schedule-data';
 
 describe('/tasks/+page.svelte', () => {
 	it('should render h1', async () => {

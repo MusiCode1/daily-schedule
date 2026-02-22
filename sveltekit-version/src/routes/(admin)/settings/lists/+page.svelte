@@ -5,8 +5,8 @@
   import ImageDisplay from '$lib/components/ImageDisplay.svelte';
   import ListEditModal from '$lib/components/ListEditModal.svelte';
   import UserPickerModal from '$lib/components/UserPickerModal.svelte';
-  import { TEXTS } from '$lib/services/language';
-  import { DEFAULT_LIST_IMAGE } from '$lib/config';
+  import { TEXTS } from '$lib/data/texts';
+  import { DEFAULT_LIST_IMAGE } from '$lib/data/defaults';
 
   // ניהול רשימות
   let managedUserId = $state('');

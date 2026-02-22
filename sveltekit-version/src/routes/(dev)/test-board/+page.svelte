@@ -1,6 +1,6 @@
 <script lang="ts">
 	import FloatingIframe from '$lib/components/FloatingIframe.svelte';
-	import { TEXTS } from '$lib/services/language';
+	import { TEXTS } from '$lib/data/texts';
 
 	// הגדרות לוחות תקשורת
 	const boards = [

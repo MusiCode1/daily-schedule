@@ -1,6 +1,6 @@
 <script lang="ts">
 	import GoogleDriveBackup from './_components/GoogleDriveBackup.svelte';
-	import { TEXTS } from '$lib/services/language';
+	import { TEXTS } from '$lib/data/texts';
 </script>
 
 <h2>{TEXTS.GOOGLE_DRIVE_TITLE}</h2>

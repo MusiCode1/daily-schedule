@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { floatingBoardState } from '$lib/services/floatingBoardState';
-	import { TEXTS } from '$lib/services/language';
+	import { deviceState, type FloatingBoardPosition } from '$lib/stores/deviceState';
+	import { TEXTS } from '$lib/data/texts';
 
 	// Props
 	let {
@@ -28,12 +28,22 @@
 	let startWidth = 0;
 	let startHeight = 0;
 
-	// טעינת המצב מ-localStorage בכל פעם שהחלון נפתח
+	function loadBoardPosition(): FloatingBoardPosition {
+		const ds = deviceState.load();
+		return ds.settings.ui.floatingBoard;
+	}
+
+	function saveBoardPosition(pos: FloatingBoardPosition): void {
+		deviceState.update((draft) => {
+			draft.settings.ui.floatingBoard = pos;
+		});
+	}
+
 	$effect(() => {
 		if (isVisible) {
-			const savedState = floatingBoardState.load();
-			position = { top: savedState.top, left: savedState.left };
-			windowSize = { width: savedState.width, height: savedState.height };
+			const saved = loadBoardPosition();
+			position = { top: saved.top, left: saved.left };
+			windowSize = { width: saved.width, height: saved.height };
 		}
 	});
 
@@ -119,12 +129,7 @@
 		if (floatingWindow) {
 			const rect = floatingWindow.getBoundingClientRect();
 			position = { top: rect.top, left: rect.left };
-			floatingBoardState.save({
-				top: rect.top,
-				left: rect.left,
-				width: rect.width,
-				height: rect.height
-			});
+			saveBoardPosition({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
 		}
 	}
 
@@ -194,12 +199,7 @@
 			const rect = floatingWindow.getBoundingClientRect();
 			position = { top: rect.top, left: rect.left };
 			windowSize = { width: rect.width, height: rect.height };
-			floatingBoardState.save({
-				top: rect.top,
-				left: rect.left,
-				width: rect.width,
-				height: rect.height
-			});
+			saveBoardPosition({ top: rect.top, left: rect.left, width: rect.width, height: rect.height });
 		}
 	}
 

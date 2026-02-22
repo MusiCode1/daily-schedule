@@ -3,7 +3,7 @@
   import ImageUploader from './ImageUploader.svelte';
   import type { Person } from '$lib/types';
   import { Button, TextInput } from '$lib/components/ui';
-  import { TEXTS } from '$lib/services/language';
+  import { TEXTS } from '$lib/data/texts';
 
   // Props
   let {

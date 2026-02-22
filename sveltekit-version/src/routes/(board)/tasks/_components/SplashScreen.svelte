@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
   import favicon from '$lib/assets/logo.svg';
-  import { TEXTS } from '$lib/services/language';
+  import { TEXTS } from '$lib/data/texts';
 
   // רכיב זה יוצג בזמן שהאפליקציה טוענת נתונים
 </script>

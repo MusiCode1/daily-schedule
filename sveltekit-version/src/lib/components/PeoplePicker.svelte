@@ -3,7 +3,7 @@
   import PersonForm from './PersonForm.svelte';
   import ImageDisplay from './ImageDisplay.svelte';
   import { Button } from '$lib/components/ui';
-  import { TEXTS } from '$lib/services/language';
+  import { TEXTS } from '$lib/data/texts';
 
   // Props
   let {

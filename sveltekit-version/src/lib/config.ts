@@ -1,6 +1,3 @@
-// תמונת ברירת מחדל לרשימות
-export const DEFAULT_LIST_IMAGE = '/images/times/list_morning_sun.png';
-
 // Google Client ID
 // This should be replaced with the actual Client ID from Google Cloud Console
 // For local development, this might need to be added// Google Drive API Configuration

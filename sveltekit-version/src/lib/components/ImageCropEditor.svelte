@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { ImageCropData } from '$lib/types';
   import { untrack } from 'svelte';
-  import { TEXTS } from '$lib/services/language';
+  import { TEXTS } from '$lib/data/texts';
 
   let {
     imageSrc,

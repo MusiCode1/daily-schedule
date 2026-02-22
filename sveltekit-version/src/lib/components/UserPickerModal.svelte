@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { userStore } from '$lib/stores/userStore.svelte';
-	import { TEXTS } from '$lib/services/language';
+	import { TEXTS } from '$lib/data/texts';
 	import ImageDisplay from './ImageDisplay.svelte';
 
 	interface Props {

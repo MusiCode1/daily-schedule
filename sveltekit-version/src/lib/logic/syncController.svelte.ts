@@ -175,16 +175,16 @@ export class SyncController {
 				remoteWriteId = restoreResult.manifest.syncMetadata.writeId;
 				mergedFromRemote = restoreResult.merged;
 
-				const shouldApplyRemoteState =
-					restoreResult.merged ||
-					!this.lastKnownWriteId ||
-					this.lastKnownWriteId !== remoteWriteId;
+			const shouldApplyRemoteState =
+				restoreResult.merged ||
+				!this.lastKnownWriteId ||
+				this.lastKnownWriteId !== remoteWriteId;
 
-				if (shouldApplyRemoteState) {
-					console.log(TAG, 'מעדכן local state עם state מהענן');
-					globalState.state = restoreResult.state;
-					globalState.save();
-				}
+			if (shouldApplyRemoteState) {
+				console.log(TAG, 'מעדכן local state עם state מהענן');
+				globalState.state = restoreResult.state;
+				globalState.save();
+			}
 
 				stateForUpload = restoreResult.state;
 				this.saveLastKnownWriteId(remoteWriteId);
