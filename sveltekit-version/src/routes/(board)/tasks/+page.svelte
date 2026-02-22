@@ -9,10 +9,10 @@
 	import type { List } from '$lib/types';
 	import { TasksBoardController } from '$lib/logic/tasksBoard.svelte';
 	import { ListsNavigationController } from '$lib/logic/listsNavigation.svelte';
-	import { SessionController } from '$lib/logic/session.svelte';
+	import { userStore } from '$lib/stores/userStore.svelte';
 	import { onMount } from 'svelte';
 	import FloatingIframe from '$lib/components/FloatingIframe.svelte';
-	import { TEXTS } from '$lib/services/language';
+	import { TEXTS } from '$lib/data/texts';
 	import AddModal from './_components/AddModal.svelte';
 	import BoardActionCard from './_components/BoardActionCard.svelte';
 	import BoardFabAddButton from './_components/BoardFabAddButton.svelte';
@@ -24,8 +24,6 @@
 	import SplashScreen from './_components/SplashScreen.svelte';
 	import TaskRow from './_components/TaskRow.svelte';
 
-	// -- אתחול Controllers --
-	const session = new SessionController();
 	const nav = new ListsNavigationController();
 	const board = new TasksBoardController();
 
@@ -54,7 +52,7 @@
 
 	onMount(() => {
 		isLoaded = true;
-		if (!session.currentUser) {
+		if (!userStore.currentUser) {
 			void goto(resolve('/login'), { replaceState: true }).catch((error) => {
 				console.warn('[TasksPage] navigation to /login failed', error);
 			});
@@ -77,10 +75,10 @@
 		description: string;
 		peopleIds: string[];
 	}) {
-		if (!session.currentUser) return;
+		if (!userStore.currentUser) return;
 
 		if (editingListForModal) {
-			listStore.updateList(session.currentUser.id, editingListForModal.id, {
+			listStore.updateList(userStore.currentUser.id, editingListForModal.id, {
 				name: formData.name,
 				greeting: formData.greeting,
 				logo: formData.logo,
@@ -89,9 +87,9 @@
 				peopleIds: formData.peopleIds.length > 0 ? formData.peopleIds : undefined
 			});
 		} else {
-			const newListId = listStore.addList(session.currentUser.id, formData.name);
+			const newListId = listStore.addList(userStore.currentUser.id, formData.name);
 			if (newListId) {
-				listStore.updateList(session.currentUser.id, newListId, {
+				listStore.updateList(userStore.currentUser.id, newListId, {
 					greeting: formData.greeting,
 					logo: formData.logo,
 					title: formData.title,
@@ -106,7 +104,7 @@
 
 {#if !isLoaded}
 	<SplashScreen />
-{:else if session.currentUser}
+{:else if userStore.currentUser}
 	<!-- מסך הלוח המלא -->
 	<header>
 		<div class="header-controls">
@@ -140,17 +138,17 @@
 			<button
 				class="avatar-circle"
 				onclick={() => {
-					session.logout();
+					userStore.logout();
 					goto(resolve('/login'), { replaceState: true });
 				}}
 				aria-label={TEXTS.SWITCH_USER_ARIA}
 			>
-				{#if session.currentUser.avatar}
+				{#if userStore.currentUser.avatar}
 					<div class="avatar-image">
-						<ImageDisplay imageSrc={session.currentUser.avatar} alt={session.currentUser.name} />
+						<ImageDisplay imageSrc={userStore.currentUser.avatar} alt={userStore.currentUser.name} />
 					</div>
 				{:else}
-					<span>{session.currentUser.name[0]}</span>
+					<span>{userStore.currentUser.name[0]}</span>
 				{/if}
 			</button>
 		</div>
@@ -159,10 +157,10 @@
 			<!-- פנייה מגדרית -->
 			<h1>
 				{board.greeting}
-				<span class="highlight-name">{session.currentUser.name}</span>
+				<span class="highlight-name">{userStore.currentUser.name}</span>
 			</h1>
 			<div class="subtitle">
-				{TEXTS.PRAISE_ALUF(session.currentUser.gender)}
+				{TEXTS.PRAISE_ALUF(userStore.currentUser.gender)}
 			</div>
 		</div>
 	</header>
@@ -234,8 +232,8 @@
 									icon={nav.activeList.isHidden ? '👁️' : '🚫'}
 									label={nav.activeList.isHidden ? TEXTS.SHOW_LIST : TEXTS.HIDE_LIST}
 									onclick={() => {
-										if (session.currentUser && nav.activeList) {
-											listStore.toggleListVisibility(session.currentUser.id, nav.activeList.id);
+										if (userStore.currentUser && nav.activeList) {
+											listStore.toggleListVisibility(userStore.currentUser.id, nav.activeList.id);
 										}
 									}}
 								/>
@@ -245,8 +243,8 @@
 									icon={nav.activeList.isLocked ? '🔓' : '🔒'}
 									label={nav.activeList.isLocked ? TEXTS.UNLOCK_LIST : TEXTS.LOCK_LIST}
 									onclick={() => {
-										if (session.currentUser && nav.activeList) {
-											listStore.toggleListLock(session.currentUser.id, nav.activeList.id);
+										if (userStore.currentUser && nav.activeList) {
+											listStore.toggleListLock(userStore.currentUser.id, nav.activeList.id);
 										}
 									}}
 								/>
@@ -326,7 +324,7 @@
 	<ListEditModal
 		isOpen={isListEditModalOpen}
 		editingList={editingListForModal}
-		userId={session.currentUser?.id || ''}
+		userId={userStore.currentUser?.id || ''}
 		onclose={() => (isListEditModalOpen = false)}
 		onsave={handleSaveList}
 	/>
