@@ -1,5 +1,32 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-22 14:20
+
+### הוספת בדיקות יחידה לשכבת Backup ו-Store
+
+נוספו 39 בדיקות נוספות המכסות את שכבת הגיבוי עם mock repo ואת סטור הסנכרון.
+
+---
+
+#### מה בוצע?
+
+- **קובץ חדש** `sveltekit-version/tests/unit/services/sync/driveBackupV2.test.ts` — 21 בדיקות:
+  - `backupWithHistory`: גיבוי ראשון (snapshot), גיבוי שני (delta), forceSnapshot, אין שינויים (throws), snapshot אוטומטי אחרי 20 deltas, שמירת history ל-repo, writeId אחיד ב-manifest ובהיסטוריה
+  - `backupToDriveV2`: cache miss (כתיבה), cache hit (דילוג), manifest תמיד נכתב
+  - `restoreWithMerge`: ללא local, writeIds זהים, ללא history, ללא ancestor, merge מוצלח (שדות שונים), last-write-wins (שדה זהה)
+  - Mock repo פנימי ב-memory (`Map<string, any>`) ללא תלות ב-Google Drive
+
+- **קובץ חדש** `sveltekit-version/tests/unit/stores/syncStore.test.ts` — 18 בדיקות:
+  - `syncStarted`, `syncSucceeded`, `syncFailed`, `setOffline`, `resetSyncStatus`
+  - בדיקות רצף: Started→Succeeded, Started→Failed→Started, מספר Failed, Succeeded אחרי Failed
+
+#### בדיקות שבוצעו
+
+- `npx vitest run tests/unit/services/sync/driveBackupV2.test.ts tests/unit/stores/syncStore.test.ts` — 39 בדיקות עברו
+- `npm run check` — 0 שגיאות, 0 אזהרות
+
+---
+
 ## 2026-02-22 14:10
 
 ### תיקון באג סנכרון: שינויים מקומיים לא עלו ל-Google Drive
@@ -107,6 +134,36 @@ return { state: params.localState, manifest: remoteManifest, merged: false, remo
 בסינכרון זה נחשף גם כשל נפרד: כשה-`historyManager` לא מוצא common ancestor בין שני writeIds (למשל כשגיבוי ישן קדם למערכת ה-history), הפולבק הוא "השתמש במצב הענן" — מה שמוחק שינויים מקומיים. יש לשקול פולבק שמר יותר (keep-local או conflict UI) כנושא נפרד.
 
 ---
+
+## 2026-02-22 13:45
+
+### הוספת בדיקות יחידה למנגנון הסנכרון (syncEngine + historyManager)
+
+נוספו 50 בדיקות יחידה לפונקציות הטהורות של מנגנון הסנכרון, המכסות את כל הלוגיקה המרכזית ללא תלות ב-I/O.
+
+---
+
+#### מה בוצע?
+
+- **קובץ חדש** `sveltekit-version/tests/unit/services/sync/syncEngine.test.ts` — 20 בדיקות:
+  - `calculateDelta`: זיהוי שינויים (שם, הוספה, מחיקה, order)
+  - `applyDelta`: החלת delta, round-trip, אי-מוטציה של base
+  - `threeWayMerge`: merge בלי שינויים, צד אחד, שני צדדים, שדות שונים, אותו שדה (last-write-wins), הוספת משימות במקביל, נורמליזציית order, tie-breaker לפי id
+  - `areStatesEqual`: השוואה תוך התעלמות מ-timestamps
+
+- **הרחבת** `sveltekit-version/tests/unit/services/sync/historyManager.test.ts` — מ-2 ל-30 בדיקות:
+  - `createEmptyHistory`: מבנה ברירת מחדל
+  - `appendToHistory`: הוספת snapshot, delta, סדר כרונולוגי
+  - `shouldCreateSnapshot`: genesis, ללא snapshot, פחות/בדיוק/מעל 20 deltas, איפוס אחרי snapshot שני
+  - `findEntryByWriteId`: מציאה לפי writeId, null עבור חסר
+  - `findCommonAncestor`: שרשרת לינארית, ענפים, writeId חסר, אותו writeId, שחזור state
+  - `mergeHistories`: entries חדשים, ללא כפילויות, מיון לפי timestamp, histories ריקים, max version
+  - `reconstructState` (הרחבה): snapshot ישיר, delta בודד, שרשרת 5 deltas, writeId חסר, delta ללא snapshot
+
+#### בדיקות שבוצעו
+
+- `npx vitest run tests/unit/services/sync/` — 50 בדיקות עברו (2 קבצים)
+- `npm run check` — 0 שגיאות, 0 אזהרות
 
 ## 2026-02-16 18:31
 
