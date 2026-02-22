@@ -552,7 +552,7 @@ export async function restoreWithMerge(params: {
 	localState: AppState | null; // State מקומי נוכחי
 	localWriteId: string | null; // writeId מקומי אחרון
 	now?: number;
-}): Promise<{ state: AppState; manifest: ManifestV2; merged: boolean }> {
+}): Promise<{ state: AppState; manifest: ManifestV2; merged: boolean; remoteState?: AppState }> {
 	console.log(`${TAG} restoreWithMerge started`, {
 		manifestFileId: params.manifestFileId,
 		hasLocalState: !!params.localState,
@@ -582,7 +582,7 @@ export async function restoreWithMerge(params: {
 		// 3. אם ה-writeIds זהים - אין שינויים
 		if (params.localWriteId === remoteWriteId) {
 			console.log(`${TAG} writeIds match, no changes`);
-			return { state: params.localState, manifest: remoteManifest, merged: false };
+			return { state: params.localState, manifest: remoteManifest, merged: false, remoteState };
 		}
 
 		// 4. צריך merge - קרא את ההיסטוריה

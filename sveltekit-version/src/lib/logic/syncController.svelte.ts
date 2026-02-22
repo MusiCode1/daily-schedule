@@ -189,9 +189,13 @@ export class SyncController {
 				stateForUpload = restoreResult.state;
 				this.saveLastKnownWriteId(remoteWriteId);
 
-				// במקרה של pull מהענן בלבד, ה-baseline המקומי הוא state שהתקבל מהענן
-				if (!restoreResult.merged) {
+				if (!restoreResult.merged && shouldApplyRemoteState) {
+					// pull מהענן בלבד — ה-baseline המקומי הוא state שהתקבל מהענן
 					this.previousState = cloneAppState(stateForUpload);
+				} else if (!restoreResult.merged && !shouldApplyRemoteState && restoreResult.remoteState) {
+					// writeIds תואמים — השתמש ב-remoteState כ-baseline לזיהוי שינויים מקומיים
+					// בלעדי זה, calculateDelta יחזיר null כי previousState === stateForUpload
+					this.previousState = cloneAppState(restoreResult.remoteState);
 				}
 			} else {
 				console.log(TAG, 'לא נמצא manifest בענן - מדלג על שלב restore');
