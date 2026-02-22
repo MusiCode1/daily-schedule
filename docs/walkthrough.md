@@ -1,5 +1,29 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-22 20:45
+
+### בדיקות E2E לסנכרון — FakeRemote + 17 תרחישים
+
+#### מה בוצע?
+
+נוסף קובץ `tests/integration/services/sync/googleDriveSync.e2e.test.ts` עם 17 טסטי integration.
+
+**המנגנון — `FakeRemote`:**
+`SyncProvider` עם "remote" בזיכרון (content, progress, history, assets, manifest). מכשירים שונים משתמשים באותו instance, מה שמאפשר לדמות סצנריות מציאותיות ללא תלות ב-API חיצוני.
+
+**8 תרחישים:**
+1. **סנכרון ראשון** — pull מחזיר localState, push יוצר snapshot
+2. **אין שינויים** — pull מחזיר מיד (לא מוריד קבצים), push זורק "No changes"
+3. **מכשיר חדש** — pull מחזיר state מרוחק ללא merge
+4. **3-way merge** — שני מכשירים שינו, מיזוג עם שמירת שני השינויים
+5. **שגיאת אימות** — SyncError category='auth' ב-pull ו-push
+6. **שגיאת רשת** — SyncError category='network' ב-pull ו-push
+7. **assets** — העלאת blob, הורדה ל-db, skip ב-push חוזר
+8. **מחזור חיים מלא** — 2 מכשירים × 3 סבבי push-pull
+
+#### תיקונים נוספים
+- `googleDriveSyncProvider.ts`: הוסרו dynamic imports מיותרים (`await import('./driveFilesApi')`) → static imports בראש הקובץ
+
 ## 2026-02-22 20:30
 
 ### ניקוי: מחיקת תיקיית `drive/` — כל קוד Google Drive עבר ל-`sync/providers/google-drive/`
