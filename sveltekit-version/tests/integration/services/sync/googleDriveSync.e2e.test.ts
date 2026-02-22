@@ -394,11 +394,10 @@ describe('Google Drive Sync E2E', () => {
 	// ──────────────────────────────────────────────────────────────────────────
 	describe('תרחיש 5: שגיאת אימות', () => {
 		it('pull זורק SyncError עם category=auth כשאין token', async () => {
-			const authFailProvider: SyncProvider = {
-				...remote,
-				initialize: async () => {
-					throw new Error('Not authenticated');
-				}
+			// Object.create: inherits all prototype methods, overrides initialize
+			const authFailProvider = Object.create(remote) as SyncProvider;
+			authFailProvider.initialize = async () => {
+				throw new Error('Not authenticated');
 			};
 
 			await expect(pull(authFailProvider, makeState(), null, makeDb())).rejects.toSatisfy(
@@ -407,11 +406,9 @@ describe('Google Drive Sync E2E', () => {
 		});
 
 		it('push זורק SyncError עם category=auth כשאין token', async () => {
-			const authFailProvider: SyncProvider = {
-				...remote,
-				initialize: async () => {
-					throw new Error('Not authenticated');
-				}
+			const authFailProvider = Object.create(remote) as SyncProvider;
+			authFailProvider.initialize = async () => {
+				throw new Error('Not authenticated');
 			};
 
 			await expect(
@@ -427,11 +424,9 @@ describe('Google Drive Sync E2E', () => {
 	// ──────────────────────────────────────────────────────────────────────────
 	describe('תרחיש 6: שגיאת רשת', () => {
 		it('push זורק SyncError עם category=network כשwrite נכשל', async () => {
-			const networkFailProvider: SyncProvider = {
-				...remote,
-				writeContent: async () => {
-					throw new Error('Upload failed: 503 Service Unavailable');
-				}
+			const networkFailProvider = Object.create(remote) as SyncProvider;
+			networkFailProvider.writeContent = async () => {
+				throw new Error('Upload failed: 503 Service Unavailable');
 			};
 
 			await expect(
@@ -448,11 +443,9 @@ describe('Google Drive Sync E2E', () => {
 				forceSnapshot: true, generateWriteId: () => 'w1'
 			});
 
-			const networkFailProvider: SyncProvider = {
-				...remote,
-				pullContent: async () => {
-					throw new Error('Download failed: 500');
-				}
+			const networkFailProvider = Object.create(remote) as SyncProvider;
+			networkFailProvider.pullContent = async () => {
+				throw new Error('Download failed: 500');
 			};
 
 			await expect(

@@ -142,9 +142,9 @@ export async function pull(
 	localState: AppState | null,
 	localWriteId: string | null,
 	db: SyncDb,
-	options?: { now?: number }
+	options?: { now?: number; needsBaseline?: boolean }
 ): Promise<PullResult> {
-	console.log(TAG, 'pull started', { localWriteId });
+	console.log(TAG, 'pull started', { localWriteId, needsBaseline: options?.needsBaseline });
 	const now = options?.now ?? Date.now();
 
 	try {
@@ -160,8 +160,19 @@ export async function pull(
 
 		const remoteWriteId = remote.writeId;
 
-		// 2. writeIds זהים → אין שינויים
+		// 2. writeIds זהים → אין שינויים מרוחקים
+		// אבל אם needsBaseline=true (סנכרון ראשון בסשן) — מורידים remoteState
+		// כדי שה-syncController יוכל לזהות שינויים מקומיים שטרם הועלו
 		if (localWriteId && localWriteId === remoteWriteId) {
+			if (options?.needsBaseline) {
+				console.log(TAG, 'pull: writeIds match, downloading remoteState for baseline');
+				try {
+					const remoteState = await pullAndBuildState(provider, db, now);
+					return { state: localState!, remoteWriteId, merged: false, remoteState };
+				} catch (e) {
+					console.warn(TAG, 'pull: failed to download baseline remoteState, continuing without', e);
+				}
+			}
 			console.log(TAG, 'pull: writeIds match, no changes');
 			return { state: localState!, remoteWriteId, merged: false };
 		}

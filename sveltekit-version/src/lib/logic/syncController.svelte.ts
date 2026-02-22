@@ -44,7 +44,9 @@ export class SyncController {
 		if (typeof window === 'undefined') return;
 		const ds = deviceState.load();
 		this.lastKnownWriteId = ds.drive.lastKnownWriteId;
-		this.previousState = cloneAppState(globalState.state);
+		// previousState=null מכוון: בסנכרון הראשון נוריד remoteState כ-baseline
+		// (ראה postmortem sync-bug-2026-02-22 — כשל #2)
+		this.previousState = null;
 	}
 
 	private saveLastKnownWriteId(writeId: string) {
@@ -138,7 +140,11 @@ export class SyncController {
 				googleDriveSyncProvider,
 				localState,
 				this.lastKnownWriteId,
-				db
+				db,
+				// needsBaseline: אם אין previousState — זה הסנכרון הראשון בסשן.
+				// במקרה זה pull יוריד remoteState (גם אם writeIds תואמים)
+				// כדי לאפשר זיהוי שינויים מקומיים שטרם הועלו.
+				{ needsBaseline: this.previousState === null }
 			);
 
 			const remoteWriteId = pullResult.remoteWriteId;
@@ -161,11 +167,16 @@ export class SyncController {
 				this.saveLastKnownWriteId(remoteWriteId);
 			}
 
-			if (!mergedFromRemote && shouldApplyRemoteState) {
-				this.previousState = cloneAppState(stateForUpload);
-			} else if (!mergedFromRemote && !shouldApplyRemoteState && pullResult.remoteState) {
-				this.previousState = cloneAppState(pullResult.remoteState);
-			}
+		if (!mergedFromRemote && shouldApplyRemoteState) {
+			this.previousState = cloneAppState(stateForUpload);
+		} else if (!mergedFromRemote && !shouldApplyRemoteState && pullResult.remoteState) {
+			// baseline מה-remote: מנרמלים שדות per-device ל-local
+			// כי pullAndBuildState מחזיר lastModified=now ו-settings={} שגורמים ל-delta פנטום
+			const baseline = cloneAppState(pullResult.remoteState);
+			baseline.lastModified = stateForUpload.lastModified;
+			baseline.settings = cloneAppState(stateForUpload).settings;
+			this.previousState = baseline;
+		}
 
 			// ─── החלטה: צריך להעלות? ──────────────────────────────────────
 			const hasLocalChanges = this.previousState
