@@ -1,4 +1,4 @@
-import { googleAuthService } from '$lib/services/drive/googleAuthService';
+import { googleAuthService } from './googleAuthService';
 import { deviceState } from '$lib/stores/deviceState';
 import { CURRENT_BACKUP_SCHEMA_VERSION } from '$lib/services/sync/constants';
 import type {
@@ -183,8 +183,8 @@ class GoogleDriveSyncProvider implements SyncProvider {
 		for (const [hash, blob] of newBlobs) {
 			const sha256Hash = hash as Sha256;
 			const name = toAssetFileName(hash);
-			const { driveFilesApi } = await import('$lib/services/drive/driveFilesApi');
-			const { driveHttpClient } = await import('$lib/services/drive/driveHttpClient');
+			const { driveFilesApi } = await import('./driveFilesApi');
+			const { driveHttpClient } = await import('./driveHttpClient');
 
 			const existing = await driveFilesApi.findFileByNameInFolder(name, ids.assetsFolderId);
 			let fileId = existing?.id || null;

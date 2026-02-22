@@ -8,8 +8,8 @@ import {
 	DRIVE_PROGRESS_FILE_NAME,
 	DRIVE_HISTORY_FILE_NAME
 } from './constants';
-import { driveFilesApi } from '$lib/services/drive/driveFilesApi';
-import { driveHttpClient } from '$lib/services/drive/driveHttpClient';
+import { driveFilesApi } from './driveFilesApi';
+import { driveHttpClient } from './driveHttpClient';
 import type { Sha256 } from '$lib/services/sync/syncTypes';
 import type { SyncHistory } from '$lib/services/sync/engine/types';
 

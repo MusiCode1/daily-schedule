@@ -10,7 +10,7 @@ let getFileMetadataImpl: (fileId: string) => Promise<DriveFileMeta>;
 let findOrCreateFolderImpl: (name: string, parentId?: string) => Promise<string>;
 let findFileByNameInFolderImpl: (name: string, parentId: string) => Promise<DriveFileMeta | null>;
 
-vi.mock('$lib/services/drive/driveFilesApi', () => {
+vi.mock('$lib/services/sync/providers/google-drive/driveFilesApi', () => {
 	return {
 		driveFilesApi: {
 			getFileMetadata: (fileId: string) => getFileMetadataImpl(fileId),
@@ -26,7 +26,7 @@ vi.mock('$lib/services/drive/driveFilesApi', () => {
 	};
 });
 
-vi.mock('$lib/services/drive/driveHttpClient', () => {
+vi.mock('$lib/services/sync/providers/google-drive/driveHttpClient', () => {
 	return {
 		driveHttpClient: {
 			downloadJson: async () => {
@@ -84,7 +84,7 @@ describe('dailyScheduleBackupRepo cache fallback', () => {
 
 	it('should fallback from stale cached manifestFileId to name-based lookup and update cache', async () => {
 		const { DEVICE_STATE_STORAGE_KEY } = await import('$lib/stores/deviceState');
-		const { DRIVE_MANIFEST_FILE_NAME } = await import('$lib/services/drive/constants');
+		const { DRIVE_MANIFEST_FILE_NAME } = await import('$lib/services/sync/providers/google-drive/constants');
 
 		// device-state עם manifestFileId מיושן
 		localStorage.setItem(
@@ -119,7 +119,7 @@ describe('dailyScheduleBackupRepo cache fallback', () => {
 			return { id: 'file:manifest-fresh', name };
 		};
 
-		const { dailyScheduleBackupRepo } = await import('$lib/services/drive/dailyScheduleBackupRepo');
+		const { dailyScheduleBackupRepo } = await import('$lib/services/sync/providers/google-drive/dailyScheduleBackupRepo');
 		const meta = await dailyScheduleBackupRepo.findV2ManifestMeta();
 
 		expect(meta?.id).toBe('file:manifest-fresh');

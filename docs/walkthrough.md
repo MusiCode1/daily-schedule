@@ -1,5 +1,44 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-22 20:30
+
+### ניקוי: מחיקת תיקיית `drive/` — כל קוד Google Drive עבר ל-`sync/providers/google-drive/`
+
+#### מה בוצע?
+
+**1. מחיקת קבצים מיותרים**
+
+- `drive/backupPayloads.ts` — היה re-export בלבד ל-`sync/payloads.ts`
+- `drive/crypto.ts` — היה re-export בלבד ל-`sync/crypto.ts`
+- `drive/types.ts` — הועבר ל-`sync/syncTypes.ts`
+- `drive/constants.ts` — הועבר ל-`sync/constants.ts` ו-`providers/google-drive/constants.ts`
+- `drive/driveBackupV2.ts` — המתזמר הישן, הוחלף ב-`syncOrchestrator.ts`
+- `drive/dailyScheduleBackupRepo.ts` — הועבר ל-`sync/providers/google-drive/`
+
+**2. העברת קבצי Google Drive API**
+
+- `drive/googleAuthService.ts` → `sync/providers/google-drive/googleAuthService.ts`
+- `drive/driveFilesApi.ts` → `sync/providers/google-drive/driveFilesApi.ts`
+- `drive/driveHttpClient.ts` → `sync/providers/google-drive/driveHttpClient.ts`
+- תיקיית `drive/` נמחקה לחלוטין
+
+**3. עדכון imports**
+
+- `sync/providers/google-drive/dailyScheduleBackupRepo.ts` ← imports יחסיים
+- `sync/providers/google-drive/googleDriveSyncProvider.ts` ← imports יחסיים
+- `logic/driveBackupSettings.svelte.ts` ← נתיב חדש לגוגל auth + repo
+- `routes/+layout.svelte` ← נתיב חדש לגוגל auth
+
+**4. טסטים**
+
+- נמחקו: `driveBackupV2.test.ts`, `driveBackupV2.integration.test.ts` (קוד שנמחק)
+- עודכנו imports: `backupPayloads.test.ts`, `crypto.test.ts`, `dailyScheduleBackupRepo.cache.test.ts`
+- הותקן מחדש: `jszip@3.10.1`
+
+#### החלטות ארכיטקטורה
+
+- **אפס תאימות לאחור**: כל re-exports הוסרו. המבנה הנוכחי הוא הסמכותי היחיד. היסטוריית הקוד הישן שמורה בגיט.
+
 ## 2026-02-22 19:45
 
 ### ריפקטור מרכזי: הפרדת סנכרון מ-Google Drive — ממשק SyncProvider גנרי

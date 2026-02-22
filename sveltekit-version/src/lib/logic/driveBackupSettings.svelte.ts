@@ -1,8 +1,8 @@
 import { GOOGLE_CLIENT_ID } from '$lib/config';
 import { TEXTS } from '$lib/data/texts';
 import { syncController } from '$lib/logic/syncController.svelte';
-import { googleAuthService, type DriveStatus } from '$lib/services/drive/googleAuthService';
-import { dailyScheduleBackupRepo } from '$lib/services/drive/dailyScheduleBackupRepo';
+import { googleAuthService, type DriveStatus } from '$lib/services/sync/providers/google-drive/googleAuthService';
+import { dailyScheduleBackupRepo } from '$lib/services/sync/providers/google-drive/dailyScheduleBackupRepo';
 import { deviceState } from '$lib/stores/deviceState';
 import { syncStatus } from '$lib/stores/syncStore';
 import { get } from 'svelte/store';
