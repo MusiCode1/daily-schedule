@@ -1,6 +1,6 @@
 <script lang="ts">
   import ImageDisplay from '$lib/components/ImageDisplay.svelte';
-  import { DEFAULT_LIST_IMAGE } from '$lib/config';
+  import { DEFAULT_LIST_IMAGE } from '$lib/data/defaults';
   
   let { 
     activeListId = $bindable("morning_routine"), 

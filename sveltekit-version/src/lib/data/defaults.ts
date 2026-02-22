@@ -1,6 +1,8 @@
 // src/lib/data/defaults.ts
 import type { AppState, List, UserProfile } from '$lib/types';
 
+export const DEFAULT_LIST_IMAGE = '/images/times/list_morning_sun.png';
+
 export const ACTIVITIES = [
 	{ id: 'toilet', name: 'שירותים', image: 'activity_toilet.png' },
 	{ id: 'breakfast', name: 'ארוחת בוקר', image: 'activity_breakfast.png' },

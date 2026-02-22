@@ -146,9 +146,6 @@ export class SyncController {
 
 		try {
 			syncStarted();
-			// #region agent log
-			fetch('http://127.0.0.1:7245/ingest/956cc918-c1e8-4dfb-a1e0-a07ce26108fe',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f3c2ad'},body:JSON.stringify({sessionId:'f3c2ad',location:'syncController.svelte.ts:sync-start',message:'sync started',data:{isManual,lastKnownWriteId:this.lastKnownWriteId,hasPreviousState:!!this.previousState,autoBackupEnabled:this.isAutoBackupEnabled()},timestamp:Date.now()})}).catch(()=>{});
-			// #endregion
 
 			// קבלת המצב המקומי הנוכחי
 			const localState = cloneAppState(globalState.state);
@@ -183,10 +180,6 @@ export class SyncController {
 				!this.lastKnownWriteId ||
 				this.lastKnownWriteId !== remoteWriteId;
 
-			// #region agent log
-			fetch('http://127.0.0.1:7245/ingest/956cc918-c1e8-4dfb-a1e0-a07ce26108fe',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f3c2ad'},body:JSON.stringify({sessionId:'f3c2ad',location:'syncController.svelte.ts:after-restore',message:'after restoreWithMerge',data:{remoteWriteId,mergedFromRemote:restoreResult.merged,localWriteId:this.lastKnownWriteId,shouldApplyRemoteState},timestamp:Date.now()})}).catch(()=>{});
-			// #endregion
-
 			if (shouldApplyRemoteState) {
 				console.log(TAG, 'מעדכן local state עם state מהענן');
 				globalState.state = restoreResult.state;
@@ -209,10 +202,6 @@ export class SyncController {
 				? !!calculateDelta(this.previousState, stateForUpload)
 				: true;
 			const shouldUpload = !remoteWriteId || mergedFromRemote || hasLocalChanges;
-
-			// #region agent log
-			fetch('http://127.0.0.1:7245/ingest/956cc918-c1e8-4dfb-a1e0-a07ce26108fe',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f3c2ad'},body:JSON.stringify({sessionId:'f3c2ad',location:'syncController.svelte.ts:upload-decision',message:'upload decision',data:{hasLocalChanges,mergedFromRemote,remoteWriteIdExists:!!remoteWriteId,shouldUpload},timestamp:Date.now()})}).catch(()=>{});
-			// #endregion
 
 			if (!shouldUpload) {
 				this.retryCount = 0;
@@ -257,9 +246,6 @@ export class SyncController {
 			// 6. איפוס retry counter
 			this.retryCount = 0;
 
-			// #region agent log
-			fetch('http://127.0.0.1:7245/ingest/956cc918-c1e8-4dfb-a1e0-a07ce26108fe',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f3c2ad'},body:JSON.stringify({sessionId:'f3c2ad',location:'syncController.svelte.ts:sync-success',message:'sync completed - uploaded',data:{newWriteId:result.writeId},timestamp:Date.now()})}).catch(()=>{});
-			// #endregion
 			syncSucceeded();
 			console.log(TAG, 'סנכרון הושלם בהצלחה', { writeId: result.writeId });
 		} catch (error) {
