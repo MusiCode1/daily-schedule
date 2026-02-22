@@ -1,5 +1,57 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-22 17:30
+
+### תיקון באג סנכרון #2: אובדן נתונים כשאין Common Ancestor בהיסטוריה
+
+תוקן באג נוסף שנחשף כתופעת לוואי של תיקון באג #1: כאשר מכשיר מנסה לבצע 3-way merge ולא מוצא ancestor משותף בהיסטוריה (למשל — גיבוי ישן שנוצר לפני שמערכת ה-history הוטמעה), הסנכרון דרס את המצב המקומי במצב הענן, מה שגרם לאובדן שינויים שהיו רק על המכשיר.
+
+---
+
+#### הבעיה
+
+שני מסלולי fallback ב-`restoreWithMerge` החזירו `remoteState` ו-`merged: false`:
+
+1. **"אין קובץ היסטוריה"** — גיבוי שנוצר לפני שמערכת ה-history הוטמעה
+2. **"אין common ancestor"** — המכשיר המקומי לא ידוע להיסטוריה (לדוגמה, `writeId` מגיבוי ישן)
+
+כאשר `merged: false`, ה-`syncController` לא העלה מחדש — ובכך נשכחו השינויים המקומיים.
+
+#### מה בוצע?
+
+**`driveBackupV2.ts` — שני fallback paths תוקנו:**
+
+```typescript
+// לפני — דרס מצב מקומי
+} catch (e) {
+    return { state: remoteState, manifest: remoteManifest, merged: false };
+}
+if (!ancestor.found || !ancestor.state) {
+    return { state: remoteState, manifest: remoteManifest, merged: false };
+}
+
+// אחרי — שמר מצב מקומי וכפה upload
+} catch (e) {
+    console.warn(`${TAG} no history found, cannot perform 3-way merge. Keeping local state.`, e);
+    return { state: params.localState!, manifest: remoteManifest, merged: true };
+}
+if (!ancestor.found || !ancestor.state) {
+    console.warn(`${TAG} no common ancestor found, keeping local state`);
+    return { state: params.localState!, manifest: remoteManifest, merged: true };
+}
+```
+
+#### החלטות ארכיטקטורה
+
+- **`merged: true` בפלבק**: מוחזר `merged: true` במקום `false` כדי שה-`syncController` יסמן `forceSnapshot: true` ב-`backupWithHistory`. כך נוצר snapshot חדש בענן עם הסטייט המקומי, שמבסס נקודת עוגן חדשה להיסטוריה — מה שמאפשר לסנכרונים עתידיים למצוא ancestor.
+- **שמרנות (keep local)**: כאשר לא ניתן לבצע 3-way merge, עדיף לשמור את המצב המקומי ("local wins") ולדאוג שהוא יעלה לענן, מאשר לדרוס אותו. המשתמש ראה שינויים מקומיים — הם חייבים להישמר.
+
+#### אימות
+
+הבאג הודגם עם Playwright (device1 ו-device2), הוזרק `lastKnownWriteId` ישן שאינו בהיסטוריה, ורומן סנכרון. הלוגים אישרו שהמסלול החדש (`no common ancestor found, keeping local state`) מופעל ושמבצע upload מוצלח עם `forceSnapshot: true`.
+
+---
+
 ## 2026-02-22 14:20
 
 ### הוספת בדיקות יחידה לשכבת Backup ו-Store
