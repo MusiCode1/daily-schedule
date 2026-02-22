@@ -598,6 +598,10 @@ export async function restoreWithMerge(params: {
 		// 5. מצא common ancestor
 		const ancestor = findCommonAncestor(history, params.localWriteId, remoteWriteId);
 
+		// #region agent log
+		fetch('http://127.0.0.1:7245/ingest/956cc918-c1e8-4dfb-a1e0-a07ce26108fe',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'f3c2ad'},body:JSON.stringify({sessionId:'f3c2ad',location:'driveBackupV2.ts:ancestor-search',message:'common ancestor search result',data:{localWriteId:params.localWriteId,remoteWriteId,ancestorFound:ancestor.found,ancestorWriteId:ancestor.writeId,historySize:history.entries.length},timestamp:Date.now()})}).catch(()=>{});
+		// #endregion
+
 		if (!ancestor.found || !ancestor.state) {
 			console.warn(`${TAG} no common ancestor found, using remote`);
 			return { state: remoteState, manifest: remoteManifest, merged: false };
