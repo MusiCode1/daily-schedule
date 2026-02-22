@@ -4,7 +4,7 @@
   import ImageUploader from '$lib/components/ImageUploader.svelte';
   import ImageDisplay from '$lib/components/ImageDisplay.svelte';
   import { Badge, Button, Card, IconButton, ModalShell, Select, TextInput } from '$lib/components/ui';
-  import { TEXTS } from '$lib/services/language';
+  import { TEXTS } from '$lib/data/texts';
 
   // ניהול משתמשים
   let isUserModalOpen = $state(false);

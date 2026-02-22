@@ -1,7 +1,7 @@
 <script lang="ts">
   import { ACTIVITIES } from '$lib/data/defaults';
   import ImageUploader from '$lib/components/ImageUploader.svelte';
-  import { TEXTS } from '$lib/services/language';
+  import { TEXTS } from '$lib/data/texts';
   import { onMount } from 'svelte';
 
   let { 

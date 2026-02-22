@@ -2,7 +2,7 @@
   import type { List } from '$lib/types';
   import ImageUploader from './ImageUploader.svelte';
   import PeoplePicker from './PeoplePicker.svelte';
-  import { TEXTS } from '$lib/services/language';
+  import { TEXTS } from '$lib/data/texts';
 
   // Props
   let { 

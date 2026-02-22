@@ -2,7 +2,7 @@
 	import { userStore } from '../stores/userStore.svelte';
 	import type { UserProfile } from '../types';
 	import ImageDisplay from './ImageDisplay.svelte';
-	import { TEXTS } from '$lib/services/language';
+	import { TEXTS } from '$lib/data/texts';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 

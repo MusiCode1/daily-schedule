@@ -2,7 +2,7 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { resolve } from '$app/paths';
-  import { TEXTS } from '$lib/services/language';
+  import { TEXTS } from '$lib/data/texts';
   import { fade } from 'svelte/transition';
 
   let { children } = $props();

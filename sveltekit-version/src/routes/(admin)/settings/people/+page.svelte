@@ -4,7 +4,7 @@
   import ImageDisplay from '$lib/components/ImageDisplay.svelte';
   import type { Person } from '$lib/types';
   import { ActionButton, Button, Card, ModalShell } from '$lib/components/ui';
-  import { TEXTS } from '$lib/services/language';
+  import { TEXTS } from '$lib/data/texts';
 
   // ניהול אנשים
   let isPersonModalOpen = $state(false);

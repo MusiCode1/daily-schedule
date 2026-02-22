@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { TEXTS } from '$lib/services/language';
+	import { TEXTS } from '$lib/data/texts';
 	import { driveBackupSettingsController } from '$lib/logic/driveBackupSettings.svelte';
 	import { syncStatus } from '$lib/stores/syncStore';
 

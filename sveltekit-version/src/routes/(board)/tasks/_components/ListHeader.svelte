@@ -1,6 +1,6 @@
 <script lang="ts">
   import ImageDisplay from '$lib/components/ImageDisplay.svelte';
-  import { TEXTS } from '$lib/services/language';
+  import { TEXTS } from '$lib/data/texts';
 
   // Props
   let { logo = '', title = '', description = '' }: {

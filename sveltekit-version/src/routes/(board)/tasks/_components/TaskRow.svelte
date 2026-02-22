@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Task } from '$lib/types';
   import ImageDisplay from '$lib/components/ImageDisplay.svelte';
-  import { TEXTS } from '$lib/services/language';
+  import { TEXTS } from '$lib/data/texts';
   import ActionButton from '$lib/components/ui/ActionButton.svelte';
 
   let { 

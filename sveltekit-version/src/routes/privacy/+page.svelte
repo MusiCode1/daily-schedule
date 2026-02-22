@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { TEXTS } from '$lib/services/language';
+	import { TEXTS } from '$lib/data/texts';
 
 </script>
 

@@ -4,7 +4,7 @@
   import ImageCropEditor from './ImageCropEditor.svelte';
   import ImageDisplay from './ImageDisplay.svelte';
   import type { ImageCropData } from '$lib/types';
-  import { TEXTS } from '$lib/services/language';
+  import { TEXTS } from '$lib/data/texts';
 
   let {
     imageSrc = null,

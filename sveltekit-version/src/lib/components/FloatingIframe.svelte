@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { floatingBoardState } from '$lib/services/floatingBoardState';
-	import { TEXTS } from '$lib/services/language';
+	import { TEXTS } from '$lib/data/texts';
 
 	// Props
 	let {
