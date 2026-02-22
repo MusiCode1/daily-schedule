@@ -1,5 +1,113 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-22 14:10
+
+### תיקון באג סנכרון: שינויים מקומיים לא עלו ל-Google Drive
+
+תוקן באג קריטי שבו שינויים מקומיים שבוצעו על מכשיר לא הועלו לענן, גורם לכך שסנכרון בין מכשירים נכשל בשקט ("מסונכרן" — אך הנתונים שונים).
+
+---
+
+#### הרקע
+
+האפליקציה מסנכרנת את המצב (`AppState`) עם Google Drive דרך `SyncController`. מנגנון הסנכרון:
+1. **Restore** — `restoreWithMerge()` מוריד את מצב הענן ומבצע 3-way merge אם נדרש
+2. **Delta check** — `calculateDelta(previousState, stateForUpload)` בודק האם יש שינויים מקומיים
+3. **Upload** — אם יש שינויים, `backupWithHistory()` מעלה לענן
+
+`previousState` אמור לשמר את "המצב שהועלה לאחרונה" — ה-baseline להשוואה.
+
+---
+
+#### מה היה הבאג
+
+**שני כשלים שרשרתיים ב-`syncController.svelte.ts`:**
+
+**כשל #1 — תנאי רחב מדי בשורה 193 (מקורי):**
+```typescript
+// לפני התיקון — תנאי שגוי
+if (!restoreResult.merged) {
+    this.previousState = cloneAppState(stateForUpload);
+}
+```
+כש-writeIds של המכשיר ושל הענן תואמים (אין שינויים מרוחקים), `restoreResult.merged = false`. התנאי הזה ירה תמיד — גם כשלא היה צורך — ואיפס את `previousState` ל-`stateForUpload`. בסינכרון הבא, `calculateDelta(stateForUpload, stateForUpload) = null`, ולא נמצאו שינויים → upload מדולג.
+
+**כשל #2 — אתחול לא נכון ב-`loadLocalState`:**
+```typescript
+// בעייתי: previousState = localState
+this.previousState = cloneAppState(globalState.state);
+```
+כשה-writeIds תואמים, `restoreWithMerge` מחזיר `state: localState` (לא מצב הענן). לכן גם `stateForUpload = localState`. כיוון ש-`previousState` אותחל ל-`localState`, ה-delta תמיד אפס.
+
+**תוצאה:** `hasLocalChanges = false` → `shouldUpload = false` → שינויים מקומיים לא עולים לעולם.
+
+**הוכחה מהלוגים (run-time evidence):**
+```json
+{"message":"previousState-reset-branch-FIRED","data":{"shouldApplyRemoteState":false}}
+{"message":"upload-decision","data":{"hasLocalChanges":false,"shouldUpload":false}}
+```
+
+---
+
+#### מה תוקן
+
+**תיקון #1 — `syncController.svelte.ts` (תנאי מדויק):**
+```typescript
+// לפני
+if (!restoreResult.merged) {
+    this.previousState = cloneAppState(stateForUpload);
+}
+
+// אחרי
+if (!restoreResult.merged && shouldApplyRemoteState) {
+    // pull מהענן בלבד — ה-baseline הוא מצב הענן
+    this.previousState = cloneAppState(stateForUpload);
+} else if (!restoreResult.merged && !shouldApplyRemoteState && restoreResult.remoteState) {
+    // writeIds תואמים — השתמש ב-remoteState כ-baseline לזיהוי שינויים מקומיים
+    // בלעדי זה, calculateDelta יחזיר null כי previousState === stateForUpload
+    this.previousState = cloneAppState(restoreResult.remoteState);
+}
+```
+
+**תיקון #2 — `driveBackupV2.ts` (החזרת `remoteState`):**
+`restoreWithMerge` כבר טען את מצב הענן (`remoteState`) אך לא החזיר אותו כשה-writeIds תואמים. הוספנו אותו לערך המוחזר:
+```typescript
+// לפני
+return { state: params.localState, manifest: remoteManifest, merged: false };
+
+// אחרי
+return { state: params.localState, manifest: remoteManifest, merged: false, remoteState };
+```
+
+**ה-baseline הנכון עכשיו:**
+- `previousState = remoteState` (מצב הענן — מה שהועלה לאחרונה)
+- `stateForUpload = localState` (עם שינויים מקומיים)
+- `calculateDelta(remoteState, localState)` → מזהה את השינויים → upload מתבצע ✓
+
+---
+
+#### אימות
+
+לוגים לאחר התיקון:
+```json
+{"message":"previousState-set-to-remoteState","data":{"hasRemoteState":true}}
+{"message":"upload-decision","data":{"hasLocalChanges":true,"shouldUpload":true}}
+```
+"גיבוי אחרון" התעדכן מ-16.2.2026 ל-22.2.2026. הסנכרון בין שני מכשירים עבד תקין.
+
+---
+
+#### קבצים שונו
+
+- `sveltekit-version/src/lib/logic/syncController.svelte.ts`
+- `sveltekit-version/src/lib/services/drive/driveBackupV2.ts`
+
+#### הערה לעתיד
+
+בסינכרון זה נחשף גם כשל נפרד: כשה-`historyManager` לא מוצא common ancestor בין שני writeIds (למשל כשגיבוי ישן קדם למערכת ה-history), הפולבק הוא "השתמש במצב הענן" — מה שמוחק שינויים מקומיים. יש לשקול פולבק שמר יותר (keep-local או conflict UI) כנושא נפרד.
+
+---
+
 ## 2026-02-16 18:31
 
 ### הוספת אינדיקטור סטטוס עגול בקצה השמאלי של שורת משימה
