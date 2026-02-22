@@ -1,5 +1,82 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-22 01:39
+
+### רפקטורינג: פישוט מבנה הקוד והסרת שכבות מיותרות
+
+סקירה מקיפה של כל מבנה הקוד בפרויקט, זיהוי כפילויות, שכבות מיותרות ומורכבות עודפת. בוצע רפקטורינג ממוקד שהקטין את מספר הקבצים ופישט את הזרימה.
+
+---
+
+#### מה בוצע?
+
+**1. הסרת SessionController**
+
+- `session.svelte.ts` היה proxy רזה (21 שורות) שרק העביר קריאות ל-`userStore` ללא ערך מוסף.
+- הקומפוננטות (`+page.svelte`, `login/+page.svelte`, `tasks/+page.svelte`) משתמשות כעת ישירות ב-`userStore`.
+- **קבצים שנמחקו**: `src/lib/logic/session.svelte.ts`
+- **קבצים ששונו**: `src/routes/+page.svelte`, `src/routes/(board)/login/+page.svelte`, `src/routes/(board)/tasks/+page.svelte`
+
+**2. מיזוג language.ts ו-audio.ts לתוך boosts.ts**
+
+- `language.ts` הכיל `LanguageService` (בניית רצפי משוב קולי) + ייצוא מחדש של `TEXTS`.
+- `audio.ts` הכיל `audioService` (נגן פשוט) שהוחלף ב-`audioSequencer` (חזק יותר ובשימוש כבר).
+- `boosts.ts` כולל כעת את כל הלוגיקה: חיזוקים, רצפי משוב, ונגינה.
+- כל ~27 קבצי קומפוננטות עודכנו לייבא `TEXTS` ישירות מ-`$lib/data/texts`.
+- **קבצים שנמחקו**: `src/lib/services/language.ts`, `src/lib/services/audio.ts`
+- **קבצים ששונו**: `src/lib/services/boosts.ts` + ~27 קבצי קומפוננטות (שינוי import)
+
+**3. הסרת floatingBoardState.ts**
+
+- שכבת עטיפה מיותרת (~136 שורות) שרק הוסיפה ולידציה כפולה מעל `deviceState`.
+- `FloatingIframe.svelte` משתמש כעת ישירות ב-`deviceState`.
+- **קבצים שנמחקו**: `src/lib/services/floatingBoardState.ts`
+- **קבצים ששונו**: `src/lib/components/FloatingIframe.svelte`
+
+**4. הטמעת persistence.ts בתוך globalState.svelte.ts**
+
+- `persistence.ts` (~42 שורות) הכיל 4 מתודות שהעבירו קריאות ל-`migrationService` ו-`localStorage`.
+- נשמש רק ב-`globalState.svelte.ts`, לכן הלוגיקה הוטמעה ישירות בו.
+- **קבצים שנמחקו**: `src/lib/stores/persistence.ts`
+- **קבצים ששונו**: `src/lib/stores/globalState.svelte.ts`
+
+**5. ניקוי syncStore.ts**
+
+- הוסר API ישן (deprecated) שכלל `syncState`, `setSyncStatus` ומתודות מיותרות.
+- נשאר רק ה-API המודרני: `syncStarted`, `syncSucceeded`, `syncFailed`, `setOffline`, `resetSyncStatus`.
+- **קבצים ששונו**: `src/lib/stores/syncStore.ts`
+
+**6. הסרת debug logging**
+
+- הוסרו קריאות `fetch` לשרת דיבאג מקומי (`127.0.0.1:7245`) מ-`syncController.svelte.ts` ו-`driveBackupV2.ts`.
+- **קבצים ששונו**: `src/lib/logic/syncController.svelte.ts`, `src/lib/services/drive/driveBackupV2.ts`
+
+**7. מחיקת index.ts ריק + העברת DEFAULT_LIST_IMAGE**
+
+- `src/lib/index.ts` היה ריק - נמחק.
+- `DEFAULT_LIST_IMAGE` הועבר מ-`config.ts` ל-`defaults.ts` (שם מרוכזים כל ברירות המחדל).
+- **קבצים שנמחקו**: `src/lib/index.ts`
+- **קבצים ששונו**: `src/lib/config.ts`, `src/lib/data/defaults.ts`, `settings/lists/+page.svelte`, `ListSwitcher.svelte`
+
+---
+
+#### החלטות ארכיטקטורה
+
+- **מיזוג LanguageService ל-boosts.ts**: שתי היחידות (language, boosts) טיפלו באותו נושא (משוב קולי). המיזוג מקטין את שטח הפנים ומקל על ניווט.
+- **הסרת SessionController**: כשמחלקה רק מעבירה קריאות (proxy) ללא לוגיקה נוספת, היא מוסיפה מורכבות ללא ערך.
+- **הטמעת persistence**: כשלשכבה יש צרכן יחיד, ההפרדה אינה מוצדקת.
+- **עדכון ייבואי TEXTS ל-data/texts**: מקור האמת לטקסטים צריך להיות ב-data layer, לא ב-services. זה עקבי עם הארכיטקטורה.
+
+---
+
+#### סיכום כמותי
+
+- **7 קבצים נמחקו** (session.svelte.ts, language.ts, audio.ts, floatingBoardState.ts, persistence.ts, index.ts)
+- **~35 קבצים עודכנו** (בעיקר שינויי import)
+- **~0 שורות קוד חדש, ~400+ שורות הוסרו** (net reduction)
+
+---
+
 ## 2026-02-16 18:31
 
 ### הוספת אינדיקטור סטטוס עגול בקצה השמאלי של שורת משימה
