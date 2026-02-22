@@ -52,6 +52,28 @@ if (!ancestor.found || !ancestor.state) {
 
 ---
 
+## 2026-02-22 17:45
+
+### עדכון בדיקות יחידה — התאמה לתיקון fallback no-history / no-ancestor
+
+עודכנו שתי בדיקות ב-`driveBackupV2.test.ts` שהכילו ציפיות ישנות לפי ההתנהגות שבוטלה (החזרת remoteState).
+
+#### מה בוצע?
+
+- **בדיקה "should return remote when there is no history in repo"** → שונה שמה ל-"should keep local state and set merged=true when there is no history in repo"
+  - ציפייה: `merged: false` → `merged: true`
+  - נוספה ציפייה: `state.lists.u1.list1.tasks.t1.name === 'מקומי'` (שמירת local state)
+
+- **בדיקה "should return remote when local writeId is not in history (no common ancestor)"** → שונה שמה בהתאם
+  - ציפייה: `merged: false` → `merged: true`
+  - נוספה ציפייה: שמירת local state
+
+#### בדיקות שבוצעו
+
+- `npx vitest run tests/unit/services/sync/driveBackupV2.test.ts` — 16 בדיקות עברו ✓
+
+---
+
 ## 2026-02-22 14:20
 
 ### הוספת בדיקות יחידה לשכבת Backup ו-Store

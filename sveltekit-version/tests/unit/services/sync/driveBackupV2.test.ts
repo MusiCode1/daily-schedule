@@ -447,7 +447,7 @@ describe('driveBackupV2.restoreWithMerge', () => {
 		expect(result.state.lists.u1.list1.tasks.t1.name).toBe('מקומי');
 	});
 
-	it('should return remote when there is no history in repo', async () => {
+	it('should keep local state and set merged=true when there is no history in repo', async () => {
 		const { repo, db } = createMockRepo();
 		const remote = createMinimalState();
 
@@ -475,10 +475,12 @@ describe('driveBackupV2.restoreWithMerge', () => {
 			localWriteId: 'local-w1-unknown'
 		});
 
-		expect(result.merged).toBe(false);
+		// No history → keep local state to avoid data loss; merged=true forces upload
+		expect(result.merged).toBe(true);
+		expect(result.state.lists.u1.list1.tasks.t1.name).toBe('מקומי');
 	});
 
-	it('should return remote when local writeId is not in history (no common ancestor)', async () => {
+	it('should keep local state and set merged=true when local writeId is not in history (no common ancestor)', async () => {
 		const { repo, db } = createMockRepo();
 		const remote = createMinimalState();
 		const manifestFileId = await backupAndGetManifestId(remote, repo, db, 'remote-w1');
@@ -494,7 +496,9 @@ describe('driveBackupV2.restoreWithMerge', () => {
 			localWriteId: 'unknown-local-id'
 		});
 
-		expect(result.merged).toBe(false);
+		// No common ancestor → keep local state to avoid data loss; merged=true forces upload
+		expect(result.merged).toBe(true);
+		expect(result.state.lists.u1.list1.tasks.t1.name).toBe('מקומי');
 	});
 
 	it('should merge successfully when local and remote changed different fields', async () => {
