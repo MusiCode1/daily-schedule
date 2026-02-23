@@ -10,8 +10,15 @@ import {
 import { calculateDelta } from '../services/sync/engine/syncEngine';
 import { pull, push, type DeviceInfo } from '../services/sync/syncOrchestrator';
 import { googleDriveSyncProvider } from '../services/sync/providers/google-drive/googleDriveSyncProvider';
+import { mockServerSyncProvider } from '../services/sync/providers/mock-server/mockServerSyncProvider';
 import { SyncError } from '../services/sync/syncTypes';
 import type { AppState } from '../types';
+
+// בחירת ספק סנכרון: mock server בבדיקות E2E, Google Drive בפרודקשן.
+// VITE_USE_MOCK_SYNC=true מוגדר ב-playwright.config.ts בלבד.
+// בבנייה לפרודקשן, Vite מחליף את הערך בסטטי false ו-Rollup מגזז את ה-import.
+const syncProvider =
+	import.meta.env.VITE_USE_MOCK_SYNC === 'true' ? mockServerSyncProvider : googleDriveSyncProvider;
 
 const TAG = '[SyncController]';
 const DEBOUNCE_DELAY = 5000;
@@ -27,7 +34,7 @@ function cloneAppState(state: AppState): AppState {
 
 /**
  * Controller לניהול סנכרון אוטומטי.
- * משתמש ב-syncOrchestrator + googleDriveSyncProvider.
+ * משתמש ב-syncOrchestrator + syncProvider (Google Drive בפרודקשן, mock server בבדיקות).
  */
 export class SyncController {
 	private debounceTimer: number | null = null;
@@ -118,9 +125,9 @@ export class SyncController {
 			return;
 		}
 
-		const available = await googleDriveSyncProvider.isAvailable();
+		const available = await syncProvider.isAvailable();
 		if (!available) {
-			console.log(TAG, 'Google Drive לא זמין - מדלג על סנכרון');
+			console.log(TAG, 'ספק הסנכרון לא זמין - מדלג על סנכרון');
 			return;
 		}
 
@@ -137,7 +144,7 @@ export class SyncController {
 			// ─── PULL ──────────────────────────────────────────────────────
 			console.log(TAG, 'מבצע pull...');
 			const pullResult = await pull(
-				googleDriveSyncProvider,
+				syncProvider,
 				localState,
 				this.lastKnownWriteId,
 				db,
@@ -195,7 +202,7 @@ export class SyncController {
 			// ─── PUSH ──────────────────────────────────────────────────────
 			console.log(TAG, 'מבצע push...');
 			const pushResult = await push(
-				googleDriveSyncProvider,
+				syncProvider,
 				stateForUpload,
 				this.previousState,
 				this.lastKnownWriteId,

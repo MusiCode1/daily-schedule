@@ -1,5 +1,50 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-23 15:20
+
+### Mock Sync Server — תשתית בדיקות E2E לסנכרון ללא Google Drive
+
+תשתית חדשה המאפשרת בדיקות Playwright E2E של מנגנון הסנכרון המלא בדפדפן, ללא תלות ב-Google Drive API ובאימות OAuth.
+
+#### מה בוצע?
+
+**1. שרת Bun עצמאי — `e2e/mock-server/server.ts`**
+
+- שרת HTTP על פורט 3001 עם `Bun.serve()`
+- שומר נתוני סנכרון בתיקיית temp: `os.tmpdir()/mock-sync/`
+- קבצים: `manifest.json`, `content.json`, `progress.json`, `history.json`, `assets.json`, `blobs/{hash}`
+- `POST /reset` — מחיקה ויצירה מחדש של כל התיקייה (לפני כל בדיקה)
+- `GET /health` — לבדיקת זמינות ע"י Playwright
+- CORS headers מלאים לתקשורת עם ה-app
+
+**2. `MockServerSyncProvider` — `src/lib/services/sync/providers/mock-server/mockServerSyncProvider.ts`**
+
+- מממש את ממשק `SyncProvider` במלואו
+- מדבר עם שרת ה-Bun דרך `fetch()`
+- `isAvailable()` תמיד `true` — ללא OAuth
+- `writeAssets()` מעלה blobs בינאריים ורושם `fileId` פיקטיבי ב-index (כמו `FakeRemote`)
+
+**3. עדכון `SyncController` — `src/lib/logic/syncController.svelte.ts`**
+
+- בוחר ספק לפי `import.meta.env.VITE_USE_MOCK_SYNC === 'true'`
+- בפרודקשן: Vite מחליף בסטטי `false` → Rollup מגזז את ה-import (tree-shaking)
+
+**4. עדכון `playwright.config.ts`**
+
+- שני `webServer` במקביל: האפליקציה (עם `VITE_USE_MOCK_SYNC=true`) + שרת ה-Bun
+- ב-CI: servers חדשים; בפיתוח: `reuseExistingServer`
+
+**5. בדיקות Playwright — `e2e/sync/`**
+
+- `first-sync.test.ts` — אפליקציה מסנכרנת בטעינה ראשונה, `lastKnownWriteId` נשמר
+- `two-devices.test.ts` — שני browser contexts (= שני מכשירים), זרימת נתונים מ-Device A ל-Device B
+
+#### החלטות ארכיטקטורה
+
+- **שרת נפרד ולא SvelteKit API routes**: שרת Bun ב-`e2e/` לא נוגע ל-SvelteKit build לעולם. SvelteKit routes היו נכנסים ל-build גם עם guard.
+- **שמירה לקבצים ולא זיכרון**: מאפשרת debugging (בדיקת קבצים ידנית), ועמידות להפעלה מחדש של השרת בין בדיקות.
+- **tree-shaking סטטי**: הפרדה ברורה בין `FakeRemote` (Vitest — לוגיקה בלבד) ל-`MockServerSyncProvider` (Playwright — app מלאה בדפדפן).
+
 ## 2026-02-22 20:45
 
 ### בדיקות E2E לסנכרון — FakeRemote + 17 תרחישים
