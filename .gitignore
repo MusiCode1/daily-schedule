@@ -34,6 +34,7 @@ temp
 temp/**
 tmp
 tmp/**
+**/temp/**
 .agent
 **/.obsidian/**
 .localappdata
@@ -67,6 +68,7 @@ scripts/screenshots/
 # נחריג את כולם חוץ מקורסור שישמש כמקור.
 .qoder
 .agent
+.agents
 .claude
 
 .agents/skills/excalidraw-mcp

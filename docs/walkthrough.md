@@ -5953,3 +5953,42 @@ sveltekit-version/
 - הורץ `npx @sveltejs/mcp svelte-autofixer ...TaskRow.svelte --svelte-version 5`:
   - `issues: []`
   - `suggestions: []`
+
+---
+
+> [!NOTE]
+> 2026-02-23 14:02
+
+## הוספת מדריך Git Worktree
+
+נוסף מסמך תיעוד קצר שמרכז עבודה יומיומית עם `git worktree`, כולל תשובות ממוקדות לשאלות על יצירת ענף אוטומטית ועל יעד הקומיט.
+
+### מה בוצע?
+
+- נוצר קובץ `docs/git-worktree-guide.md` עם הסבר על יצירה, מחיקה ו-detached HEAD.
+- נוספה הבהרה מפורשת: קומיט נכנס לענף הפעיל ב-worktree ולא אוטומטית ל-`main`.
+
+### קבצים שנוצרו
+
+- `docs/git-worktree-guide.md`
+
+---
+
+> [!NOTE]
+> 2026-02-23 14:05
+
+## הרחבת מדריך Worktree: הסבר `HEAD` ו-`index`
+
+נוספה הרחבה ממוקדת למדריך `git worktree` כדי להסביר מה המשמעות של "`תיקייה עם HEAD/index משלה`" ברמת עבודה יומיומית.
+
+### מה בוצע?
+
+- נוספה תת-כותרת חדשה ב-`docs/git-worktree-guide.md`:
+  - הגדרה קצרה של `HEAD`.
+  - הגדרה קצרה של `index` (Staging).
+  - הסבר מה עצמאי ומה משותף בין Worktrees.
+  - דוגמה מעשית של `main` מול `feature-login`.
+
+### קבצים ששונו
+
+- `docs/git-worktree-guide.md`
