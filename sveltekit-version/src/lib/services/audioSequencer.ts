@@ -1,5 +1,9 @@
 // src/lib/services/audioSequencer.ts
 
+import { createLogger } from '$lib/logger';
+
+const log = createLogger('AudioSequencer');
+
 export type AudioSegment =
 	| { type: 'file'; content: string } // תוכן הוא שם קובץ ב-/sounds/
 	| { type: 'tts'; content: string }; // תוכן הוא טקסט להקראה
@@ -18,7 +22,7 @@ export const audioSequencer = {
 					await this.playTTS(segment.content);
 				}
 			} catch (err) {
-				console.error(`Error playing segment (${segment.type}):`, err);
+				log.error(`שגיאה בניגון מקטע (${segment.type}):`, err);
 				// המשך למקטע הבא גם אם אחד נכשל
 			}
 		}
@@ -33,13 +37,13 @@ export const audioSequencer = {
 
 			// טיפול בשגיאות (למשל, קובץ לא נמצא)
 			audio.onerror = (e) => {
-				console.warn(`Audio file not found or failed to load: ${filename}`, e);
+				log.warn(`קובץ אודיו לא נמצא או נכשל בטעינה: ${filename}`, e);
 				resolve(); // resolve בכל מקרה כדי להמשיך ברצף
 			};
 
 			// נגן
 			audio.play().catch((err) => {
-				console.warn(`Playback failed for ${filename}:`, err);
+				log.warn(`ניגון נכשל עבור ${filename}:`, err);
 				resolve();
 			});
 		});
@@ -48,7 +52,7 @@ export const audioSequencer = {
 	playTTS(text: string, lang: string = 'he-IL'): Promise<void> {
 		return new Promise((resolve) => {
 			if (!('speechSynthesis' in window)) {
-				console.warn('Web Speech API not supported');
+				log.warn('Web Speech API אינו נתמך בדפדפן זה');
 				resolve();
 				return;
 			}
@@ -62,7 +66,7 @@ export const audioSequencer = {
 
 			utterance.onend = () => resolve();
 			utterance.onerror = (e) => {
-				console.warn('TTS Error:', e);
+				log.warn('שגיאת TTS:', e);
 				resolve();
 			};
 

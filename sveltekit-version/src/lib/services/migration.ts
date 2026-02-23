@@ -2,6 +2,9 @@ import type { AppState, List } from '$lib/types';
 import { INITIAL_STATE, ACTIVITIES, DEFAULT_LIST_DEFINITIONS } from '$lib/data/defaults';
 import { TEXTS } from '$lib/data/texts';
 import { db } from './db';
+import { createLogger } from '$lib/logger';
+
+const log = createLogger('Migration');
 
 // פונקציית עזר להמרת base64 (data URL) ל-Blob
 async function dataURLToBlob(dataURL: string): Promise<Blob> {
@@ -33,7 +36,7 @@ function asArray<T>(value: T[] | Record<string, T> | null | undefined): T[] {
 }
 
 function migrateToV2(state: AnyState): AnyState {
-	console.log('Migrating to version 2: Adding list logos...');
+	log.info('מגר לגרסה 2: הוספת לוגואים לרשימות...');
 	const users = Object.keys(state.lists || {});
 	users.forEach((userId) => {
 		const userLists: List[] = state.lists[userId] || [];
@@ -49,7 +52,7 @@ function migrateToV2(state: AnyState): AnyState {
 }
 
 function migrateToV3(state: AnyState): AnyState {
-	console.log('Migrating to version 3: Fixing image paths...');
+	log.info('מגר לגרסה 3: תיקון נתיבי תמונות...');
 
 	// תיקון תמונות משתמשים
 	if (state.users) {
@@ -82,7 +85,7 @@ function migrateToV3(state: AnyState): AnyState {
 }
 
 function migrateToV4(state: AnyState): AnyState {
-	console.log('Migrating to version 4: Adding greetings...');
+	log.info('מגר לגרסה 4: הוספת ברכות לרשימות...');
 	const users = Object.keys(state.lists || {});
 	users.forEach((userId) => {
 		const userLists: List[] = state.lists[userId] || [];
@@ -99,7 +102,7 @@ function migrateToV4(state: AnyState): AnyState {
 }
 
 function migrateToV5(state: AnyState): AnyState {
-	console.log('Migrating to version 5: Update default greetings...');
+	log.info('מגר לגרסה 5: עדכון ברכות ברירת מחדל...');
 	const users = Object.keys(state.lists || {});
 	users.forEach((userId) => {
 		const userLists: List[] = state.lists[userId] || [];
@@ -114,7 +117,7 @@ function migrateToV5(state: AnyState): AnyState {
 }
 
 function migrateToV6(state: AnyState): AnyState {
-	console.log('Migrating to version 6: Separating image metadata...');
+	log.info('מגר לגרסה 6: הפרדת מטאדטה של תמונות...');
 
 	// אתחול images אם לא קיים
 	if (!state.images) {
@@ -164,12 +167,12 @@ function migrateToV6(state: AnyState): AnyState {
 	}
 
 	state.version = 6;
-	console.log(`Migrated ${Object.keys(state.images).length} image metadata entries`);
+	log.info(`הוגרו ${Object.keys(state.images).length} רשומות מטאדטה של תמונות`);
 	return state;
 }
 
 function migrateToV7(state: AnyState): AnyState {
-	console.log('Migrating to version 7: Adding communication board URLs and change types...');
+	log.info('מגר לגרסה 7: הוספת כתובות לוח תקשורת וסוגי שינוי...');
 	const users = Object.keys(state.lists || {});
 	users.forEach((userId) => {
 		const userLists: any[] = state.lists[userId] || [];
@@ -191,7 +194,7 @@ function migrateToV7(state: AnyState): AnyState {
 }
 
 function migrateToV8(state: AnyState): AnyState {
-	console.log('Migrating to version 8: Adding list title and description...');
+	log.info('מגר לגרסה 8: הוספת כותרת ותיאור לרשימות...');
 	const users = Object.keys(state.lists || {});
 	users.forEach((userId) => {
 		const userLists: List[] = state.lists[userId] || [];
@@ -209,7 +212,7 @@ function migrateToV8(state: AnyState): AnyState {
 }
 
 function migrateToV9(state: AnyState): AnyState {
-	console.log('Migrating to version 9: Adding people (team/family members)...');
+	log.info('מגר לגרסה 9: הוספת אנשים (חברי משפחה/צוות)...');
 
 	// אתחול מאגר האנשים אם לא קיים
 	if (!state.people) {
@@ -235,7 +238,7 @@ function migrateToV9(state: AnyState): AnyState {
 }
 
 function migrateToV10(state: AnyState): AnyState {
-	console.log('Migrating to version 10: Adding isLocked to lists...');
+	log.info('מגר לגרסה 10: הוספת isLocked לרשימות...');
 	const users = Object.keys(state.lists || {});
 	users.forEach((userId) => {
 		const userLists: List[] = state.lists[userId] || [];
@@ -250,7 +253,7 @@ function migrateToV10(state: AnyState): AnyState {
 }
 
 function migrateToV11(state: AnyState): AnyState {
-	console.log('Migrating to version 11: Populating example family members...');
+	log.info('מגר לגרסה 11: הוספת חברי משפחה לדוגמה...');
 	if (asArray(state.people).length === 0) {
 		state.people = asArray(INITIAL_STATE.people);
 	}
@@ -259,7 +262,7 @@ function migrateToV11(state: AnyState): AnyState {
 }
 
 function migrateToV12(state: AnyState): AnyState {
-	console.log('Migrating to version 12: Updating defaults to Family Members (Ezra, Tzofia, Adam)...');
+	log.info('מגר לגרסה 12: עדכון ברירות מחדל לחברי משפחה (עזרא, צופיה, אדם)...');
 
 	const oldDefaultIds = ['u1', 'u2', 'u3'];
 	const currentUsers = asArray(state.users);
@@ -269,7 +272,7 @@ function migrateToV12(state: AnyState): AnyState {
 	// מיגרציה לא מזריקה נתוני ברירת מחדל חדשים.
 	// במקרה של סטאפ ברירת מחדל ישן - נשמרים הנתונים הקיימים כמות שהם.
 	if (isDefaultSetup) {
-		console.log('Legacy default setup detected; preserving existing user data.');
+		log.info('זוהתה הגדרה ישנה של ברירת מחדל; שומר נתוני משתמש קיימים.');
 	}
 
 	// ניקוי מזהי ילדים ישנים מתוך people (אם קיימים), תוך תמיכה גם במערך וגם באובייקט.
@@ -289,7 +292,7 @@ function migrateToV12(state: AnyState): AnyState {
 }
 
 function migrateToV13(state: AnyState): AnyState {
-	console.log('Migrating to version 13: Adding new preparation lists (Grandparents, Guests)...');
+	log.info('מגר לגרסה 13: הוספת רשימות הכנה חדשות (סבא-סבתא, אורחים)...');
 
 	const users = Object.keys(state.lists || {});
 	users.forEach((userId) => {
@@ -342,7 +345,7 @@ function migrateToV13(state: AnyState): AnyState {
 }
 
 function migrateToV14(state: AnyState): AnyState {
-	console.log('Migrating to version 14: Updating peopleIds for preparation lists...');
+	log.info('מגר לגרסה 14: עדכון peopleIds לרשימות הכנה...');
 
 	const users = Object.keys(state.lists || {});
 	users.forEach((userId) => {
@@ -365,7 +368,7 @@ function migrateToV14(state: AnyState): AnyState {
 }
 
 function migrateToV15(state: AnyState): AnyState {
-	console.log('[Migration] v14 → v15: מעבר ל-objects + order');
+	log.info('v14 → v15: מעבר ל-objects + order');
 
 	// 1. המרת users ממערך ל-object
 	if (Array.isArray(state.users)) {
@@ -451,7 +454,7 @@ function migrateToV15(state: AnyState): AnyState {
 	// 6. עדכון גרסה
 	state.version = 15;
 
-	console.log('[Migration] v15 completed successfully');
+	log.info('v15 הושלמה בהצלחה');
 	return state;
 }
 
@@ -507,13 +510,13 @@ export const migrationService = {
 						task.imageSrc.startsWith('data:image')
 					) {
 						try {
-							console.log(`Migrating image for task ${task.name}...`);
+							log.debug(`מגר תמונה עבור משימה "${task.name}"...`);
 							const blob = await dataURLToBlob(task.imageSrc);
 							const newId = await db.saveImage(blob);
 							task.imageSrc = newId;
 							hasChanges = true;
 						} catch (e) {
-							console.error(`Failed to migrate image for task ${task.name}`, e);
+							log.error(`מיגרציית תמונה נכשלה למשימה "${task.name}"`, e);
 						}
 					}
 				}
@@ -521,7 +524,7 @@ export const migrationService = {
 		}
 
 		if (hasChanges) {
-			console.log('Migration complete: Images moved to IndexedDB');
+			log.info('מיגרציה הושלמה: תמונות הועברו ל-IndexedDB');
 		}
 
 		return state;
@@ -580,10 +583,10 @@ export const migrationService = {
 					newState.activeListId['u1'] = newListsArray[0].id;
 				}
 
-				console.log('Migrated legacy lists to user u1');
-				return newState;
+			log.info('הוגרו רשימות ישנות למשתמש u1');
+			return newState;
 			} catch (e) {
-				console.error('Migration failed', e);
+				log.error('מיגרציה נכשלה', e);
 				return null;
 			}
 		}
@@ -597,7 +600,7 @@ export const migrationService = {
 		// אם אין טוקן ישן, אין מה לנסות להגר
 		if (!legacyToken) return null;
 
-		console.log('Migrating Google Auth storage from legacy format...');
+		log.info('מגר אחסון Google Auth מפורמט ישן...');
 
 		// בדיקת תקינות בסיסית של הטוקן הישן (לוודא שהוא לא פג בצורה קיצונית או ריק)
 		// הערה: בדיקת התפוגה המדויקת תתבצע על ידי GoogleDriveService,

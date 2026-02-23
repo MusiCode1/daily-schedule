@@ -1,5 +1,8 @@
 import { GOOGLE_CLIENT_ID } from '$lib/config';
 import { TEXTS } from '$lib/data/texts';
+import { createLogger } from '$lib/logger';
+
+const log = createLogger('DriveBackupSettings');
 import { syncController } from '$lib/logic/syncController.svelte';
 import { googleAuthService, type DriveStatus } from '$lib/services/drive/googleAuthService';
 import { dailyScheduleBackupRepo } from '$lib/services/drive/dailyScheduleBackupRepo';
@@ -74,7 +77,7 @@ export class DriveBackupSettingsController {
 		try {
 			await googleAuthService.initialize(this.customClientId || GOOGLE_CLIENT_ID);
 		} catch (error) {
-			console.error('[DriveBackupSettings] initialize failed', error);
+			log.error('initialize נכשל', error);
 			this.errorMessage = TEXTS.ERROR_GENERIC;
 		} finally {
 			this.isLoading = false;
@@ -97,7 +100,7 @@ export class DriveBackupSettingsController {
 				googleAuthService.signIn();
 			})
 			.catch((error) => {
-				console.error('[DriveBackupSettings] signIn init failed', error);
+				log.error('signIn init נכשל', error);
 				this.errorMessage = TEXTS.ERROR_GENERIC;
 			});
 	}
@@ -124,7 +127,7 @@ export class DriveBackupSettingsController {
 			await this.refreshLastRemoteBackupTime();
 			this.successMessage = TEXTS.BACKUP_SUCCESS;
 		} catch (error) {
-			console.error('[DriveBackupSettings] syncNow failed', error);
+			log.error('syncNow נכשל', error);
 			this.errorMessage = TEXTS.ERROR_GENERIC;
 		} finally {
 			this.isSyncingNow = false;
@@ -142,7 +145,7 @@ export class DriveBackupSettingsController {
 			const parsedTime = Date.parse(meta.modifiedTime);
 			this.lastRemoteBackupTime = Number.isNaN(parsedTime) ? null : parsedTime;
 		} catch (error) {
-			console.warn('[DriveBackupSettings] failed to read last backup time', error);
+			log.warn('קריאת זמן גיבוי אחרון נכשלה', error);
 			this.lastRemoteBackupTime = null;
 		}
 	}

@@ -1,5 +1,8 @@
 import { browser } from '$app/environment';
 import { deviceState, type FloatingBoardPosition } from '$lib/stores/deviceState';
+import { createLogger } from '$lib/logger';
+
+const log = createLogger('FloatingBoardState');
 
 // ערכי ברירת מחדל
 const DEFAULT_STATE: FloatingBoardPosition = {
@@ -35,7 +38,7 @@ export const floatingBoardState = {
 				typeof parsed?.width !== 'number' ||
 				typeof parsed?.height !== 'number'
 			) {
-				console.warn('Invalid floating board state, using defaults');
+				log.warn('מצב לוח צף לא תקין, משתמש בברירת מחדל');
 				deviceState.update((draft) => {
 					draft.settings.ui.floatingBoard = { ...DEFAULT_STATE };
 				});
@@ -77,7 +80,7 @@ export const floatingBoardState = {
 
 			return normalized;
 		} catch (error) {
-			console.error('Failed to load floating board state:', error);
+			log.error('טעינת מצב לוח צף נכשלה:', error);
 			return { ...DEFAULT_STATE };
 		}
 	},
@@ -104,7 +107,7 @@ export const floatingBoardState = {
 				isNaN(position.width) ||
 				isNaN(position.height)
 			) {
-				console.warn('Invalid position data, not saving');
+				log.warn('נתוני מיקום לא תקינים, לא שומר');
 				return;
 			}
 
@@ -112,7 +115,7 @@ export const floatingBoardState = {
 				draft.settings.ui.floatingBoard = position;
 			});
 		} catch (error) {
-			console.error('Failed to save floating board state:', error);
+			log.error('שמירת מצב לוח צף נכשלה:', error);
 		}
 	},
 
@@ -129,7 +132,7 @@ export const floatingBoardState = {
 				draft.settings.ui.floatingBoard = { ...DEFAULT_STATE };
 			});
 		} catch (error) {
-			console.error('Failed to reset floating board state:', error);
+			log.error('איפוס מצב לוח צף נכשל:', error);
 		}
 	}
 };

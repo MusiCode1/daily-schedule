@@ -1,5 +1,40 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-23 13:35
+
+### הוספת מערכת לוגינג מודולרית
+
+יצירת לוגר מרכזי לפרויקט שמאפשר שליטה על רמות הלוג גלובלית ופר-מודול, עם כיבוי אוטומטי ב-production ומיגרציה של קבצי לוגיקה ושירות מ-`console.*` ישיר.
+
+---
+
+#### מה בוצע?
+
+**1. קובץ לוגר חדש — `src/lib/logger.ts`**
+
+- `createLogger(moduleName)` — מחזיר אובייקט עם `.debug()`, `.info()`, `.warn()`, `.error()`, כל אחד מדפיס עם תגית `[ModuleName]`
+- `logManager` — API גלובלי: `setGlobalLevel`, `setGlobalEnabled`, `setModuleLevel`, `setModuleEnabled`
+- ב-dev: ברירת מחדל `debug`; ב-production: ברירת מחדל `warn`
+- חשיפה ל-`window.__logManager` בסביבת dev לשליטה נוחה מה-console
+
+**2. מיגרציה של 5 קבצים מ-`console.*` לל-`log.*`:**
+
+- `src/lib/services/audio.ts` — `createLogger('Audio')`
+- `src/lib/services/audioSequencer.ts` — `createLogger('AudioSequencer')`
+- `src/lib/services/floatingBoardState.ts` — `createLogger('FloatingBoardState')`
+- `src/lib/services/migration.ts` — `createLogger('Migration')`
+- `src/lib/logic/driveBackupSettings.svelte.ts` — `createLogger('DriveBackupSettings')`
+
+קבצי הסנכרון (`syncEngine`, `historyManager`, `syncController`) הושארו בכוונה ללא שינוי — הם עוברים שיפוץ ארכיטקטוני בענף נפרד.
+
+#### החלטות ארכיטקטורה
+
+- **ספרייה מובנית ולא חיצונית**: הפרויקט רץ על Cloudflare Pages + דפדפן + Service Worker — ספריות כמו pino/winston לא עובדות בכל הסביבות. הלוגר המובנה אפסי בגודל ב-bundle ועובד בכל הסביבות.
+- **`console.log` → `log.info`**: שימוש ב-`info` עבור הודעות מיגרציה שהיו `console.log`, כי הן מידעיות ולא debug.
+- **שליטה ב-runtime**: `window.__logManager` חשוף בסביבת dev כדי לאפשר שתיקת מודולים ספציפיים ישירות מה-console של הדפדפן, ללא הפעלה מחדש.
+
+---
+
 ## 2026-02-22 17:30
 
 ### תיקון באג סנכרון #2: אובדן נתונים כשאין Common Ancestor בהיסטוריה
