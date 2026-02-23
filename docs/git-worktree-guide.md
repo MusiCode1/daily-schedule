@@ -82,6 +82,26 @@ git worktree prune
 git branch -d feature-login
 ```
 
+## איך מקבלים רשימת Worktrees?
+
+הפקודה הבסיסית:
+
+```bash
+git worktree list
+```
+
+פלט טיפוסי יציג לכל Worktree:
+
+- נתיב תיקייה
+- קומיט נוכחי
+- ענף פעיל (או `detached`)
+
+לפלט מפורט יותר (נוח לסקריפטים):
+
+```bash
+git worktree list --porcelain
+```
+
 ## שאלות נפוצות
 
 ### האם אוטומטית נוצר ענף?

@@ -5992,3 +5992,22 @@ sveltekit-version/
 ### קבצים ששונו
 
 - `docs/git-worktree-guide.md`
+
+---
+
+> [!NOTE]
+> 2026-02-23 14:21
+
+## הרחבת מדריך Worktree: צפייה ברשימת Worktrees
+
+נוספה למדריך פסקה ייעודית שמסבירה איך להציג את כל ה-worktrees הפעילים ומה כולל הפלט.
+
+### מה בוצע?
+
+- נוספה כותרת `איך מקבלים רשימת Worktrees?` ב-`docs/git-worktree-guide.md`.
+- נוספה הפקודה `git worktree list`.
+- נוספה גם גרסה מפורטת `git worktree list --porcelain` עבור שימוש סקריפטי.
+
+### קבצים ששונו
+
+- `docs/git-worktree-guide.md`
