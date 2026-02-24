@@ -35,7 +35,7 @@
 		title={TEXTS.MOVE_UP_ACTION}
 		aria-label={TEXTS.MOVE_UP_ACTION}
 	>
-		▲
+		⬆
 	</IconButton>
 
 	<!-- עריכה -->
@@ -45,7 +45,7 @@
 		title={TEXTS.EDIT_ACTION}
 		aria-label={TEXTS.EDIT_ACTION}
 	>
-		✎
+		✏️
 	</IconButton>
 
 	<!-- שכפול -->
@@ -55,7 +55,7 @@
 		title={TEXTS.DUPLICATE_TASK_ACTION}
 		aria-label={TEXTS.DUPLICATE_TASK_ACTION}
 	>
-		⧉
+		📋
 	</IconButton>
 
 	<!-- מחיקה -->
@@ -77,7 +77,7 @@
 		title={TEXTS.MOVE_DOWN_ACTION}
 		aria-label={TEXTS.MOVE_DOWN_ACTION}
 	>
-		▼
+		⬇
 	</IconButton>
 </div>
 
@@ -86,31 +86,32 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 0.5rem;
-		padding: 0.4rem 0.75rem;
-		background: #f8fafc;
+		gap: 0.75rem;
+		padding: 0.5rem 1rem;
+		background: var(--bg-card, #ffffff);
 		border: 2px solid #e2e8f0;
-		border-top: none;
-		border-radius: 0 0 var(--radius-lg, 16px) var(--radius-lg, 16px);
+		border-radius: var(--radius-md, 12px);
+		box-shadow: var(--shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.1));
 		width: fit-content;
-		margin: 0 auto;
+		margin: 0.4rem auto 0;
 	}
 
-	/* דריסת גודל בסיס של btn-icon לכפתורים עגולים גדולים */
+	/* כפתורים עגולים גדולים - דריסת btn-icon */
 	:global(.action-circle.btn-icon) {
-		width: 48px;
-		height: 48px;
+		width: 56px;
+		height: 56px;
 		border-radius: var(--radius-full, 9999px);
 		border: 2px solid;
-		font-size: 1.2rem;
+		font-size: 1.4rem;
 		flex-shrink: 0;
+		transition: all 0.2s ease;
 	}
 
 	:global(.action-circle.btn-icon:active) {
-		transform: scale(0.9);
+		transform: scale(0.92);
 	}
 
-	/* כפתורי חצים */
+	/* כפתורי חצים - ראשיים ובולטים */
 	:global(.action-move.btn-icon) {
 		border-color: var(--primary, #6366f1);
 		color: var(--primary, #6366f1);
@@ -120,13 +121,16 @@
 	:global(.action-move.btn-icon:hover:not(:disabled)) {
 		background: var(--primary, #6366f1);
 		color: white;
-		box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-		transform: scale(1.1);
+		transform: translateY(-2px);
+		box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
 	}
 
 	:global(.action-move.btn-icon:disabled) {
-		opacity: 0.3;
+		opacity: 0.25;
 		cursor: not-allowed;
+		background: #f1f5f9;
+		border-color: #cbd5e1;
+		color: #cbd5e1;
 	}
 
 	/* כפתור עריכה */
@@ -139,8 +143,8 @@
 	:global(.action-edit.btn-icon:hover) {
 		background: var(--edit, #8b5cf6);
 		color: white;
-		box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
-		transform: scale(1.1);
+		transform: translateY(-2px);
+		box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3);
 	}
 
 	/* כפתור שכפול */
@@ -153,8 +157,8 @@
 	:global(.action-duplicate.btn-icon:hover) {
 		background: var(--info, #3b82f6);
 		color: white;
-		box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-		transform: scale(1.1);
+		transform: translateY(-2px);
+		box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
 	}
 
 	/* כפתור מחיקה */
@@ -167,7 +171,7 @@
 	:global(.action-delete.btn-icon:hover) {
 		background: var(--danger, #ef4444);
 		color: white;
-		box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-		transform: scale(1.1);
+		transform: translateY(-2px);
+		box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
 	}
 </style>

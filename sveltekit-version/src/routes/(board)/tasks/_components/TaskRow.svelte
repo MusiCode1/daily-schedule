@@ -160,6 +160,11 @@
     height: 120px;
   }
 
+  /* רווח גדול אחרי הווידג'ט במצב עריכה - מבהיר שייכות פאנל לכרטיס */
+  .task-row-wrapper.edit-mode {
+    margin-bottom: 1rem;
+  }
+
   .task-card {
     background: var(--bg-card, #ffffff);
     border-radius: 16px;
@@ -383,11 +388,6 @@
 
   .status-indicator-active .status-glyph {
     font-size: 1.35rem;
-  }
-
-  /* במצב עריכה - הכרטיס עם פינות תחתונות ישרות כי ה-ActionBar צמוד */
-  .edit-mode .task-card {
-    border-radius: 16px 16px 0 0;
   }
 
   .task-card.editable {
