@@ -273,6 +273,79 @@ export class TasksBoardController {
 	}
 
 	/**
+	 * הזזת משימה למעלה (החלפת order עם המשימה שמעליה)
+	 */
+	moveTaskUp(taskId: string) {
+		if (!this.isEditMode || !this.currentUser || !this.activeList) return;
+
+		const sorted = this.tasks;
+		const index = sorted.findIndex((t) => t.id === taskId);
+		if (index <= 0) return;
+
+		const tasksObj = { ...this.activeList.tasks };
+		const currentOrder = tasksObj[taskId].order;
+		const aboveTask = sorted[index - 1];
+
+		tasksObj[taskId] = { ...tasksObj[taskId], order: aboveTask.order };
+		tasksObj[aboveTask.id] = { ...tasksObj[aboveTask.id], order: currentOrder };
+
+		listStore.updateTasks(this.currentUser.id, this.activeList.id, tasksObj);
+	}
+
+	/**
+	 * הזזת משימה למטה (החלפת order עם המשימה שמתחתיה)
+	 */
+	moveTaskDown(taskId: string) {
+		if (!this.isEditMode || !this.currentUser || !this.activeList) return;
+
+		const sorted = this.tasks;
+		const index = sorted.findIndex((t) => t.id === taskId);
+		if (index < 0 || index >= sorted.length - 1) return;
+
+		const tasksObj = { ...this.activeList.tasks };
+		const currentOrder = tasksObj[taskId].order;
+		const belowTask = sorted[index + 1];
+
+		tasksObj[taskId] = { ...tasksObj[taskId], order: belowTask.order };
+		tasksObj[belowTask.id] = { ...tasksObj[belowTask.id], order: currentOrder };
+
+		listStore.updateTasks(this.currentUser.id, this.activeList.id, tasksObj);
+	}
+
+	/**
+	 * שכפול משימה - יוצר עותק מתחת למשימה המקורית
+	 */
+	duplicateTask(taskId: string) {
+		if (!this.isEditMode || !this.currentUser || !this.activeList) return;
+
+		const originalTask = this.activeList.tasks[taskId];
+		if (!originalTask) return;
+
+		const tasksObj = { ...this.activeList.tasks };
+
+		// הזז את כל המשימות שאחרי המשימה המקורית ב-1
+		for (const t of Object.values(tasksObj)) {
+			if (t.order > originalTask.order) {
+				tasksObj[t.id] = { ...tasksObj[t.id], order: t.order + 1 };
+			}
+		}
+
+		// צור עותק עם order מיד אחרי המקורית
+		const newTask: Task = {
+			id: crypto.randomUUID(),
+			name: originalTask.name,
+			imageSrc: originalTask.imageSrc,
+			isDone: false,
+			order: originalTask.order + 1,
+			communicationBoardUrl: originalTask.communicationBoardUrl,
+			changeType: originalTask.changeType
+		};
+		tasksObj[newTask.id] = newTask;
+
+		listStore.updateTasks(this.currentUser.id, this.activeList.id, tasksObj);
+	}
+
+	/**
 	 * נורמליזציה של order - מאפס את הסדר למספרים רציפים
 	 */
 	private normalizeTaskOrder(tasksObj: { [taskId: string]: Task }) {

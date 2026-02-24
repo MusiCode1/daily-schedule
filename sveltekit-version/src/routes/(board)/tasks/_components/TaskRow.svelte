@@ -2,43 +2,39 @@
   import type { Task } from '$lib/types';
   import ImageDisplay from '$lib/components/ImageDisplay.svelte';
   import { TEXTS } from '$lib/services/language';
-  import ActionButton from '$lib/components/ui/ActionButton.svelte';
+  import TaskActionBar from './TaskActionBar.svelte';
 
-  let { 
-    task, 
-    isActive = false, 
+  let {
+    task,
+    isActive = false,
     isEditMode = false,
+    isFirst = false,
+    isLast = false,
     taskNumber,
     ontoggle,
     ondelete,
     onedit,
+    onduplicate,
+    onmoveup,
+    onmovedown,
     onopenboard,
     ...rest
-  } = $props<{ 
-    task: Task; 
-    isActive?: boolean; 
+  } = $props<{
+    task: Task;
+    isActive?: boolean;
     isEditMode?: boolean;
+    isFirst?: boolean;
+    isLast?: boolean;
     taskNumber?: number;
     ontoggle?: (id: string) => void;
     ondelete?: (id: string) => void;
     onedit?: (task: Task) => void;
+    onduplicate?: (id: string) => void;
+    onmoveup?: (id: string) => void;
+    onmovedown?: (id: string) => void;
     onopenboard?: (url: string) => void;
     [key: string]: any;
   }>();
-
-  function handleDelete(e: Event) {
-    if (!isEditMode) return;
-    e.stopPropagation();
-    if (confirm(TEXTS.DELETE_TASK_CONFIRM)) {
-      ondelete?.(task.id);
-    }
-  }
-
-  function handleEdit(e: Event) {
-    if (!isEditMode) return;
-    e.stopPropagation();
-    onedit?.(task);
-  }
 
   function handleToggle(e: Event) {
     e.stopPropagation();
@@ -53,7 +49,7 @@
   }
 </script>
 
-<div class="task-row-wrapper" class:completed={task.isDone} class:active={isActive} class:cancelled={task.changeType === 'cancelled'}>
+<div class="task-row-wrapper" class:completed={task.isDone} class:active={isActive} class:cancelled={task.changeType === 'cancelled'} class:edit-mode={isEditMode}>
   {#if isActive && !isEditMode}
     <div class="now-indicator">
       <div class="now-text">{TEXTS.NOW}</div>
@@ -71,35 +67,14 @@
     tabindex="0"
     {...rest}
   >
-    {#if isEditMode}
-      <ActionButton
-        tone="danger"
-        class="task-row-action-btn delete-btn"
-        onclick={handleDelete}
-        title={TEXTS.DELETE_ACTION}
-        aria-label={TEXTS.DELETE_ACTION}
-      >
-        ✕
-      </ActionButton>
-      <ActionButton
-        class="task-row-action-btn edit-btn"
-        onclick={handleEdit}
-        title={TEXTS.EDIT_ACTION}
-        aria-label={TEXTS.EDIT_ACTION}
-      >
-        ✎
-      </ActionButton>
-      <div class="drag-handle-indicator">⋮⋮</div>
-    {/if}
-
     {#if taskNumber !== undefined}
       <div class="task-number">{taskNumber}</div>
     {/if}
 
     <div class="task-image-wrapper">
       {#if task.imageSrc}
-        <ImageDisplay 
-          imageSrc={task.imageSrc} 
+        <ImageDisplay
+          imageSrc={task.imageSrc}
           alt={task.name}
           className="task-image"
         />
@@ -122,12 +97,12 @@
           {/if}
         </div>
       {/if}
-      
+
       <h3 class="task-name">{task.name}</h3>
-      
+
       {#if task.communicationBoardUrl && (isActive || task.isDone) && !isEditMode}
-        <button 
-          class="comm-board-btn" 
+        <button
+          class="comm-board-btn"
           onclick={handleOpenBoard}
           title={TEXTS.OPEN_COMMUNICATION_BOARD}
         >
@@ -151,6 +126,22 @@
       </div>
     </div>
   </div>
+
+  {#if isEditMode}
+    <TaskActionBar
+      {isFirst}
+      {isLast}
+      onmoveup={() => onmoveup?.(task.id)}
+      onmovedown={() => onmovedown?.(task.id)}
+      onedit={() => onedit?.(task)}
+      onduplicate={() => onduplicate?.(task.id)}
+      ondelete={() => {
+        if (confirm(TEXTS.DELETE_TASK_CONFIRM)) {
+          ondelete?.(task.id);
+        }
+      }}
+    />
+  {/if}
 </div>
 
 <style>
@@ -159,10 +150,14 @@
     width: 100%;
     max-width: 600px;
     flex: 1;
-    height: 120px; /* גובה קבוע לכל השורות */
     display: flex;
+    flex-direction: column;
     align-items: center;
     transition: transform 0.2s;
+  }
+
+  .task-row-wrapper:not(.edit-mode) {
+    height: 120px;
   }
 
   .task-card {
@@ -173,7 +168,7 @@
     align-items: center;
     overflow: hidden;
     width: 100%;
-    height: 100%;
+    height: 120px;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     cursor: pointer;
     border: 2px solid transparent;
@@ -390,77 +385,11 @@
     font-size: 1.35rem;
   }
 
-  /* כפתור מחיקה */
-  /* כפתורי פעולה */
-  :global(.task-row-action-btn) {
-    position: absolute;
-    top: 0;
-    width: 36px;
-    height: 36px;
-    border: none;
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    opacity: 0.8;
-    transition: all 0.2s;
-    z-index: 10;
+  /* במצב עריכה - הכרטיס עם פינות תחתונות ישרות כי ה-ActionBar צמוד */
+  .edit-mode .task-card {
+    border-radius: 16px 16px 0 0;
   }
 
-  :global(.task-row-action-btn:hover) {
-    opacity: 1;
-    transform: scale(1.1);
-  }
-
-  :global(.task-row-action-btn.delete-btn) {
-    left: 0;
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger-color, #ef4444);
-    border-bottom-right-radius: 12px;
-  }
-
-  :global(.task-row-action-btn.delete-btn:hover) {
-    background: var(--danger-color, #ef4444);
-    color: white;
-  }
-
-  :global(.task-row-action-btn.edit-btn) {
-    right: 0;
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--primary-accent, #6366f1);
-    border-bottom-left-radius: 12px;
-  }
-
-  :global(.task-row-action-btn.edit-btn:hover) {
-    background: var(--primary-accent, #6366f1);
-    color: white;
-  }
-
-  .drag-handle-indicator {
-    position: absolute;
-    top: 50%;
-    right: 0.5rem; /* שמאל ב-RTL? המשתמש ביקש RTL, בדוק זרימה */
-    transform: translateY(-50%);
-    font-size: 1.5rem;
-    color: #cbd5e1;
-    cursor: grab;
-    pointer-events: none; /* אפשר ללחיצות לעבור לכרטיס אם צריך, או טפל בגרירה על הכרטיס */
-    z-index: 10;
-  }
-  
-  /* ב-RTL 'ימין' הוא ההתחלה, אבל ידיות הן בדרך כלל ב"התחלה" או "סוף".
-     תמונת המשימה בימין? הקוד אומר שעוטף התמונה הוא בילד הראשון.
-     נבדוק את פריסת הכרטיס. כיוון flex row. עוטף תמונה ראשון.
-     אז התמונה בימין. התוכן בשמאל.
-     ידית הגרירה צריכה כנראה להיות בקצה השמאלי.
-  */
-  .drag-handle-indicator {
-    right: auto;
-    left: 0.5rem;
-  }
-
-  /* כשניתן לעריכה, אולי להראות את הידית טוב יותר */
   .task-card.editable {
     cursor: grab;
   }
