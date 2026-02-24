@@ -1,5 +1,53 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-25 01:10
+
+### תיקון מערכת סנכרון — יישור עם התכנון המקורי (historyContent)
+
+המימוש של מערכת הסנכרון סטה מהתכנון המקורי (`sync-design-decisions.md`): ההיסטוריה עבדה עם `AppState` מלא במקום `ContentV2` (ללא isDone, lastModified, syncMetadata). סטייה זו גרמה ל-5 באגים מתועדים (phantom deltas, baseline mismatch, ועוד).
+
+#### מה בוצע?
+
+**1. פונקציית המרה `toHistoryContent()` — `syncOrchestrator.ts`**
+
+- מפשיטה שדות אפמריים (`isDone`, `lastModified`, `syncMetadata`) מ-`AppState`
+- מחזירה `Record<string, any>` שמכיל רק נתונים מבניים
+- נוספה גם `applyProgressToState()` — להחזרת `isDone` מ-remote אחרי merge
+
+**2. עדכון טיפוסים — `engine/types.ts`, `engine/syncEngine.ts`, `engine/historyManager.ts`**
+
+- `SnapshotEntry.state` ו-`CommonAncestorResult.state` → `Record<string, any>` (במקום `AppState`)
+- `calculateDelta`, `applyDelta`, `threeWayMerge` → מקבלים `object` (במקום `AppState`)
+- `reconstructState` → מחזיר `Record<string, any> | null`
+
+**3. Push — שימוש ב-historyContent**
+
+- Snapshot: `entry.state = toHistoryContent(state)`
+- Delta: `calculateDelta(toHistoryContent(previousState), toHistoryContent(state))`
+
+**4. Pull — 3-way merge על historyContent**
+
+- Merge על `toHistoryContent(local/remote)` עם ancestor (שכבר historyContent)
+- שחזור ל-AppState מלא: `localState` כ-basis + `mergedContent` + החזרת `isDone` מ-remote
+
+**5. פישוט `syncController.svelte.ts`**
+
+- הסרת נרמול baseline מיותר (lastModified, settings) — `toHistoryContent` מטפל בזה
+- השוואת שינויים מקומיים דרך `toHistoryContent` — מבטלת phantom deltas
+
+**6. עדכונים נלווים**
+
+- `syncTypes.ts`: `ContentV2.settings` → `{ childLockEnabled?: boolean }` (במקום `Record<string, never>`)
+- `payloads.ts`: הכללת `childLockEnabled` ב-payload
+- `MockSyncPanel.svelte`: תיקון `getWriteId()` — הסרת גישות ל-properties לא קיימים
+- `syncEngine.test.ts`: התאמת casts לטיפוסים החדשים
+
+#### החלטות ארכיטקטורה
+
+- **`toHistoryContent` ב-orchestrator ולא ב-engine**: ה-engine גנרי (עובד על objects), ה-orchestrator מכיר את המבנה של AppState — שם ההמרה.
+- **`applyProgressToState` — last-write-wins מ-remote**: אחרי merge מבני, מחילים isDone מ-remote כי progress מנוהל בנפרד (קובץ progress.json) ו-remote הוא מקור האמת.
+- **Conflict fallback → remote**: ב-historyContent אין lastModified לפסיקת LWW, לכן בקונפליקט ננצח עם remote (עדיף לאבד שינוי מקומי מאשר מרוחק).
+
 ## 2026-02-23 15:20
 
 ### Mock Sync Server — תשתית בדיקות E2E לסנכרון ללא Google Drive

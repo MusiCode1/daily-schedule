@@ -8,7 +8,7 @@ import {
 	setOffline
 } from '../stores/syncStore';
 import { calculateDelta } from '../services/sync/engine/syncEngine';
-import { pull, push, type DeviceInfo } from '../services/sync/syncOrchestrator';
+import { pull, push, toHistoryContent, type DeviceInfo } from '../services/sync/syncOrchestrator';
 import { googleDriveSyncProvider } from '../services/sync/providers/google-drive/googleDriveSyncProvider';
 import { mockServerSyncProvider } from '../services/sync/providers/mock-server/mockServerSyncProvider';
 import { SyncError } from '../services/sync/syncTypes';
@@ -176,18 +176,17 @@ export class SyncController {
 
 		if (!mergedFromRemote && shouldApplyRemoteState) {
 			this.previousState = cloneAppState(stateForUpload);
-		} else if (!mergedFromRemote && !shouldApplyRemoteState && pullResult.remoteState) {
-			// baseline מה-remote: מנרמלים שדות per-device ל-local
-			// כי pullAndBuildState מחזיר lastModified=now ו-settings={} שגורמים ל-delta פנטום
-			const baseline = cloneAppState(pullResult.remoteState);
-			baseline.lastModified = stateForUpload.lastModified;
-			baseline.settings = cloneAppState(stateForUpload).settings;
-			this.previousState = baseline;
+		} else if (this.previousState === null && pullResult.remoteState) {
+			// סנכרון ראשון בסשן, writeIds תואמים — remote כ-baseline
+			this.previousState = cloneAppState(pullResult.remoteState);
 		}
+		// אין צורך בנרמול baseline — toHistoryContent מפשיט את השדות הבעייתיים
 
 			// ─── החלטה: צריך להעלות? ──────────────────────────────────────
 			const hasLocalChanges = this.previousState
-				? !!calculateDelta(this.previousState, stateForUpload)
+				? !!calculateDelta(
+						toHistoryContent(this.previousState),
+						toHistoryContent(stateForUpload))
 				: true;
 			const shouldUpload = !remoteWriteId || mergedFromRemote || hasLocalChanges;
 

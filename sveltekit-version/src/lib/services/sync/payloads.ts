@@ -37,7 +37,9 @@ export function buildContentPayload(state: AppState): ContentV2 {
 		images: state.images,
 		activeListId: state.activeListId,
 		currentUserId: state.currentUserId,
-		settings: {}
+		settings: {
+			childLockEnabled: state.settings?.childLockEnabled ?? false
+		}
 	};
 }
 

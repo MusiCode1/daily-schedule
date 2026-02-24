@@ -1,5 +1,4 @@
 import * as jsondiffpatch from 'jsondiffpatch';
-import type { AppState } from '$lib/types';
 
 const TAG = '[SyncEngine]';
 
@@ -10,7 +9,7 @@ const differ = jsondiffpatch.create({
 	}
 });
 
-export function calculateDelta(oldState: AppState, newState: AppState): object | undefined {
+export function calculateDelta(oldState: object, newState: object): object | undefined {
 	const delta = differ.diff(oldState, newState);
 	if (!delta) {
 		console.log(TAG, 'אין שינויים בין הגרסאות');
@@ -20,19 +19,20 @@ export function calculateDelta(oldState: AppState, newState: AppState): object |
 	return delta;
 }
 
-export function applyDelta(baseState: AppState, delta: object): AppState {
+export function applyDelta(baseState: object, delta: object): object {
 	const result = differ.patch(
 		JSON.parse(JSON.stringify(baseState)),
 		delta as jsondiffpatch.Delta
 	);
 	console.log(TAG, 'Delta הוחל בהצלחה');
-	return result as AppState;
+	return result as object;
 }
 
 /**
  * 3-way merge - המוח של המערכת
+ * מקבל historyContent objects (ללא שדות אפמריים)
  */
-export function threeWayMerge(common: AppState, local: AppState, remote: AppState): AppState {
+export function threeWayMerge(common: object, local: object, remote: object): object {
 	console.log(TAG, '3-way merge מתחיל...');
 
 	const deltaLocal = differ.diff(common, local);
@@ -59,15 +59,15 @@ export function threeWayMerge(common: AppState, local: AppState, remote: AppStat
 		merged = differ.patch(merged, deltaLocal);
 		console.log(TAG, 'Merge הצליח ללא קונפליקטים');
 	} catch (error) {
-		console.warn(TAG, 'קונפליקט זוהה, משתמש ב-last-write-wins', error);
-		merged = local.lastModified > remote.lastModified ? local : remote;
+		console.warn(TAG, 'קונפליקט זוהה, last-write-wins לא זמין ב-historyContent, משתמש ב-remote', error);
+		merged = remote;
 	}
 
 	normalizeMergedState(merged);
 	return merged;
 }
 
-function normalizeMergedState(state: AppState): void {
+function normalizeMergedState(state: any): void {
 	console.log(TAG, 'מנרמל order...');
 	Object.keys(state.lists).forEach((userId) => {
 		const userLists = state.lists[userId];
@@ -85,7 +85,7 @@ function normalizeMergedState(state: AppState): void {
 	console.log(TAG, 'נורמליזציה הסתיימה');
 }
 
-export function areStatesEqual(a: AppState, b: AppState): boolean {
+export function areStatesEqual(a: object, b: object): boolean {
 	const aCopy = { ...a };
 	const bCopy = { ...b };
 	delete (aCopy as any).lastModified;

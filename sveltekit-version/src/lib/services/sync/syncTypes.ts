@@ -37,7 +37,7 @@ export type ContentV2 = {
 	images: Record<string, any>;
 	activeListId: Record<string, string>;
 	currentUserId: string | null;
-	settings: Record<string, never>;
+	settings: { childLockEnabled?: boolean };
 };
 
 export type ProgressV2 = {

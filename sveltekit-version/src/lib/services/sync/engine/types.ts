@@ -1,5 +1,3 @@
-import type { AppState } from '$lib/types';
-
 /**
  * מבנה history.json - שומר את כל הדלתות וה-snapshots
  */
@@ -15,6 +13,7 @@ export type HistoryEntry = SnapshotEntry | DeltaEntry;
 
 /**
  * Snapshot מלא - נקודת ציון
+ * state הוא historyContent (ללא isDone, lastModified, syncMetadata)
  */
 export interface SnapshotEntry {
 	type: 'snapshot';
@@ -23,7 +22,7 @@ export interface SnapshotEntry {
 	timestamp: number;
 	deviceId: string;
 	deviceName: string;
-	state: AppState;
+	state: Record<string, any>;
 }
 
 /**
@@ -46,5 +45,5 @@ export interface CommonAncestorResult {
 	found: boolean;
 	writeId: string | null;
 	entry: HistoryEntry | null;
-	state: AppState | null;
+	state: Record<string, any> | null;
 }

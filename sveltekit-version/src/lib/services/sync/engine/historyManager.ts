@@ -4,7 +4,6 @@ import type {
 	DeltaEntry,
 	CommonAncestorResult
 } from './types';
-import type { AppState } from '$lib/types';
 import { applyDelta } from './syncEngine';
 
 const TAG = '[HistoryManager]';
@@ -108,7 +107,7 @@ function buildChain(history: SyncHistory, writeId: string): string[] | null {
 	return chain;
 }
 
-export function reconstructState(history: SyncHistory, writeId: string): AppState | null {
+export function reconstructState(history: SyncHistory, writeId: string): Record<string, any> | null {
 	console.log(TAG, `משחזר state עבור writeId: ${writeId}`);
 
 	const targetEntry = findEntryByWriteId(history, writeId);
@@ -145,7 +144,7 @@ export function reconstructState(history: SyncHistory, writeId: string): AppStat
 		return null;
 	}
 
-	let state: AppState =
+	let state: object =
 		typeof structuredClone === 'function'
 			? structuredClone(snapshotEntry.state)
 			: JSON.parse(JSON.stringify(snapshotEntry.state));
@@ -170,7 +169,7 @@ export function reconstructState(history: SyncHistory, writeId: string): AppStat
 	}
 
 	console.log(TAG, 'State שוחזר בהצלחה');
-	return state;
+	return state as Record<string, any>;
 }
 
 export function mergeHistories(

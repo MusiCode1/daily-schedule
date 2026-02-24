@@ -19,6 +19,56 @@ import { sha256String, sha256Blob, stableStringify } from './crypto';
 
 const TAG = '[SyncOrchestrator]';
 
+/**
+ * ממיר AppState ל-historyContent — מפשיט שדות אפמריים (isDone, lastModified, syncMetadata)
+ * כדי שההיסטוריה תכיל רק נתונים מבניים (בהתאם לתכנון המקורי עם ContentV2).
+ */
+export function toHistoryContent(state: AppState): Record<string, any> {
+	const content: Record<string, any> = {
+		version: state.version,
+		users: state.users,
+		people: state.people,
+		lists: {},
+		images: state.images,
+		activeListId: state.activeListId,
+		currentUserId: state.currentUserId,
+		settings: { childLockEnabled: state.settings?.childLockEnabled ?? false }
+	};
+	// העתקת lists ללא isDone
+	for (const userId of Object.keys(state.lists || {})) {
+		content.lists[userId] = {};
+		for (const [listId, list] of Object.entries(state.lists[userId] || {})) {
+			const tasks: Record<string, any> = {};
+			for (const [taskId, task] of Object.entries((list as any).tasks || {})) {
+				const { isDone, ...rest } = task as any;
+				tasks[taskId] = rest;
+			}
+			content.lists[userId][listId] = { ...list, tasks };
+		}
+	}
+	return content;
+}
+
+/**
+ * מחיל isDone מ-source state על target state (last-write-wins)
+ */
+function applyProgressToState(target: AppState, source: AppState): void {
+	for (const userId of Object.keys(source.lists || {})) {
+		const sourceLists = source.lists[userId] || {};
+		const targetLists = target.lists[userId] || {};
+		for (const [listId, sourceList] of Object.entries(sourceLists)) {
+			const targetList = targetLists[listId] as any;
+			if (!targetList) continue;
+			for (const [taskId, sourceTask] of Object.entries((sourceList as any).tasks || {})) {
+				const targetTask = targetList.tasks?.[taskId];
+				if (targetTask) {
+					targetTask.isDone = (sourceTask as any).isDone;
+				}
+			}
+		}
+	}
+}
+
 export type DeviceInfo = {
 	deviceId: string;
 	deviceName: string;
@@ -211,9 +261,22 @@ export async function pull(
 
 		console.log(TAG, 'pull: common ancestor found', { writeId: ancestor.writeId });
 
-		const mergedState = threeWayMerge(ancestor.state, localState, remoteState);
-		mergedState.lastModified = Math.max(localState.lastModified, remoteState.lastModified);
-		mergedState.syncMetadata = remoteState.syncMetadata;
+		// merge על historyContent (ללא isDone, lastModified, syncMetadata)
+		const mergedContent = threeWayMerge(
+			ancestor.state,                    // כבר historyContent (מההיסטוריה)
+			toHistoryContent(localState),
+			toHistoryContent(remoteState)
+		);
+		// שחזור ל-AppState מלא
+		const mergedState: AppState = {
+			...localState,                     // basis: per-device fields
+			...(mergedContent as any),
+			settings: localState.settings,     // per-device
+			lastModified: Math.max(localState.lastModified, remoteState.lastModified),
+			syncMetadata: remoteState.syncMetadata
+		};
+		// החזרת isDone מ-progress (last-write-wins: remote)
+		applyProgressToState(mergedState, remoteState);
 
 		console.log(TAG, 'pull: 3-way merge completed');
 		return { state: mergedState, remoteWriteId, merged: true, remoteState };
@@ -332,7 +395,9 @@ export async function push(
 
 		const writeId = generateWriteId();
 
-		// 3. יצירת history entry
+		// 3. יצירת history entry (על historyContent — ללא isDone, lastModified, syncMetadata)
+		const historyContent = toHistoryContent(state);
+
 		if (isSnapshot) {
 			const entry: SnapshotEntry = {
 				type: 'snapshot',
@@ -341,14 +406,14 @@ export async function push(
 				timestamp: now,
 				deviceId: device.deviceId,
 				deviceName: device.deviceName,
-				state
+				state: historyContent
 			};
 			appendToHistory(history, entry);
 		} else {
 			if (!previousState) {
 				throw new Error('previousState required for delta entry');
 			}
-			const delta = calculateDelta(previousState, state);
+			const delta = calculateDelta(toHistoryContent(previousState), historyContent);
 			if (!delta) {
 				console.log(TAG, 'no changes detected, skipping push');
 				throw new Error('No changes to backup');
