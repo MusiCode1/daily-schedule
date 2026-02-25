@@ -11,6 +11,7 @@ import { calculateDelta } from '../services/sync/engine/syncEngine';
 import { pull, push, toHistoryContent, type DeviceInfo } from '../services/sync/syncOrchestrator';
 import { googleDriveSyncProvider } from '../services/sync/providers/google-drive/googleDriveSyncProvider';
 import { mockServerSyncProvider } from '../services/sync/providers/mock-server/mockServerSyncProvider';
+import { buildProgressPayload } from '../services/sync/payloads';
 import { SyncError } from '../services/sync/syncTypes';
 import type { AppState } from '../types';
 
@@ -183,11 +184,17 @@ export class SyncController {
 		// אין צורך בנרמול baseline — toHistoryContent מפשיט את השדות הבעייתיים
 
 			// ─── החלטה: צריך להעלות? ──────────────────────────────────────
-			const hasLocalChanges = this.previousState
+			const hasContentChanges = this.previousState
 				? !!calculateDelta(
 						toHistoryContent(this.previousState),
 						toHistoryContent(stateForUpload))
 				: true;
+			const hasProgressChanges = this.previousState
+				? !!calculateDelta(
+						buildProgressPayload(this.previousState),
+						buildProgressPayload(stateForUpload))
+				: false;
+			const hasLocalChanges = hasContentChanges || hasProgressChanges;
 			const shouldUpload = !remoteWriteId || mergedFromRemote || hasLocalChanges;
 
 			if (!shouldUpload) {

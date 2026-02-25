@@ -527,12 +527,72 @@ return { ..., settings: {} };  // תמיד ריק!
 
 ---
 
+#### באג 6 (קריטי): שינויי progress בלבד (isDone) לא מסתנכרנים — push נחסם
+
+**תאריך זיהוי:** 25.2.2026
+**מיקום:** `syncOrchestrator.ts:412-419`
+
+**הבעיה:** כשמשתמש רק מסמן משימות כ"בוצע" (isDone) בלי לשנות שום דבר מבני
+(שם, תמונה, סדר וכו'), ה-push נחסם לגמרי עם "No changes to backup".
+
+```typescript
+// syncOrchestrator.ts:416-419
+const delta = calculateDelta(toHistoryContent(previousState), historyContent);
+if (!delta) {
+    console.log(TAG, 'no changes detected, skipping push');
+    throw new Error('No changes to backup');  // ← חוסם את כל ה-push!
+}
+```
+
+**שורש הבעיה:** `toHistoryContent()` מסנן את `isDone` מה-state (כי זה שדה progress, לא content).
+לכן כש-content לא השתנה, ה-delta יוצא `null` וה-push נזרק עם שגיאה —
+למרות ש-`buildProgressPayload()` (שורה 435) **כן** מייצר payload שונה עם ערכי `isDone` מעודכנים.
+
+**זרימה:**
+
+```
+1. previousState = { tasks: { t1: { name: "הכן תיק", isDone: false } } }
+2. המשתמש מסמן V על "הכן תיק" → isDone: true
+3. push() מתחיל
+4. toHistoryContent(previousState) = { tasks: { t1: { name: "הכן תיק" } } }  ← ללא isDone
+5. toHistoryContent(state)         = { tasks: { t1: { name: "הכן תיק" } } }  ← ללא isDone
+6. calculateDelta() → null (זהים!)
+7. throw new Error('No changes to backup') ← ה-push נחסם!
+8. buildProgressPayload() לעולם לא נקראת ← שינוי ה-isDone אבד!
+```
+
+**השפעה:** סימון/ביטול "בוצע" על משימות **לא מסתנכרן בין מכשירים**.
+זה אחד התרחישים הנפוצים ביותר — משתמש מסמן משימות במהלך היום,
+אבל progress לא עולה ל-Drive ולא מגיע למכשיר השני.
+
+**תיקון נדרש:** ה-push לא צריך להיחסם כשיש שינויי progress בלבד.
+שתי אפשרויות:
+
+1. **בדיקה כפולה** — בדוק גם progress delta לפני חסימה:
+   ```typescript
+   const contentDelta = calculateDelta(toHistoryContent(previousState), historyContent);
+   const progressDelta = calculateDelta(
+       buildProgressPayload(previousState),
+       buildProgressPayload(state)
+   );
+   if (!contentDelta && !progressDelta) {
+       throw new Error('No changes to backup');
+   }
+   ```
+   אם יש רק progress delta — דלג על ה-history entry אבל **כן** כתוב את ה-progress payload.
+
+2. **הכללת isDone בהיסטוריה** — אל תסנן `isDone` ב-`toHistoryContent()`.
+   פשוט יותר, אבל עלול ליצור דלתאות יומיות גדולות יותר (כי isDone משתנה הרבה).
+
+---
+
 ### סיכום — סדר תיקון מומלץ
 
 | # | באג | חומרה | תיקון |
 |---|-----|--------|-------|
 | 1 | push מיותר (lastModified phantom) | 🔴 קריטי | אל תכלול `lastModified` ב-delta, או שמר timestamp מקורי ב-pullAndBuildState |
 | 2 | דלתאות בהיסטוריה ריקות | 🔴 קריטי | חשב delta להיסטוריה מה-state *לפני* השינוי, לא אחריו |
+| 6 | שינויי progress (isDone) לא מסתנכרנים | 🔴 קריטי | בדוק גם progress delta לפני חסימת push, או הכלל isDone בהיסטוריה |
 | 3 | syncMetadata phantom | 🟡 בינוני | הוסף syncMetadata ל-content payload, או התעלם ממנו ב-delta |
 | 4 | isDone undefined/false phantom | 🟡 בינוני | נרמל isDone ב-local state, או התעלם ב-delta |
 | 5 | settings={} | ⚪ קטן | ככל הנראה by design |
@@ -541,5 +601,6 @@ return { ..., settings: {} };  // תמיד ריק!
 
 1. **`syncController.svelte.ts`** — שורות 177-186 + 189-192: לוגיקת previousState + hasLocalChanges
 2. **`syncOrchestrator.ts`** — שורה 253: `lastModified: now` → שמר מקורי, או הוצא מ-delta
-3. **`payloads.ts`** — שורה 41: `settings: {}` + חסר `syncMetadata`
-4. **`syncOrchestrator.ts`** — שורה 263: normalization של isDone
+3. **`syncOrchestrator.ts`** — שורות 412-419: חסימת push כש-content delta ריק — צריך לבדוק גם progress delta
+4. **`payloads.ts`** — שורה 41: `settings: {}` + חסר `syncMetadata`
+5. **`syncOrchestrator.ts`** — שורה 263: normalization של isDone

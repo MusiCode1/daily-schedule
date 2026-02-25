@@ -58,7 +58,8 @@ export default defineConfig({
 					include: [
 						'tests/unit/**/*.{test,spec}.{js,ts}',
 						'tests/integration/**/*.{test,spec}.{js,ts}'
-					]
+					],
+					exclude: ['e2e/**']
 				}
 			}
 		]

@@ -589,4 +589,56 @@ describe('Google Drive Sync E2E', () => {
 			expect(bPull3.state.lists['u1']['list1'].tasks['t2'].name).toBe("B's task");
 		});
 	});
+
+	// ──────────────────────────────────────────────────────────────────────────
+	// תרחיש 9: שינויי progress בלבד (isDone)
+	// ──────────────────────────────────────────────────────────────────────────
+	describe('תרחיש 9: שינויי progress בלבד (isDone)', () => {
+		it('push עם isDone בלבד מצליח ולא מוסיף delta entry להיסטוריה', async () => {
+			const state = makeState();
+			const device = makeDevice('dev-a');
+
+			// push ראשון — snapshot
+			await push(remote, state, null, null, device, makeDb(), {
+				forceSnapshot: true,
+				generateWriteId: () => 'w1'
+			});
+
+			// שינוי isDone בלבד
+			const stateWithDone = cloneState(state);
+			stateWithDone.lists['u1']['list1'].tasks['t1'].isDone = true;
+
+			// push שני — delta path
+			const result = await push(
+				remote, stateWithDone, state, 'w1', device, makeDb(),
+				{ generateWriteId: () => 'w2' }
+			);
+
+			expect(result.writeId).toBe('w2');
+			expect(remote.getWriteId()).toBe('w2');
+
+			// היסטוריה — רק ה-snapshot הראשון, ללא delta entry חדש
+			const history = await remote.pullHistory();
+			expect(history!.entries.length).toBe(1);
+			expect(history!.entries[0].type).toBe('snapshot');
+
+			// progress — isDone עודכן
+			const progress = await remote.pullProgress();
+			expect((progress as any).taskDone['t1']).toBe(true);
+		});
+
+		it('push ללא שום שינוי (לא content ולא progress) זורק "No changes to backup"', async () => {
+			const state = makeState();
+
+			await push(remote, state, null, null, makeDevice('dev-a'), makeDb(), {
+				forceSnapshot: true,
+				generateWriteId: () => 'w1'
+			});
+
+			// אותו state בדיוק — אין שינוי
+			await expect(
+				push(remote, state, state, 'w1', makeDevice('dev-a'), makeDb())
+			).rejects.toThrow('No changes to backup');
+		});
+	});
 });

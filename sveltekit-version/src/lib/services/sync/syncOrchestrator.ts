@@ -413,21 +413,34 @@ export async function push(
 			if (!previousState) {
 				throw new Error('previousState required for delta entry');
 			}
-			const delta = calculateDelta(toHistoryContent(previousState), historyContent);
-			if (!delta) {
-				console.log(TAG, 'no changes detected, skipping push');
-				throw new Error('No changes to backup');
+			const contentDelta = calculateDelta(toHistoryContent(previousState), historyContent);
+
+			if (contentDelta) {
+				// שינויי תוכן → delta entry בהיסטוריה
+				const entry: DeltaEntry = {
+					type: 'delta',
+					writeId,
+					parentWriteId: lastKnownWriteId!,
+					timestamp: now,
+					deviceId: device.deviceId,
+					deviceName: device.deviceName,
+					delta: contentDelta
+				};
+				appendToHistory(history, entry);
+			} else {
+				// אין שינויי תוכן — בדיקת progress (isDone)
+				const progressDelta = calculateDelta(
+					buildProgressPayload(previousState),
+					buildProgressPayload(state)
+				);
+				if (!progressDelta) {
+					console.log(TAG, 'no changes detected, skipping push');
+					throw new Error('No changes to backup');
+				}
+				// שינויי progress בלבד — לא מוסיפים entry להיסטוריה
+				// (progress מנוהל כ-last-write-wins, לא צריך delta history)
+				console.log(TAG, 'progress-only changes, skipping history entry');
 			}
-			const entry: DeltaEntry = {
-				type: 'delta',
-				writeId,
-				parentWriteId: lastKnownWriteId!,
-				timestamp: now,
-				deviceId: device.deviceId,
-				deviceName: device.deviceName,
-				delta
-			};
-			appendToHistory(history, entry);
 		}
 
 		// 4. בניית payloads + hashes

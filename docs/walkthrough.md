@@ -1,5 +1,35 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-25 03:10
+
+### תיקון באג 6: שינויי progress (isDone) לא מסתנכרנים בין מכשירים
+
+לאחר יישום `toHistoryContent()` (שמסנן isDone מההיסטוריה), התגלה שסימון/ביטול "בוצע" על משימות חוסם את ה-push לגמרי — כי ה-delta check בודק רק content (ללא isDone), ואם אין שינוי מבני, ה-push נזרק עם "No changes to backup".
+
+#### מה בוצע?
+
+**1. `syncOrchestrator.ts` — push() בודק content + progress**
+
+- החלפת בדיקת delta יחידה בבדיקה כפולה: content delta → history entry; progress delta → push ללא history entry
+- אם אין שינוי לא ב-content ולא ב-progress → throw "No changes"
+- שומר על ההפרדה הארכיטקטונית: history מכיל רק content deltas
+
+**2. `syncController.svelte.ts` — hasLocalChanges כולל progress**
+
+- `hasContentChanges` + `hasProgressChanges` → `hasLocalChanges`
+- מונע דילוג על push כשרק isDone השתנה
+
+**3. תיקוני בדיקות**
+
+- `backupPayloads.test.ts`: ציפיית `settings` מעודכנת ל-`{ childLockEnabled: false }`
+- `vite.config.ts`: הוספת `exclude: ['e2e/**']` למניעת סריקת Playwright ע"י vitest
+- `googleDriveSync.e2e.test.ts`: 2 בדיקות חדשות — progress-only push + no-changes throw
+- `syncOrchestrator.regression.test.ts`: יישור hasLocalChanges עם הלוגיקה החדשה
+
+#### החלטות ארכיטקטורה
+
+- **שינויי progress לא נכנסים להיסטוריה**: isDone משתנה הרבה (מדי יום), אז שמירתו בהיסטוריה תנפח את הדלתאות. במקום זה, progress מסתנכרן כ-last-write-wins payload בלבד.
+
 ## 2026-02-25 01:10
 
 ### תיקון מערכת סנכרון — יישור עם התכנון המקורי (historyContent)

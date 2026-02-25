@@ -40,10 +40,12 @@ import type { SyncHistory } from '$lib/services/sync/engine/types';
 import {
 	pull,
 	push,
+	toHistoryContent,
 	type SyncDb,
 	type DeviceInfo
 } from '$lib/services/sync/syncOrchestrator';
 import { calculateDelta } from '$lib/services/sync/engine/syncEngine';
+import { buildProgressPayload } from '$lib/services/sync/payloads';
 
 // ─── FakeRemote ──────────────────────────────────────────────────────────────
 
@@ -370,10 +372,14 @@ describe('רגרסיה postmortem כשל #2: previousState=localState → delta 
 			ctrl.previousState = baseline;
 		}
 
-		// החלטת upload
-		const hasLocalChanges = ctrl.previousState
-			? !!calculateDelta(ctrl.previousState, stateForUpload)
+		// החלטת upload — כמו ב-syncController: בודקים content + progress
+		const hasContentChanges = ctrl.previousState
+			? !!calculateDelta(toHistoryContent(ctrl.previousState), toHistoryContent(stateForUpload))
 			: true;
+		const hasProgressChanges = ctrl.previousState
+			? !!calculateDelta(buildProgressPayload(ctrl.previousState), buildProgressPayload(stateForUpload))
+			: false;
+		const hasLocalChanges = hasContentChanges || hasProgressChanges;
 		const shouldUpload = !remoteWriteId || mergedFromRemote || hasLocalChanges;
 
 		if (!shouldUpload) {
