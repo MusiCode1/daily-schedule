@@ -24,154 +24,132 @@
 		e.stopPropagation();
 		fn?.();
 	}
+
+	// מחלקות Tailwind משותפות לכפתורים - משתמש במשתני ה-Theme (כמו var--primary) כדי לתמוך בערכות הנושא
+	const baseBtn = `!w-11 !h-11 !rounded-full !flex items-center justify-center shrink-0 
+		transition-all duration-300 bg-transparent hover:!text-white hover:scale-110 
+		hover:-translate-y-0.5 active:scale-90 active:translate-y-0.5 
+		disabled:opacity-40 disabled:!text-[var(--text-muted)] disabled:!bg-transparent 
+		disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:translate-y-0`;
 </script>
 
-<div class="action-bar">
+<div
+	class="relative z-10 mx-auto mt-2 inline-flex max-w-fit items-center justify-center gap-1.5 rounded-full border border-[var(--text-muted)]/20 px-3 py-1.5 shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+	style="background: var(--bg-card); backdrop-filter: blur(12px);"
+	dir="rtl"
+>
 	<!-- חץ למעלה -->
 	<IconButton
-		class="action-circle action-move"
+		class="{baseBtn} text-[var(--primary)] hover:!bg-[var(--primary)] hover:shadow-[var(--primary)]/30 hover:shadow-md"
 		disabled={isFirst}
 		onclick={(e: Event) => handle(e, onmoveup)}
 		title={TEXTS.MOVE_UP_ACTION}
 		aria-label={TEXTS.MOVE_UP_ACTION}
 	>
-		⬆
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="24"
+			height="24"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2.5"
+			stroke-linecap="round"
+			stroke-linejoin="round"><path d="m18 15-6-6-6 6" /></svg
+		>
 	</IconButton>
+
+	<div class="mx-0.5 h-7 w-[1.5px] rounded-sm bg-[var(--text-muted)] opacity-20"></div>
 
 	<!-- עריכה -->
 	<IconButton
-		class="action-circle action-edit"
+		class="{baseBtn} text-[var(--edit)] hover:!bg-[var(--edit)] hover:shadow-[var(--edit)]/30 hover:shadow-md"
 		onclick={(e: Event) => handle(e, onedit)}
 		title={TEXTS.EDIT_ACTION}
 		aria-label={TEXTS.EDIT_ACTION}
 	>
-		✏️
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="22"
+			height="22"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" /><path
+				d="m15 5 4 4"
+			/></svg
+		>
 	</IconButton>
 
 	<!-- שכפול -->
 	<IconButton
-		class="action-circle action-duplicate"
+		class="{baseBtn} text-[var(--info)] hover:!bg-[var(--info)] hover:shadow-[var(--info)]/30 hover:shadow-md"
 		onclick={(e: Event) => handle(e, onduplicate)}
 		title={TEXTS.DUPLICATE_TASK_ACTION}
 		aria-label={TEXTS.DUPLICATE_TASK_ACTION}
 	>
-		📋
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="22"
+			height="22"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path
+				d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
+			/></svg
+		>
 	</IconButton>
 
 	<!-- מחיקה -->
 	<IconButton
-		tone="danger"
-		class="action-circle action-delete"
+		class="{baseBtn} text-[var(--danger)] hover:!bg-[var(--danger)] hover:shadow-[var(--danger)]/30 hover:shadow-md"
 		onclick={(e: Event) => handle(e, ondelete)}
 		title={TEXTS.DELETE_ACTION}
 		aria-label={TEXTS.DELETE_ACTION}
 	>
-		🗑️
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="22"
+			height="22"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path
+				d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"
+			/><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" /></svg
+		>
 	</IconButton>
+
+	<div class="mx-0.5 h-7 w-[1.5px] rounded-sm bg-[var(--text-muted)] opacity-20"></div>
 
 	<!-- חץ למטה -->
 	<IconButton
-		class="action-circle action-move"
+		class="{baseBtn} text-[var(--primary)] hover:!bg-[var(--primary)] hover:shadow-(--primary)/30 hover:shadow-md"
 		disabled={isLast}
 		onclick={(e: Event) => handle(e, onmovedown)}
 		title={TEXTS.MOVE_DOWN_ACTION}
 		aria-label={TEXTS.MOVE_DOWN_ACTION}
 	>
-		⬇
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="24"
+			height="24"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2.5"
+			stroke-linecap="round"
+			stroke-linejoin="round"><path d="m6 9 6 6 6-6" /></svg
+		>
 	</IconButton>
 </div>
-
-<style>
-	.action-bar {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 0.75rem;
-		padding: 0.5rem 1rem;
-		background: var(--bg-card, #ffffff);
-		border: 2px solid #e2e8f0;
-		border-radius: var(--radius-md, 12px);
-		box-shadow: var(--shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.1));
-		width: fit-content;
-		margin: 0.4rem auto 0;
-	}
-
-	/* כפתורים עגולים גדולים - דריסת btn-icon */
-	:global(.action-circle.btn-icon) {
-		width: 56px;
-		height: 56px;
-		border-radius: var(--radius-full, 9999px);
-		border: 2px solid;
-		font-size: 1.4rem;
-		flex-shrink: 0;
-		transition: all 0.2s ease;
-	}
-
-	:global(.action-circle.btn-icon:active) {
-		transform: scale(0.92);
-	}
-
-	/* כפתורי חצים - ראשיים ובולטים */
-	:global(.action-move.btn-icon) {
-		border-color: var(--primary, #6366f1);
-		color: var(--primary, #6366f1);
-		background: var(--primary-bg, #e0e7ff);
-	}
-
-	:global(.action-move.btn-icon:hover:not(:disabled)) {
-		background: var(--primary, #6366f1);
-		color: white;
-		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
-	}
-
-	:global(.action-move.btn-icon:disabled) {
-		opacity: 0.25;
-		cursor: not-allowed;
-		background: #f1f5f9;
-		border-color: #cbd5e1;
-		color: #cbd5e1;
-	}
-
-	/* כפתור עריכה */
-	:global(.action-edit.btn-icon) {
-		border-color: var(--edit, #8b5cf6);
-		color: var(--edit, #8b5cf6);
-		background: #faf5ff;
-	}
-
-	:global(.action-edit.btn-icon:hover) {
-		background: var(--edit, #8b5cf6);
-		color: white;
-		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3);
-	}
-
-	/* כפתור שכפול */
-	:global(.action-duplicate.btn-icon) {
-		border-color: var(--info, #3b82f6);
-		color: var(--info, #3b82f6);
-		background: #eff6ff;
-	}
-
-	:global(.action-duplicate.btn-icon:hover) {
-		background: var(--info, #3b82f6);
-		color: white;
-		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
-	}
-
-	/* כפתור מחיקה */
-	:global(.action-delete.btn-icon) {
-		border-color: var(--danger, #ef4444);
-		color: var(--danger, #ef4444);
-		background: var(--cancelled, #fef2f2);
-	}
-
-	:global(.action-delete.btn-icon:hover) {
-		background: var(--danger, #ef4444);
-		color: white;
-		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
-	}
-</style>
