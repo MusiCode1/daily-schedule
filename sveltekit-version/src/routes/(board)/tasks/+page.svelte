@@ -285,9 +285,14 @@
 						taskNumber={index + 1}
 						isActive={index === board.activeTaskIndex}
 						isEditMode={board.isEditMode}
+						isFirst={index === 0}
+						isLast={index === board.tasks.length - 1}
 						ontoggle={() => board.toggleTask(task.id)}
 						ondelete={() => board.deleteTask(task.id)}
 						onedit={() => board.openAddModal(task)}
+						onduplicate={() => board.duplicateTask(task.id)}
+						onmoveup={() => board.moveTaskUp(task.id)}
+						onmovedown={() => board.moveTaskDown(task.id)}
 						onopenboard={(url) => board.openCommunicationBoard(url)}
 						ondragstart={(e: DragEvent) => dnd.handleDragStart(e, index)}
 					/>

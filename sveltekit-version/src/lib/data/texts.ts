@@ -145,6 +145,9 @@ const TEXTS_ADMIN = {
 	DELETE_TASK_CONFIRM: 'למחוק?',
 	EDIT_ACTION: 'ערוך',
 	DELETE_ACTION: 'מחק',
+	MOVE_UP_ACTION: 'העבר למעלה',
+	MOVE_DOWN_ACTION: 'העבר למטה',
+	DUPLICATE_TASK_ACTION: 'שכפל משימה',
 
 	// תמונות
 	IMAGE_ALT_GENERIC: 'תמונה',
