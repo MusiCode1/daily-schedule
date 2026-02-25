@@ -1,7 +1,7 @@
 import type { AppState } from '$lib/types';
 import type { SyncProvider } from './syncProvider';
 import type { SyncHistory, SnapshotEntry, DeltaEntry } from './engine/types';
-import type { ManifestV2, Sha256 } from './syncTypes';
+import type { ManifestV2, ProgressV2, Sha256 } from './syncTypes';
 import { SyncError } from './syncTypes';
 import { CURRENT_BACKUP_SCHEMA_VERSION } from './constants';
 import {
@@ -63,6 +63,22 @@ function applyProgressToState(target: AppState, source: AppState): void {
 				const targetTask = targetList.tasks?.[taskId];
 				if (targetTask) {
 					targetTask.isDone = (sourceTask as any).isDone;
+				}
+			}
+		}
+	}
+}
+
+/** מחילה progress מרוחק (ProgressV2.taskDone) על AppState — last-write-wins */
+function applyRemoteProgress(state: AppState, progress: ProgressV2): void {
+	const taskDone: Record<string, boolean> = progress.taskDone || {};
+	for (const userId of Object.keys(state.lists || {})) {
+		const userLists = state.lists[userId] || {};
+		for (const list of Object.values(userLists)) {
+			for (const task of Object.values((list as any).tasks || {})) {
+				const t = task as any;
+				if (t.id in taskDone) {
+					t.isDone = taskDone[t.id];
 				}
 			}
 		}
@@ -210,10 +226,19 @@ export async function pull(
 
 		const remoteWriteId = remote.writeId;
 
-		// 2. writeIds זהים → אין שינויים מרוחקים
-		// אבל אם needsBaseline=true (סנכרון ראשון בסשן) — מורידים remoteState
-		// כדי שה-syncController יוכל לזהות שינויים מקומיים שטרם הועלו
+		// 2. writeIds זהים → אין שינויי תוכן מרוחקים
+		// אבל progress עשוי להשתנות (progress-only push שומר writeId קיים)
 		if (localWriteId && localWriteId === remoteWriteId) {
+			// בדיקת progress: האם ה-progressHash השתנה?
+			const localPH = await sha256String(stableStringify(buildProgressPayload(localState!)));
+			if (localPH !== remote.progressHash) {
+				console.log(TAG, 'pull: writeIds match but progressHash differs, downloading progress');
+				const progress = await provider.pullProgress();
+				if (progress) {
+					applyRemoteProgress(localState!, progress);
+				}
+			}
+
 			if (options?.needsBaseline) {
 				console.log(TAG, 'pull: writeIds match, downloading remoteState for baseline');
 				try {
@@ -393,12 +418,13 @@ export async function push(
 		const isSnapshot = options?.forceSnapshot || shouldCreateSnapshot(history);
 		console.log(TAG, `entry type: ${isSnapshot ? 'snapshot' : 'delta'}`);
 
-		const writeId = generateWriteId();
-
 		// 3. יצירת history entry (על historyContent — ללא isDone, lastModified, syncMetadata)
 		const historyContent = toHistoryContent(state);
 
+		let writeId: string;
+
 		if (isSnapshot) {
+			writeId = generateWriteId();
 			const entry: SnapshotEntry = {
 				type: 'snapshot',
 				writeId,
@@ -416,6 +442,7 @@ export async function push(
 			const contentDelta = calculateDelta(toHistoryContent(previousState), historyContent);
 
 			if (contentDelta) {
+				writeId = generateWriteId();
 				// שינויי תוכן → delta entry בהיסטוריה
 				const entry: DeltaEntry = {
 					type: 'delta',
@@ -437,9 +464,25 @@ export async function push(
 					console.log(TAG, 'no changes detected, skipping push');
 					throw new Error('No changes to backup');
 				}
-				// שינויי progress בלבד — לא מוסיפים entry להיסטוריה
-				// (progress מנוהל כ-last-write-wins, לא צריך delta history)
-				console.log(TAG, 'progress-only changes, skipping history entry');
+				// progress-only: שימוש חוזר ב-writeId הקיים — לא מוסיפים entry להיסטוריה
+				// כך B יזהה writeIds תואמים ויבדוק רק progressHash
+				if (lastKnownWriteId) {
+					writeId = lastKnownWriteId;
+				} else {
+					// edge case: אין writeId קודם — ניפול ל-snapshot
+					writeId = generateWriteId();
+					const entry: SnapshotEntry = {
+						type: 'snapshot',
+						writeId,
+						parentWriteId: null,
+						timestamp: now,
+						deviceId: device.deviceId,
+						deviceName: device.deviceName,
+						state: historyContent
+					};
+					appendToHistory(history, entry);
+				}
+				console.log(TAG, 'progress-only changes, reusing writeId:', writeId);
 			}
 		}
 

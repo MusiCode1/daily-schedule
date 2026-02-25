@@ -1,5 +1,39 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-25 23:30
+
+### תיקון סנכרון progress-only בין מכשירים (writeId + progressHash)
+
+הקומיט הקודם תיקן את חסימת ה-push עבור שינויי isDone בלבד, אך progress-only push עדיין יצר writeId חדש ללא entry בהיסטוריה — מה שגרם למכשיר B לא למצוא common ancestor ולהישאר עם state ישן.
+
+#### מה בוצע?
+
+**1. `syncOrchestrator.ts` — push() משתמש חוזר ב-writeId ל-progress-only**
+
+- יצירת writeId הועברה ממיקום גלובלי למיקום מותנה: snapshot/content delta מייצרים writeId חדש, progress-only משתמש חוזר ב-`lastKnownWriteId`
+- edge case: אם אין writeId קודם (תיאורטי) — נופל ל-snapshot
+
+**2. `syncOrchestrator.ts` — pull() בודק progressHash כש-writeIds תואמים**
+
+- לפני ההחזרה, מחשב progressHash מקומי ומשווה ל-remote
+- אם שונה — מוריד progress ומחיל עם `applyRemoteProgress()` חדשה
+- פונקציה זו מקבלת `ProgressV2.taskDone` ומחילה על AppState (last-write-wins)
+
+**3. טסטים — twoDeviceSync.test.ts**
+
+- הטסט "באג ידוע: progress-only" הוחלף בטסט עובד שמוודא ש-B מקבל isDone
+- נוסף טסט הלוך-חזור: A מסמן t1 → B מושך → B מסמן t2 → A מושך → שניהם רואים הכל
+
+**4. טסטים — syncOrchestrator.test.ts**
+
+- `push progress-only should reuse lastKnownWriteId` — writeId לא משתנה, history לא גדלה
+- `pull should detect progress change when writeIds match` — progress מורד ומוחל
+- `pull should not download progress when progressHash matches` — אין הורדה מיותרת
+
+#### החלטות ארכיטקטורה
+
+- **writeId לא משתנה ב-progress-only**: כך B רואה writeIds תואמים ולא נכנס ל-merge/findCommonAncestor. במקום זה, progressHash שונה מגלה שיש עדכון ומוריד רק את קובץ ה-progress.
+
 ## 2026-02-25 03:10
 
 ### תיקון באג 6: שינויי progress (isDone) לא מסתנכרנים בין מכשירים

@@ -252,4 +252,90 @@ describe('syncOrchestrator.push', () => {
 		expect(commitArg.hashes.contentHash).toMatch(/^sha256:/);
 		expect(commitArg.hashes.progressHash).toMatch(/^sha256:/);
 	});
+
+	it('progress-only push should reuse lastKnownWriteId', async () => {
+		const state = makeState();
+		const previousState = structuredClone(state);
+		// שינוי isDone בלבד — ללא שינוי תוכן
+		(state.lists.u1.list1.tasks.t1 as any).isDone = true;
+
+		const { createEmptyHistory, appendToHistory } = await import('$lib/services/sync/engine/historyManager');
+		const history = createEmptyHistory();
+		appendToHistory(history, {
+			type: 'snapshot',
+			writeId: 'existing-w1',
+			parentWriteId: null,
+			timestamp: 1000,
+			deviceId: 'd1',
+			deviceName: 'Dev',
+			state: previousState
+		});
+
+		const provider = makeMockProvider({
+			pullHistory: vi.fn(async () => history),
+			pullAssets: vi.fn(async () => null)
+		});
+
+		const result = await push(
+			provider, state, previousState, 'existing-w1', device, makeDb(),
+			{ now: 2000, generateWriteId: () => 'should-not-be-used' }
+		);
+
+		// writeId צריך להישאר זהה (שימוש חוזר)
+		expect(result.writeId).toBe('existing-w1');
+
+		// היסטוריה לא צריכה לגדול (אין entry חדש)
+		const historyArg = vi.mocked(provider.writeHistory).mock.calls[0][0];
+		expect(historyArg.entries.length).toBe(1); // רק ה-snapshot המקורי
+	});
+});
+
+describe('syncOrchestrator.pull — progress detection', () => {
+	it('should detect progress change when writeIds match', async () => {
+		const localState = makeState();
+		// progress מקומי: t1.isDone = false
+		const { sha256String, stableStringify } = await import('$lib/services/sync/crypto');
+		const { buildProgressPayload } = await import('$lib/services/sync/payloads');
+
+		const localProgressHash = await sha256String(stableStringify(buildProgressPayload(localState)));
+
+		// remote יש progressHash שונה (מרמז על שינוי isDone)
+		const remoteMeta = makeRemoteMeta('w1');
+		remoteMeta.progressHash = 'sha256:different-progress' as any;
+
+		const remoteProgress = { backupSchemaVersion: 2, taskDone: { t1: true } };
+
+		const provider = makeMockProvider({
+			checkRemote: vi.fn(async () => remoteMeta),
+			pullProgress: vi.fn(async () => remoteProgress as any)
+		});
+
+		const result = await pull(provider, localState, 'w1', makeDb());
+
+		expect(result.merged).toBe(false);
+		expect(result.remoteWriteId).toBe('w1');
+		// progress הוחל — t1 צריך להיות true
+		expect((result.state.lists.u1?.list1?.tasks?.t1 as any)?.isDone).toBe(true);
+		expect(provider.pullProgress).toHaveBeenCalled();
+	});
+
+	it('should not download progress when progressHash matches', async () => {
+		const localState = makeState();
+		const { sha256String, stableStringify } = await import('$lib/services/sync/crypto');
+		const { buildProgressPayload } = await import('$lib/services/sync/payloads');
+
+		const localProgressHash = await sha256String(stableStringify(buildProgressPayload(localState)));
+
+		const remoteMeta = makeRemoteMeta('w1');
+		remoteMeta.progressHash = localProgressHash as any;
+
+		const provider = makeMockProvider({
+			checkRemote: vi.fn(async () => remoteMeta)
+		});
+
+		const result = await pull(provider, localState, 'w1', makeDb());
+
+		expect(result.merged).toBe(false);
+		expect(provider.pullProgress).not.toHaveBeenCalled();
+	});
 });
