@@ -209,6 +209,18 @@ const TEXTS_ADMIN = {
 	DRIVE_DESC: 'גבה את הנתונים שלך לענן וסנכרן בין מכשירים.',
 	SAVE_BACKUP_LOCAL_TITLE: 'שמור גיבוי לקובץ מקומי',
 	DOWNLOAD_FILE_TITLE: 'הורד קובץ',
+
+	// גיבוי/ייבוא לקובץ מקומי
+	FILE_SYNC_TITLE: 'גיבוי לקובץ מקומי',
+	FILE_SYNC_DESC: 'ייצוא וייבוא נתונים באמצעות קובץ ZIP.',
+	FILE_EXPORT_BUTTON: 'הורד גיבוי (ZIP)',
+	FILE_IMPORT_BUTTON: 'ייבא מקובץ',
+	FILE_EXPORT_SUCCESS: 'הקובץ הורד בהצלחה!',
+	FILE_IMPORT_SUCCESS: 'הנתונים יובאו בהצלחה!',
+	FILE_IMPORT_ERROR: 'שגיאה בייבוא הקובץ',
+	FILE_EXPORT_ERROR: 'שגיאה ביצירת קובץ הגיבוי',
+	FILE_EXPORTING: 'מכין קובץ להורדה...',
+	FILE_IMPORTING: 'מייבא נתונים מהקובץ...',
 	UNKNOWN: 'לא ידוע',
 	GENERIC_USER: 'משתמש',
 

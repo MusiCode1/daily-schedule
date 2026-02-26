@@ -1,5 +1,6 @@
 <script lang="ts">
 	import GoogleDriveBackup from './_components/GoogleDriveBackup.svelte';
+	import FileBackup from './_components/FileBackup.svelte';
 	import MockSyncPanel from './_components/MockSyncPanel.svelte';
 	import { TEXTS } from '$lib/services/language';
 
@@ -14,6 +15,10 @@
 	{:else}
 		<GoogleDriveBackup />
 	{/if}
+</div>
+
+<div class="settings-group" style="margin-top: 2rem;">
+	<FileBackup />
 </div>
 
 <style>

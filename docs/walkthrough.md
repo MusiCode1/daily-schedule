@@ -1,5 +1,40 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-26 22:00
+
+### הוספת ממשק סנכרון באמצעות קובץ (File Sync UI)
+
+הוספת כרטיס UI לעמוד הגיבוי (`/settings/backup`) המאפשר ייצוא וייבוא נתונים באמצעות קובץ ZIP מקומי, לצד האפשרות הקיימת של Google Drive.
+
+#### מה בוצע?
+
+**1. קומפוננטת UI — `FileBackup.svelte`**
+
+- כרטיס בעיצוב זהה ל-`GoogleDriveBackup.svelte` עם אייקון קובץ
+- כפתור "הורד גיבוי (ZIP)" — מפעיל ייצוא דרך ה-orchestrator
+- כפתור "ייבא מקובץ" — פותח בוחר קבצים להעלאת ZIP
+- הודעות הצלחה/שגיאה עם ניקוי אוטומטי אחרי 5 שניות
+
+**2. Controller — `fileSyncSettings.svelte.ts`**
+
+- `exportZip()` — משתמש ב-`push()` של ה-orchestrator עם `fileSyncProvider` ו-`forceSnapshot: true`
+- `importZip(file)` — טוען ZIP דרך `fileSyncProvider.loadZip()`, בונה state דרך `importFromProvider()`, ומחיל על `globalState`
+- State ריאקטיבי: `isExporting`, `isImporting`, `errorMessage`, `successMessage`
+
+**3. `syncOrchestrator.ts` — חשיפת `importFromProvider()`**
+
+- פונקציה ציבורית חדשה שעוטפת את `pullAndBuildState` הפרטית
+- נדרשת כי `pull()` מדלג על file import (ה-`checkRemote()` של `FileSyncProvider` מחזיר `null`)
+
+**4. טקסטים — `texts.ts`**
+
+- 10 מפתחות חדשים ב-`TEXTS_ADMIN` עבור ממשק הסנכרון לקובץ
+
+#### החלטות ארכיטקטורה
+
+- **`importFromProvider` במקום `pull`**: ה-orchestrator של `pull()` מדלג כשאין remote metadata (כי `FileSyncProvider.checkRemote()` מחזיר `null`). במקום לשנות את ההתנהגות של `checkRemote`, נוספה פונקציה ציבורית שקוראת ישירות ל-`pullAndBuildState`.
+- **ייצוא דרך `push()` עם `forceSnapshot`**: שימוש חוזר במנגנון הקיים במקום כתיבת לוגיקת ייצוא נפרדת. ה-commit של `FileSyncProvider` בונה ZIP ומפעיל הורדה בדפדפן.
+
 ## 2026-02-25 23:30
 
 ### תיקון סנכרון progress-only בין מכשירים (writeId + progressHash)

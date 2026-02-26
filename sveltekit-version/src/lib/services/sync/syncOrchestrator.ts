@@ -378,6 +378,21 @@ async function pullAndBuildState(
 	return restored;
 }
 
+// ─── Import (ללא merge — בניית state ישירה מספק) ─────────────────────────────
+
+/**
+ * ייבוא state מספק סנכרון — ללא merge, בונה AppState חדש מה-provider.
+ * שימוש: file import, שחזור מגיבוי.
+ */
+export async function importFromProvider(
+	provider: SyncProvider,
+	db: SyncDb,
+	options?: { now?: number }
+): Promise<AppState> {
+	const now = options?.now ?? Date.now();
+	return pullAndBuildState(provider, db, now);
+}
+
 // ─── Push ────────────────────────────────────────────────────────────────────
 
 /**
