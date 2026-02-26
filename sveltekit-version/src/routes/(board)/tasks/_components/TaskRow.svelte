@@ -1,457 +1,458 @@
 <script lang="ts">
-  import type { Task } from '$lib/types';
-  import ImageDisplay from '$lib/components/ImageDisplay.svelte';
-  import { TEXTS } from '$lib/services/language';
-  import TaskActionBar from './TaskActionBar.svelte';
+	import type { Task } from '$lib/types';
+	import ImageDisplay from '$lib/components/ImageDisplay.svelte';
+	import { TEXTS } from '$lib/services/language';
+	import TaskActionBar from './TaskActionBar.svelte';
 
-  let {
-    task,
-    isActive = false,
-    isEditMode = false,
-    isFirst = false,
-    isLast = false,
-    taskNumber,
-    ontoggle,
-    ondelete,
-    onedit,
-    onduplicate,
-    onmoveup,
-    onmovedown,
-    onopenboard,
-    ...rest
-  } = $props<{
-    task: Task;
-    isActive?: boolean;
-    isEditMode?: boolean;
-    isFirst?: boolean;
-    isLast?: boolean;
-    taskNumber?: number;
-    ontoggle?: (id: string) => void;
-    ondelete?: (id: string) => void;
-    onedit?: (task: Task) => void;
-    onduplicate?: (id: string) => void;
-    onmoveup?: (id: string) => void;
-    onmovedown?: (id: string) => void;
-    onopenboard?: (url: string) => void;
-    [key: string]: any;
-  }>();
+	let {
+		task,
+		isActive = false,
+		isEditMode = false,
+		isFirst = false,
+		isLast = false,
+		taskNumber,
+		ontoggle,
+		ondelete,
+		onedit,
+		onduplicate,
+		onmoveup,
+		onmovedown,
+		onopenboard,
+		...rest
+	} = $props<{
+		task: Task;
+		isActive?: boolean;
+		isEditMode?: boolean;
+		isFirst?: boolean;
+		isLast?: boolean;
+		taskNumber?: number;
+		ontoggle?: (id: string) => void;
+		ondelete?: (id: string) => void;
+		onedit?: (task: Task) => void;
+		onduplicate?: (id: string) => void;
+		onmoveup?: (id: string) => void;
+		onmovedown?: (id: string) => void;
+		onopenboard?: (url: string) => void;
+		[key: string]: any;
+	}>();
 
-  function handleToggle(e: Event) {
-    e.stopPropagation();
-    ontoggle?.(task.id);
-  }
+	function handleToggle(e: Event) {
+		e.stopPropagation();
+		ontoggle?.(task.id);
+	}
 
-  function handleOpenBoard(e: Event) {
-    e.stopPropagation();
-    if (task.communicationBoardUrl) {
-      onopenboard?.(task.communicationBoardUrl);
-    }
-  }
+	function handleOpenBoard(e: Event) {
+		e.stopPropagation();
+		if (task.communicationBoardUrl) {
+			onopenboard?.(task.communicationBoardUrl);
+		}
+	}
 </script>
 
-<div class="task-row-wrapper" class:completed={task.isDone} class:active={isActive} class:cancelled={task.changeType === 'cancelled'} class:edit-mode={isEditMode}>
-  {#if isActive && !isEditMode}
-    <div class="now-indicator">
-      <div class="now-text">{TEXTS.NOW}</div>
-      <div class="now-arrow"></div>
-    </div>
-  {/if}
+<div
+	class="task-row-wrapper"
+	class:completed={task.isDone}
+	class:active={isActive}
+	class:cancelled={task.changeType === 'cancelled'}
+	class:edit-mode={isEditMode}
+>
+	{#if isActive && !isEditMode}
+		<div class="now-indicator">
+			<div class="now-text">{TEXTS.NOW}</div>
+			<div class="now-arrow"></div>
+		</div>
+	{/if}
 
-  <div
-    class="task-card"
-    draggable={isEditMode}
-    class:editable={isEditMode}
-    onclick={handleToggle}
-    onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && handleToggle(e)}
-    role="button"
-    tabindex="0"
-    {...rest}
-  >
-    {#if taskNumber !== undefined}
-      <div class="task-number">{taskNumber}</div>
-    {/if}
+	<div
+		class="task-card"
+		draggable={isEditMode}
+		class:editable={isEditMode}
+		onclick={handleToggle}
+		onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && handleToggle(e)}
+		role="button"
+		tabindex="0"
+		{...rest}
+	>
+		{#if taskNumber !== undefined}
+			<div class="task-number">{taskNumber}</div>
+		{/if}
 
-    <div class="task-image-wrapper">
-      {#if task.imageSrc}
-        <ImageDisplay
-          imageSrc={task.imageSrc}
-          alt={task.name}
-          className="task-image"
-        />
-      {:else}
-        <div class="placeholder-image">
-          <span>📷</span>
-        </div>
-      {/if}
-    </div>
+		<div class="task-image-wrapper">
+			{#if task.imageSrc}
+				<ImageDisplay imageSrc={task.imageSrc} alt={task.name} className="task-image" />
+			{:else}
+				<div class="placeholder-image">
+					<span>📷</span>
+				</div>
+			{/if}
+		</div>
 
-    <div class="task-content">
-      {#if task.changeType}
-        <div class="change-badge {task.changeType}">
-          {#if task.changeType === 'cancelled'}
-            <span class="change-icon">🚫</span>
-            <span class="change-text">{TEXTS.CHANGE_LABEL}</span>
-          {:else}
-            <span class="change-icon">✨</span>
-            <span class="change-text">{TEXTS.NEW_ACTIVITY_LABEL}</span>
-          {/if}
-        </div>
-      {/if}
+		<div class="task-content">
+			{#if task.changeType}
+				<div class="change-badge {task.changeType}">
+					{#if task.changeType === 'cancelled'}
+						<span class="change-icon">🚫</span>
+						<span class="change-text">{TEXTS.CHANGE_LABEL}</span>
+					{:else}
+						<span class="change-icon">✨</span>
+						<span class="change-text">{TEXTS.NEW_ACTIVITY_LABEL}</span>
+					{/if}
+				</div>
+			{/if}
 
-      <h3 class="task-name">{task.name}</h3>
+			<h3 class="task-name">{task.name}</h3>
 
-      {#if task.communicationBoardUrl && (isActive || task.isDone) && !isEditMode}
-        <button
-          class="comm-board-btn"
-          onclick={handleOpenBoard}
-          title={TEXTS.OPEN_COMMUNICATION_BOARD}
-        >
-          💬
-        </button>
-      {/if}
-    </div>
+			{#if task.communicationBoardUrl && (isActive || task.isDone) && !isEditMode}
+				<button
+					class="comm-board-btn"
+					onclick={handleOpenBoard}
+					title={TEXTS.OPEN_COMMUNICATION_BOARD}
+				>
+					💬
+				</button>
+			{/if}
+		</div>
 
-    <div class="task-status-slot" aria-hidden="true">
-      <div
-        class="status-indicator"
-        class:status-indicator-done={task.isDone}
-        class:status-indicator-active={isActive && !task.isDone}
-        class:status-indicator-empty={!task.isDone && !isActive}
-      >
-        {#if task.isDone}
-          <span class="status-glyph">✓</span>
-        {:else if isActive}
-          <span class="status-glyph">●</span>
-        {/if}
-      </div>
-    </div>
-  </div>
+		<div class="task-status-slot" aria-hidden="true">
+			<div
+				class="status-indicator"
+				class:status-indicator-done={task.isDone}
+				class:status-indicator-active={isActive && !task.isDone}
+				class:status-indicator-empty={!task.isDone && !isActive}
+			>
+				{#if task.isDone}
+					<span class="status-glyph">✓</span>
+				{:else if isActive}
+					<span class="status-glyph">●</span>
+				{/if}
+			</div>
+		</div>
+	</div>
 
-  {#if isEditMode}
-    <TaskActionBar
-      {isFirst}
-      {isLast}
-      onmoveup={() => onmoveup?.(task.id)}
-      onmovedown={() => onmovedown?.(task.id)}
-      onedit={() => onedit?.(task)}
-      onduplicate={() => onduplicate?.(task.id)}
-      ondelete={() => {
-        if (confirm(TEXTS.DELETE_TASK_CONFIRM)) {
-          ondelete?.(task.id);
-        }
-      }}
-    />
-  {/if}
+	{#if isEditMode}
+		<TaskActionBar
+			{isFirst}
+			{isLast}
+			onmoveup={() => onmoveup?.(task.id)}
+			onmovedown={() => onmovedown?.(task.id)}
+			onedit={() => onedit?.(task)}
+			onduplicate={() => onduplicate?.(task.id)}
+			ondelete={() => {
+				if (confirm(TEXTS.DELETE_TASK_CONFIRM)) {
+					ondelete?.(task.id);
+				}
+			}}
+		/>
+	{/if}
 </div>
 
 <style>
-  .task-row-wrapper {
-    position: relative;
-    width: 100%;
-    max-width: 600px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: transform 0.2s;
-  }
+	.task-row-wrapper {
+		position: relative;
+		width: 100%;
+		max-width: 600px;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		transition: transform 0.2s;
+	}
 
-  .task-row-wrapper:not(.edit-mode) {
-    height: 120px;
-  }
+	.task-row-wrapper:not(.edit-mode) {
+		height: 120px;
+	}
 
-  /* רווח גדול אחרי הווידג'ט במצב עריכה - מבהיר שייכות פאנל לכרטיס */
-  .task-row-wrapper.edit-mode {
-    margin-bottom: 1rem;
-  }
+	/* רווח גדול אחרי הווידג'ט במצב עריכה - מבהיר שייכות פאנל לכרטיס */
+	.task-row-wrapper.edit-mode {
+		margin-bottom: 1rem;
+	}
 
-  .task-card {
-    background: var(--bg-card, #ffffff);
-    border-radius: 16px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    overflow: hidden;
-    width: 100%;
-    height: 120px;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    cursor: pointer;
-    border: 2px solid transparent;
-    position: relative;
-  }
+	.task-card {
+		background: var(--bg-card, #ffffff);
+		border-radius: 16px;
+		box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+		display: flex;
+		align-items: center;
+		overflow: hidden;
+		width: 100%;
+		height: 120px;
+		transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+		cursor: pointer;
+		/*border: 2px solid transparent;*/
+		position: relative;
+	}
 
-  /* מצב גרירה (Dragging) */
-  /* הערה: המחלקה 'dragging' מתווספת בדרך כלל דרך JS בהורה או ב-directive */
-  :global(.task-card.dragging) {
-    opacity: 0.5;
-    transform: scale(0.95);
-    border: 2px dashed var(--primary-accent, #6366f1);
-  }
+	/* מצב גרירה (Dragging) */
+	/* הערה: המחלקה 'dragging' מתווספת בדרך כלל דרך JS בהורה או ב-directive */
+	:global(.task-card.dragging) {
+		opacity: 0.5;
+		transform: scale(0.95);
+		border: 2px dashed var(--primary-accent, #6366f1);
+	}
 
-  .task-image-wrapper {
-    height: 100%;
-    aspect-ratio: 1 / 1;
-    width: auto;
-    position: relative;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden; /* לחיתוך שוליים עגולות */
-    border-radius: 12px; /* שוליים עגולות */
-  }
+	.task-image-wrapper {
+		height: 100%;
+		aspect-ratio: 1 / 1;
+		width: auto;
+		position: relative;
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden; /* לחיתוך שוליים עגולות */
+		border-radius: 12px; /* שוליים עגולות */
+	}
 
-  .task-image-wrapper :global(.task-image) {
-    width: 100%;
-    height: 100%;
-  }
+	.task-image-wrapper :global(.task-image) {
+		width: 100%;
+		height: 100%;
+	}
 
-  .placeholder-image {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f1f5f9;
-    font-size: 3rem;
-  }
+	.placeholder-image {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: #f1f5f9;
+		font-size: 3rem;
+	}
 
-  .placeholder-image span {
-    opacity: 0.3;
-  }
+	.placeholder-image span {
+		opacity: 0.3;
+	}
 
-  .task-content {
-    flex-grow: 1;
-    padding: 0 1.5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    height: 100%;
-  }
+	.task-content {
+		flex-grow: 1;
+		padding: 0 1.5rem;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		height: 100%;
+	}
 
-  .task-number {
-    min-width: 50px;
-    padding: 0 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: #cbd5e1;
-    flex-shrink: 0;
-    transition: all 0.3s;
-    line-height: 1;
-  }
+	.task-number {
+		min-width: 50px;
+		padding: 0 0.75rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 2.5rem;
+		font-weight: 800;
+		color: #cbd5e1;
+		flex-shrink: 0;
+		transition: all 0.3s;
+		line-height: 1;
+	}
 
-  .task-row-wrapper.active .task-number {
-    color: var(--primary-accent, #6366f1);
-    text-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
-  }
+	.task-row-wrapper.active .task-number {
+		color: var(--primary-accent, #6366f1);
+		text-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+	}
 
-  .task-row-wrapper.completed .task-number {
-    color: var(--success-color, #22c55e);
-  }
+	.task-row-wrapper.completed .task-number {
+		color: var(--success-color, #22c55e);
+	}
 
-  .task-name {
-    font-size: 1.4rem;
-    font-weight: 700;
-    margin: 0;
-    line-height: 1.2;
-  }
+	.task-name {
+		font-size: 1.4rem;
+		font-weight: 700;
+		margin: 0;
+		line-height: 1.2;
+	}
 
-  /* מצב פעיל (עכשיו) */
-  .task-row-wrapper.active .task-card {
-    border-color: var(--primary-accent, #6366f1);
-    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
-    z-index: 5;
-    transform: scale(1.02);
-  }
+	/* מצב פעיל (עכשיו) */
+	.task-row-wrapper.active .task-card {
+		border-color: var(--primary-accent, #6366f1);
+		box-shadow: 0 8px 20px rgba(99, 102, 241, 0.25);
+		z-index: 5;
+		transform: scale(1.02);
+	}
 
-  .now-indicator {
-    position: absolute;
-    right: -3.5rem;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    z-index: 20;
-    animation: bounceRight 1.5s infinite;
-  }
+	.now-indicator {
+		position: absolute;
+		right: -3.5rem;
+		top: 50%;
+		transform: translateY(-50%);
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		z-index: 20;
+		animation: bounceRight 1.5s infinite;
+	}
 
-  .now-text {
-    background: var(--danger-color, #ef4444);
-    color: white;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-weight: bold;
-    font-size: 0.9rem;
-    white-space: nowrap;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  }
+	.now-text {
+		background: var(--danger-color, #ef4444);
+		color: white;
+		padding: 4px 8px;
+		border-radius: 4px;
+		font-weight: bold;
+		font-size: 0.9rem;
+		white-space: nowrap;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+	}
 
-  .now-arrow {
-    width: 0;
-    height: 0;
-    border-top: 12px solid transparent;
-    border-bottom: 12px solid transparent;
-    border-right: 18px solid var(--danger-color, #ef4444);
-    margin-right: -2px;
-  }
+	.now-arrow {
+		width: 0;
+		height: 0;
+		border-top: 12px solid transparent;
+		border-bottom: 12px solid transparent;
+		border-right: 18px solid var(--danger-color, #ef4444);
+		margin-right: -2px;
+	}
 
-  @keyframes bounceRight {
-    0%,
-    100% {
-      transform: translate(0, -50%);
-    }
-    50% {
-      transform: translate(-5px, -50%);
-    }
-  }
+	@keyframes bounceRight {
+		0%,
+		100% {
+			transform: translate(0, -50%);
+		}
+		50% {
+			transform: translate(-5px, -50%);
+		}
+	}
 
-  /* מצב בוצע */
-  .task-row-wrapper.completed .task-card {
-    background: #ecfdf5;
-    border: 2px solid var(--success-color, #22c55e);
-    opacity: 1;
-    transform: scale(0.98);
-  }
+	/* מצב בוצע */
+	.task-row-wrapper.completed .task-card {
+		background: #ecfdf5;
+		border: 2px solid var(--success-color, #22c55e);
+		opacity: 1;
+		transform: scale(0.98);
+	}
 
-  .task-row-wrapper.completed .task-name {
-    text-decoration: none;
-    color: #15803d;
-  }
+	.task-row-wrapper.completed .task-name {
+		text-decoration: none;
+		color: #15803d;
+	}
 
-  /* מצב בוטל (משימת שינוי) */
-  .task-row-wrapper.cancelled .task-card {
-    background: #fef2f2;
-    border: 2px solid #fca5a5;
-    opacity: 1;
-    transform: scale(0.98);
-  }
+	/* מצב בוטל (משימת שינוי) */
+	.task-row-wrapper.cancelled .task-card {
+		background: #fef2f2;
+		border: 2px solid #fca5a5;
+		opacity: 1;
+		transform: scale(0.98);
+	}
 
-  .task-row-wrapper.cancelled .task-name {
-    text-decoration: none;
-    color: #991b1b;
-  }
+	.task-row-wrapper.cancelled .task-name {
+		text-decoration: none;
+		color: #991b1b;
+	}
 
-  .task-row-wrapper.cancelled .task-number {
-    color: #dc2626;
-  }
+	.task-row-wrapper.cancelled .task-number {
+		color: #dc2626;
+	}
 
-  .task-status-slot {
-    min-width: 64px;
-    height: 100%;
-    padding: 0 0.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
+	.task-status-slot {
+		min-width: 64px;
+		height: 100%;
+		padding: 0 0.9rem;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
 
-  .status-indicator {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    border: 3px solid #cbd5e1;
-    background: transparent;
-    color: #94a3b8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.25s ease;
-  }
+	.status-indicator {
+		width: 42px;
+		height: 42px;
+		border-radius: 50%;
+		border: 3px solid #cbd5e1;
+		background: transparent;
+		color: #94a3b8;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.25s ease;
+	}
 
-  .status-indicator-empty {
-    background: transparent;
-  }
+	.status-indicator-empty {
+		background: transparent;
+	}
 
-  .status-indicator-active {
-    background: var(--primary-accent, #6366f1);
-    border-color: #ffffff;
-    box-shadow: 0 6px 14px rgba(99, 102, 241, 0.35);
-    color: #ffffff;
-  }
+	.status-indicator-active {
+		background: var(--primary-accent, #6366f1);
+		border-color: #ffffff;
+		box-shadow: 0 6px 14px rgba(99, 102, 241, 0.35);
+		color: #ffffff;
+	}
 
-  .status-indicator-done {
-    background: var(--success-color, #22c55e);
-    border-color: var(--success-color, #22c55e);
-    box-shadow: 0 4px 10px rgba(34, 197, 94, 0.25);
-    color: #ffffff;
-  }
+	.status-indicator-done {
+		background: var(--success-color, #22c55e);
+		border-color: var(--success-color, #22c55e);
+		box-shadow: 0 4px 10px rgba(34, 197, 94, 0.25);
+		color: #ffffff;
+	}
 
-  .status-glyph {
-    line-height: 1;
-    font-size: 1.2rem;
-    font-weight: 800;
-  }
+	.status-glyph {
+		line-height: 1;
+		font-size: 1.2rem;
+		font-weight: 800;
+	}
 
-  .status-indicator-active .status-glyph {
-    font-size: 1.35rem;
-  }
+	.status-indicator-active .status-glyph {
+		font-size: 1.35rem;
+	}
 
-  .task-card.editable {
-    cursor: grab;
-  }
-  .task-card.editable:active {
-    cursor: grabbing;
-  }
+	.task-card.editable {
+		cursor: grab;
+	}
+	.task-card.editable:active {
+		cursor: grabbing;
+	}
 
-  .change-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.2rem 0.5rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    margin-bottom: 0.3rem;
-    width: fit-content;
-  }
+	.change-badge {
+		display: flex;
+		align-items: center;
+		gap: 0.3rem;
+		padding: 0.2rem 0.5rem;
+		border-radius: 6px;
+		font-size: 0.75rem;
+		font-weight: bold;
+		margin-bottom: 0.3rem;
+		width: fit-content;
+	}
 
-  .change-badge.cancelled {
-    background: #fef2f2;
-    color: #dc2626;
-    border: 1px solid #fecaca;
-  }
+	.change-badge.cancelled {
+		background: #fef2f2;
+		color: #dc2626;
+		border: 1px solid #fecaca;
+	}
 
-  .change-badge.added {
-    background: #fefce8;
-    color: #ca8a04;
-    border: 1px solid #fef08a;
-  }
+	.change-badge.added {
+		background: #fefce8;
+		color: #ca8a04;
+		border: 1px solid #fef08a;
+	}
 
-  .change-icon {
-    font-size: 1rem;
-    line-height: 1;
-  }
+	.change-icon {
+		font-size: 1rem;
+		line-height: 1;
+	}
 
-  .change-text {
-    line-height: 1;
-  }
+	.change-text {
+		line-height: 1;
+	}
 
-  .comm-board-btn {
-    background: #eef2ff;
-    border: 2px solid var(--primary-accent, #6366f1);
-    color: var(--primary-accent, #6366f1);
-    border-radius: 8px;
-    padding: 0.3rem 0.6rem;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-right: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+	.comm-board-btn {
+		background: #eef2ff;
+		border: 2px solid var(--primary-accent, #6366f1);
+		color: var(--primary-accent, #6366f1);
+		border-radius: 8px;
+		padding: 0.3rem 0.6rem;
+		font-size: 1.2rem;
+		cursor: pointer;
+		transition: all 0.2s;
+		margin-right: auto;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
 
-  .comm-board-btn:hover {
-    background: var(--primary-accent, #6366f1);
-    transform: scale(1.1);
-  }
+	.comm-board-btn:hover {
+		background: var(--primary-accent, #6366f1);
+		transform: scale(1.1);
+	}
 
-  .comm-board-btn:hover {
-    filter: brightness(110%);
-  }
+	.comm-board-btn:hover {
+		filter: brightness(110%);
+	}
 </style>
-
