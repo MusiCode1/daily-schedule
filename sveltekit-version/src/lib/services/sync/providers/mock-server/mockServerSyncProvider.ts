@@ -16,7 +16,7 @@ import type {
 } from '../../syncTypes';
 import type { SyncHistory } from '../../engine/types';
 
-const BASE_URL = 'http://localhost:3001';
+const BASE_URL = import.meta.env.VITE_MOCK_SYNC_URL || 'http://localhost:3001';
 
 // ─── עזרים ───────────────────────────────────────────────────────────────────
 

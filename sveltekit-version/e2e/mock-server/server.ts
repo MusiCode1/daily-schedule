@@ -2,21 +2,33 @@
  * שרת סנכרון מדומה לבדיקות E2E.
  *
  * מדמה את Google Drive API עבור בדיקות Playwright.
- * שומר נתונים בתיקיית temp: os.tmpdir()/mock-sync/
+ * שומר נתונים בתיקיית temp (ברירת מחדל: os.tmpdir()/mock-sync/)
  *
  * נקודות קצה:
  *   GET/POST /manifest, /content, /progress, /history, /assets
  *   GET/POST /blobs/:hash   — קבצים בינאריים (תמונות)
  *   POST     /reset         — מחיקת כל הנתונים (לפני כל בדיקה)
  *   GET      /health        — בדיקת זמינות (ל-Playwright webServer)
+ *
+ * פרמטרים (CLI → env → defaults):
+ *   bun e2e/mock-server/server.ts --port 3002 --store-dir /tmp/my-sync
+ *   MOCK_SYNC_PORT=3002 MOCK_SYNC_STORE_DIR=/tmp/my-sync bun e2e/mock-server/server.ts
  */
 
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { rm, mkdir, writeFile, readFile } from 'node:fs/promises';
 
-const PORT = 3001;
-const STORE_DIR = join(tmpdir(), 'mock-sync');
+// ─── פרמטרים ─────────────────────────────────────────────────────────────────
+
+function parseCliArg(name: string): string | undefined {
+	const flag = `--${name}`;
+	const idx = process.argv.indexOf(flag);
+	return idx !== -1 && idx + 1 < process.argv.length ? process.argv[idx + 1] : undefined;
+}
+
+const PORT = Number(parseCliArg('port') || process.env.MOCK_SYNC_PORT || 3001);
+const STORE_DIR = parseCliArg('store-dir') || process.env.MOCK_SYNC_STORE_DIR || join(tmpdir(), 'mock-sync');
 const BLOBS_DIR = join(STORE_DIR, 'blobs');
 
 // ─── אתחול ───────────────────────────────────────────────────────────────────
@@ -104,7 +116,31 @@ Bun.serve({
 				return data === null ? noContent() : jsonRes(data);
 			}
 			if (method === 'POST') {
-				await writeJson(name, await req.json());
+				const incoming = await req.json();
+
+				// history: מיזוג entries לפי writeId (מונע race condition בין שני טאבים)
+				if (name === 'history' && incoming && (incoming as any).entries) {
+					const existing = (await readJson('history')) as any;
+					if (existing?.entries) {
+						const existingIds = new Set(existing.entries.map((e: any) => e.writeId));
+						const newEntries = (incoming as any).entries.filter(
+							(e: any) => !existingIds.has(e.writeId)
+						);
+						if (newEntries.length > 0) {
+							existing.entries.push(...newEntries);
+							existing.entries.sort((a: any, b: any) => a.timestamp - b.timestamp);
+							existing.backupSchemaVersion = Math.max(
+								existing.backupSchemaVersion ?? 0,
+								(incoming as any).backupSchemaVersion ?? 0
+							);
+							await writeJson(name, existing);
+							console.log(`[MockSyncServer] History merged: +${newEntries.length} entries (total: ${existing.entries.length})`);
+							return jsonRes({ ok: true });
+						}
+					}
+				}
+
+				await writeJson(name, incoming);
 				return jsonRes({ ok: true });
 			}
 		}

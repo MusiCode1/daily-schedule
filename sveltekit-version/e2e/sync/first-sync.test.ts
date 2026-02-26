@@ -6,7 +6,7 @@
 
 import { test, expect } from '@playwright/test';
 
-const MOCK_SERVER = 'http://localhost:3001';
+const MOCK_SERVER = `http://127.0.0.1:${process.env.MOCK_SYNC_PORT || 3001}`;
 
 test.beforeEach(async ({ request }) => {
 	await request.post(`${MOCK_SERVER}/reset`);

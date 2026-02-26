@@ -1,5 +1,29 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-26 23:30
+
+### תיקון ייבוא תמונות מ-ZIP + פרמטריזציה של שרת Mock
+
+#### מה בוצע?
+
+**1. תיקון באג: תמונות לא יובאו מקובץ ZIP**
+
+- הבעיה: `fileSyncProvider.writeAssets()` לא עדכן את `hashToFile` ב-`assets.json`, כך שבייבוא ה-orchestrator דילג על כל התמונות (`asset missing in remote index`)
+- התיקון: `writeAssets()` עכשיו מעדכן `hashToFile` עבור blobs חדשים עם metadata (fileId, mimeType, size)
+- נוספו לוגים מפורטים ל-`pullAndBuildState` (כמה assets נדרשים, קיימים, חסרים, שוחזרו)
+
+**2. פרמטריזציה של שרת ה-Mock Sync**
+
+- `server.ts`: פורט ותיקיית אחסון נקראים מ-CLI args (`--port`, `--store-dir`) → env vars (`MOCK_SYNC_PORT`, `MOCK_SYNC_STORE_DIR`) → defaults
+- `mockServerSyncProvider.ts`: `BASE_URL` נקרא מ-`VITE_MOCK_SYNC_URL` עם fallback
+- `playwright.config.ts`: קורא `MOCK_SYNC_PORT` ומעביר לשרת ולאפליקציה
+- 3 קבצי E2E: `MOCK_SERVER` נבנה מ-`process.env.MOCK_SYNC_PORT` עם `127.0.0.1` במקום `localhost`
+
+#### החלטות ארכיטקטורה
+
+- **`127.0.0.1` במקום `localhost`**: בבדיקות E2E, `localhost` עלול להתפרש כ-IPv6 (`::1`) ולגרום ל-`ECONNREFUSED`. שימוש ב-`127.0.0.1` מבטיח IPv4.
+- **סדר עדיפויות CLI → env → default**: מאפשר גמישות מרבית — Playwright מעביר דרך env, הפעלה ידנית דרך CLI.
+
 ## 2026-02-26 22:00
 
 ### הוספת ממשק סנכרון באמצעות קובץ (File Sync UI)

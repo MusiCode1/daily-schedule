@@ -9,7 +9,7 @@
 
 import { test, expect, type Page, type APIRequestContext } from '@playwright/test';
 
-const MOCK_SERVER = 'http://localhost:3001';
+const MOCK_SERVER = `http://127.0.0.1:${process.env.MOCK_SYNC_PORT || 3001}`;
 const SYNC_TIMEOUT = 20_000;
 const POLL_INTERVALS: number[] = [500, 1000, 2000];
 const BACKUP_PAGE = '/settings/backup';
