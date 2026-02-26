@@ -1,66 +1,50 @@
-import type { AppState, List, Task } from '$lib/types';
+import type { AppState } from '$lib/types';
 import { CURRENT_BACKUP_SCHEMA_VERSION } from './constants';
-import type { ContentV2, ProgressV2 } from './syncTypes';
+import type { SyncContent, SyncProgress } from './syncTypes';
 
-function cloneTaskWithoutProgress(task: Task) {
-	const { isDone, ...rest } = task;
-	return rest;
-}
-
-function cloneListWithoutProgress(list: List) {
-	const tasksWithoutProgress: Record<string, any> = {};
-	for (const [taskId, task] of Object.entries(list.tasks)) {
-		tasksWithoutProgress[taskId] = cloneTaskWithoutProgress(task);
-	}
-	return {
-		...list,
-		tasks: tasksWithoutProgress
-	};
-}
-
-export function buildContentPayload(state: AppState): ContentV2 {
-	const lists: Record<string, Record<string, any>> = {};
-	for (const userId of Object.keys(state.lists || {})) {
-		const userLists = state.lists[userId] || {};
-		lists[userId] = {};
-		for (const [listId, list] of Object.entries(userLists)) {
-			lists[userId][listId] = cloneListWithoutProgress(list);
-		}
-	}
-
+/**
+ * בונה את ה-payload של התוכן המבני לסנכרון.
+ * ממיר את AppState לפורמט SyncContent — כולל users, people, lists, images ו-settings.
+ * Users ו-people מומרים ממפה (map) למערך (array) עבור תאימות לענן.
+ * @param state - מצב האפליקציה המקומי
+ * @returns אובייקט SyncContent מוכן להעלאה
+ */
+export function buildContentPayload(state: AppState): SyncContent {
 	return {
 		backupSchemaVersion: CURRENT_BACKUP_SCHEMA_VERSION,
 		appStateVersion: state.version,
 		users: Object.values(state.users),
 		people: Object.values(state.people),
-		lists,
+		lists: state.lists,
 		images: state.images,
-		activeListId: state.activeListId,
-		currentUserId: state.currentUserId,
 		settings: {
-			childLockEnabled: state.settings?.childLockEnabled ?? false
+			activeListId: state.settings.activeListId,
+			currentUserId: state.settings.currentUserId,
+			childLockEnabled: state.settings.childLockEnabled ?? false
 		}
 	};
 }
 
-export function buildProgressPayload(state: AppState): ProgressV2 {
-	const taskDone: Record<string, boolean> = {};
-
-	for (const userId of Object.keys(state.lists || {})) {
-		const userLists = state.lists[userId] || {};
-		for (const list of Object.values(userLists)) {
-			for (const task of Object.values(list.tasks)) {
-				taskDone[task.id] = !!task.isDone;
-			}
-		}
-	}
-
+/**
+ * בונה את ה-payload של התקדמות המשימות לסנכרון.
+ * מופרד מה-content כדי לאפשר עדכון progress בלבד ללא שינוי ב-writeId.
+ * @param state - מצב האפליקציה המקומי
+ * @returns אובייקט SyncProgress עם מצב ביצוע המשימות
+ */
+export function buildProgressPayload(state: AppState): SyncProgress {
 	return {
 		backupSchemaVersion: CURRENT_BACKUP_SCHEMA_VERSION,
-		taskDone
+		taskDone: state.taskProgress
 	};
 }
 
+/**
+ * אוסף את כל מזהי ה-assets (תמונות מ-IndexedDB) המופיעים ב-state.
+ * סורק avatars של users ו-people, לוגואים של רשימות, ותמונות משימות.
+ * מחזיר רק מזהים בפורמט `idb:*`.
+ * @param state - מצב האפליקציה
+ * @returns מערך מזהי IDB ייחודיים
+ */
 export function collectAssetIds(state: AppState): string[] {
 	const set = new Set<string>();
 

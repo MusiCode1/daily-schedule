@@ -10,10 +10,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import type { AppState } from '$lib/types';
 import type { SyncProvider } from '$lib/services/sync/syncProvider';
 import type {
-	ContentV2,
-	ProgressV2,
-	AssetsIndexV2,
-	ManifestV2,
+	SyncContent,
+	SyncProgress,
+	SyncAssetsIndex,
+	SyncManifest,
 	RemoteMetadata,
 	Sha256
 } from '$lib/services/sync/syncTypes';
@@ -30,12 +30,12 @@ import { pull, push, type SyncDb, type DeviceInfo } from '$lib/services/sync/syn
 class FakeRemote implements SyncProvider {
 	readonly id = 'fake';
 
-	private content: ContentV2 | null = null;
-	private progress: ProgressV2 | null = null;
+	private content: SyncContent | null = null;
+	private progress: SyncProgress | null = null;
 	private history: SyncHistory | null = null;
-	private assets: AssetsIndexV2 | null = null;
+	private assets: SyncAssetsIndex | null = null;
 	private blobs = new Map<string, Blob>();
-	private manifest: ManifestV2 | null = null;
+	private manifest: SyncManifest | null = null;
 
 	/** לבדיקות — כמה פעמים כל שיטה נקראה */
 	readonly calls = {
@@ -71,16 +71,16 @@ class FakeRemote implements SyncProvider {
 		};
 	}
 
-	async pullContent(): Promise<ContentV2 | null> {
+	async pullContent(): Promise<SyncContent | null> {
 		return this.content;
 	}
-	async pullProgress(): Promise<ProgressV2 | null> {
+	async pullProgress(): Promise<SyncProgress | null> {
 		return this.progress;
 	}
 	async pullHistory(): Promise<SyncHistory | null> {
 		return this.history;
 	}
-	async pullAssets(): Promise<AssetsIndexV2 | null> {
+	async pullAssets(): Promise<SyncAssetsIndex | null> {
 		return this.assets;
 	}
 
@@ -90,11 +90,11 @@ class FakeRemote implements SyncProvider {
 		return blob;
 	}
 
-	async writeContent(payload: ContentV2): Promise<void> {
+	async writeContent(payload: SyncContent): Promise<void> {
 		this.calls.writeContent++;
 		this.content = payload;
 	}
-	async writeProgress(payload: ProgressV2): Promise<void> {
+	async writeProgress(payload: SyncProgress): Promise<void> {
 		this.calls.writeProgress++;
 		this.progress = payload;
 	}
@@ -102,7 +102,7 @@ class FakeRemote implements SyncProvider {
 		this.calls.writeHistory++;
 		this.history = JSON.parse(JSON.stringify(h)); // deep clone
 	}
-	async writeAssets(index: AssetsIndexV2, newBlobs: Map<string, Blob>): Promise<void> {
+	async writeAssets(index: SyncAssetsIndex, newBlobs: Map<string, Blob>): Promise<void> {
 		this.calls.writeAssets++;
 		// מדמה: Drive מעלה כל blob חדש ורושם fileId פיקטיבי ב-hashToFile
 		for (const [hash, blob] of newBlobs) {
@@ -115,7 +115,7 @@ class FakeRemote implements SyncProvider {
 		}
 		this.assets = index;
 	}
-	async commit(m: ManifestV2): Promise<void> {
+	async commit(m: SyncManifest): Promise<void> {
 		this.calls.commit++;
 		this.manifest = m;
 	}
@@ -135,7 +135,7 @@ class FakeRemote implements SyncProvider {
 
 function makeState(overrides: Partial<AppState> = {}): AppState {
 	return {
-		version: 15,
+		version: 16,
 		users: { u1: { id: 'u1', name: 'Alice', gender: 'girl', avatar: '', themeColor: '#f00' } },
 		people: {},
 		lists: {
@@ -144,18 +144,23 @@ function makeState(overrides: Partial<AppState> = {}): AppState {
 					id: 'list1',
 					name: 'Morning Routine',
 					tasks: {
-						t1: { id: 't1', name: 'Brush teeth', imageSrc: null, isDone: false, order: 0 },
-						t2: { id: 't2', name: 'Get dressed', imageSrc: null, isDone: false, order: 1 }
+						t1: { id: 't1', name: 'Brush teeth', imageSrc: null, order: 0 },
+						t2: { id: 't2', name: 'Get dressed', imageSrc: null, order: 1 }
 					}
 				}
 			}
 		},
 		images: {},
-		activeListId: { u1: 'list1' },
-		currentUserId: 'u1',
-		settings: { lastActiveTime: 1000, childLockEnabled: false },
-		lastModified: 1000,
-		syncMetadata: undefined as any,
+		taskProgress: {},
+		settings: {
+			activeListId: { u1: 'list1' },
+			currentUserId: 'u1',
+			childLockEnabled: false
+		},
+		localDevice: {
+			lastModified: 1000,
+			lastActiveTime: 1000
+		},
 		...overrides
 	} as AppState;
 }
@@ -166,7 +171,10 @@ function makeDb(blobs: Map<string, Blob> = new Map()): SyncDb {
 		getImage: async (id) => store.get(id) ?? null,
 		saveImage: async (blob, id) => {
 			store.set(id, blob);
-		}
+		},
+		saveSyncHistory: async () => {},
+		getSyncHistory: async () => null,
+		deleteSyncHistory: async () => {}
 	};
 }
 
@@ -275,7 +283,7 @@ describe('Google Drive Sync E2E', () => {
 	describe('תרחיש 3: Device B מסתנכרן בפעם הראשונה', () => {
 		it('pull מחזיר את state המרוחק ללא merge', async () => {
 			// Device A פש
-			const stateA = makeState({ currentUserId: 'u1' });
+			const stateA = makeState();
 			await push(remote, stateA, null, null, makeDevice('dev-a'), makeDb(), {
 				forceSnapshot: true,
 				generateWriteId: () => 'w1'
@@ -286,7 +294,7 @@ describe('Google Drive Sync E2E', () => {
 
 			expect(result.merged).toBe(false);
 			expect(result.remoteWriteId).toBe('w1');
-			expect(result.state.currentUserId).toBe('u1');
+			expect(result.state.settings.currentUserId).toBe('u1');
 		});
 
 		it('אחרי pull, Device B יכול לדחוף state חדש', async () => {
@@ -299,7 +307,7 @@ describe('Google Drive Sync E2E', () => {
 			// Device B: pull → state מרוחק → push עם שינוי
 			const pullResult = await pull(remote, null, null, makeDb());
 			const stateB = cloneState(pullResult.state);
-			stateB.lists['u1']['list1'].tasks['t1'].isDone = true;
+			stateB.lists['u1']['list1'].tasks['t1'].name = 'Brush teeth well';
 
 			const pushResult = await push(
 				remote, stateB, pullResult.state, pullResult.remoteWriteId,
@@ -367,7 +375,7 @@ describe('Google Drive Sync E2E', () => {
 			});
 
 			const stateB = cloneState(baseState);
-			stateB.lists['u1']['list1'].tasks['t2'].isDone = true;
+			stateB.taskProgress['t2'] = true;
 			const mergeResult = await pull(remote, stateB, 'w1', makeDb());
 
 			// push את המצב הממוזג → forceSnapshot (כי זה אחרי merge)
@@ -495,7 +503,10 @@ describe('Google Drive Sync E2E', () => {
 			const downloadedBlobs = new Map<string, Blob>();
 			const dbB: SyncDb = {
 				getImage: async (id) => downloadedBlobs.get(id) ?? null,
-				saveImage: async (blob, id) => { downloadedBlobs.set(id, blob); }
+				saveImage: async (blob, id) => { downloadedBlobs.set(id, blob); },
+				saveSyncHistory: async () => {},
+				getSyncHistory: async () => null,
+				deleteSyncHistory: async () => {}
 			};
 
 			await pull(remote, null, null, dbB);
@@ -606,16 +617,17 @@ describe('Google Drive Sync E2E', () => {
 
 			// שינוי isDone בלבד
 			const stateWithDone = cloneState(state);
-			stateWithDone.lists['u1']['list1'].tasks['t1'].isDone = true;
+			stateWithDone.taskProgress['t1'] = true;
 
-			// push שני — delta path
+			// push שני — delta path (progress-only reuses writeId)
 			const result = await push(
 				remote, stateWithDone, state, 'w1', device, makeDb(),
 				{ generateWriteId: () => 'w2' }
 			);
 
-			expect(result.writeId).toBe('w2');
-			expect(remote.getWriteId()).toBe('w2');
+			// progress-only: writeId ממוחזר (לא חדש)
+			expect(result.writeId).toBe('w1');
+			expect(remote.getWriteId()).toBe('w1');
 
 			// היסטוריה — רק ה-snapshot הראשון, ללא delta entry חדש
 			const history = await remote.pullHistory();

@@ -23,7 +23,6 @@ export interface Task {
 	id: string;
 	name: string;
 	imageSrc: string | null; // רק מזהה תמונה (idb:xxx או URL)
-	isDone: boolean;
 	order: number; // סדר מפורש (0, 1, 2...)
 	communicationBoardUrl?: string; // קישור ללוח תקשורת (אופציונלי)
 	changeType?: TaskChangeType; // סוג השינוי - משימה בוטלה או נוספה (אופציונלי)
@@ -71,27 +70,29 @@ export interface UserProfile {
 
 export interface AppState {
 	version: number;
-	users: { [userId: string]: UserProfile }; // object במקום מערך!
 
-	lists: { [userId: string]: { [listId: string]: List } }; // object של objects!
-
-	// מאגר מטאדטה של תמונות (מפתח = מזהה תמונה)
+	// ─── Content (מסונכרן כמבנה) ───
+	users: { [userId: string]: UserProfile };
+	people: { [personId: string]: Person };
+	lists: { [userId: string]: { [listId: string]: List } };
 	images: { [imageId: string]: ImageMetadata };
 
-	// מאגר גלובלי של אנשים (צוות/משפחה)
-	people: { [personId: string]: Person }; // object במקום מערך!
+	// ─── Progress (מסונכרן בנפרד, קל) ───
+	taskProgress: { [taskId: string]: boolean }; // taskId → isDone
 
-	// Track which list is active for each user
-	activeListId: { [userId: string]: string };
-
-	currentUserId: string | null;
-
+	// ─── Settings (מסונכרן כהגדרות) ───
 	settings: {
-		lastActiveTime: number;
-		childLockEnabled: boolean; // חדש! מתג נעילת ילדים (ברירת מחדל: false)
+		activeListId: { [userId: string]: string };
+		currentUserId: string | null;
+		childLockEnabled: boolean;
 	};
-	lastModified: number;
-	syncMetadata?: SyncMetadata;
+
+	// ─── Device-local (לא מסונכרן) ───
+	localDevice: {
+		lastModified: number;
+		lastActiveTime: number;
+		syncMetadata?: SyncMetadata;
+	};
 }
 
 export interface SyncMetadata {

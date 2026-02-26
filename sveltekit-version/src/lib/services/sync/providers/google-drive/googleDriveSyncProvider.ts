@@ -4,10 +4,10 @@ import { driveHttpClient } from './driveHttpClient';
 import { deviceState } from '$lib/stores/deviceState';
 import { CURRENT_BACKUP_SCHEMA_VERSION } from '$lib/services/sync/constants';
 import type {
-	ContentV2,
-	ProgressV2,
-	AssetsIndexV2,
-	ManifestV2,
+	SyncContent,
+	SyncProgress,
+	SyncAssetsIndex,
+	SyncManifest,
 	RemoteMetadata,
 	Sha256
 } from '$lib/services/sync/syncTypes';
@@ -16,6 +16,9 @@ import type { SyncProvider } from '$lib/services/sync/syncProvider';
 import { dailyScheduleBackupRepo } from './dailyScheduleBackupRepo';
 
 const TAG = '[GoogleDriveSyncProvider]';
+
+/** משך תוקף הנעילה — 30 שניות */
+const LOCK_TTL_MS = 30_000;
 
 function toAssetFileName(hash: string): string {
 	return `sha256_${hash.slice('sha256:'.length)}`;
@@ -56,12 +59,19 @@ function updateCachedHashes(updates: {
 	});
 }
 
+/**
+ * ספק סנכרון ראשי — מממש את {@link SyncProvider} עבור Google Drive.
+ *
+ * אחראי על קריאה/כתיבה של כל חלקי הגיבוי (manifest, content, progress, assets, history)
+ * דרך {@link dailyScheduleBackupRepo}, עם cache אינקרמנטלי למניעת העלאות מיותרות.
+ */
 class GoogleDriveSyncProvider implements SyncProvider {
 	readonly id = 'google-drive';
 
 	private initialized = false;
 	private structureIds: Awaited<ReturnType<typeof dailyScheduleBackupRepo.ensureStructure>> | null = null;
 
+	/** אתחול הספק — יוצר את מבנה הקבצים ב-Drive אם לא קיים */
 	async initialize(): Promise<void> {
 		if (this.initialized) return;
 		console.log(TAG, 'initialize: ensureStructure...');
@@ -77,13 +87,18 @@ class GoogleDriveSyncProvider implements SyncProvider {
 		return this.structureIds;
 	}
 
+	/** בודק אם הספק זמין — כלומר, יש access token פעיל */
 	async isAvailable(): Promise<boolean> {
 		return !!googleAuthService.getAccessToken();
 	}
 
+	/**
+	 * בודק את מצב הגיבוי המרוחק — קורא את ה-appProperties מקובץ ה-manifest.
+	 * @returns מטא-דאטה מרוחקת, או null אם אין manifest או שהוא ריק
+	 */
 	async checkRemote(): Promise<RemoteMetadata | null> {
 		console.log(TAG, 'checkRemote...');
-		const meta = await dailyScheduleBackupRepo.findV2ManifestMeta();
+		const meta = await dailyScheduleBackupRepo.findManifestMeta();
 		if (!meta?.appProperties) return null;
 
 		const ap = meta.appProperties as Record<string, string>;
@@ -100,26 +115,29 @@ class GoogleDriveSyncProvider implements SyncProvider {
 		};
 	}
 
-	async pullContent(): Promise<ContentV2 | null> {
+	/** מושך את תוכן המשימות מ-Drive */
+	async pullContent(): Promise<SyncContent | null> {
 		const ids = await this.getIds();
 		try {
-			return (await dailyScheduleBackupRepo.readJson(ids.contentFileId)) as ContentV2;
+			return (await dailyScheduleBackupRepo.readJson(ids.contentFileId)) as SyncContent;
 		} catch (e) {
 			console.warn(TAG, 'pullContent failed', e);
 			return null;
 		}
 	}
 
-	async pullProgress(): Promise<ProgressV2 | null> {
+	/** מושך את מצב ההתקדמות מ-Drive */
+	async pullProgress(): Promise<SyncProgress | null> {
 		const ids = await this.getIds();
 		try {
-			return (await dailyScheduleBackupRepo.readJson(ids.progressFileId)) as ProgressV2;
+			return (await dailyScheduleBackupRepo.readJson(ids.progressFileId)) as SyncProgress;
 		} catch (e) {
 			console.warn(TAG, 'pullProgress failed', e);
 			return null;
 		}
 	}
 
+	/** מושך את היסטוריית הסנכרון מ-Drive */
 	async pullHistory(): Promise<SyncHistory | null> {
 		const ids = await this.getIds();
 		try {
@@ -130,16 +148,23 @@ class GoogleDriveSyncProvider implements SyncProvider {
 		}
 	}
 
-	async pullAssets(): Promise<AssetsIndexV2 | null> {
+	/** מושך את אינדקס הנכסים מ-Drive */
+	async pullAssets(): Promise<SyncAssetsIndex | null> {
 		const ids = await this.getIds();
 		try {
-			return (await dailyScheduleBackupRepo.readJson(ids.assetsIndexFileId)) as AssetsIndexV2;
+			return (await dailyScheduleBackupRepo.readJson(ids.assetsIndexFileId)) as SyncAssetsIndex;
 		} catch (e) {
 			console.warn(TAG, 'pullAssets failed', e);
 			return null;
 		}
 	}
 
+	/**
+	 * מוריד נכס חסר מ-Drive לפי hash.
+	 * @param hash - hash SHA-256 של הנכס
+	 * @returns Blob עם תוכן הנכס
+	 * @throws {Error} אם הנכס לא נמצא באינדקס
+	 */
 	async downloadMissingAsset(hash: string): Promise<Blob> {
 		// חיפוש ה-fileId מה-assetsIndex
 		const assetsIndex = await this.pullAssets();
@@ -148,7 +173,12 @@ class GoogleDriveSyncProvider implements SyncProvider {
 		return await dailyScheduleBackupRepo.downloadAsset(fileId);
 	}
 
-	async writeContent(payload: ContentV2, hash: string): Promise<void> {
+	/**
+	 * כותב תוכן משימות ל-Drive. מדלג אם ה-hash לא השתנה.
+	 * @param payload - תוכן הסנכרון
+	 * @param hash - hash של התוכן לזיהוי שינויים
+	 */
+	async writeContent(payload: SyncContent, hash: string): Promise<void> {
 		const cached = getCachedHashes();
 		if (cached.content === hash) {
 			console.log(TAG, 'writeContent skipped (no change)');
@@ -160,7 +190,12 @@ class GoogleDriveSyncProvider implements SyncProvider {
 		console.log(TAG, 'writeContent done');
 	}
 
-	async writeProgress(payload: ProgressV2, hash: string): Promise<void> {
+	/**
+	 * כותב מצב התקדמות ל-Drive. מדלג אם ה-hash לא השתנה.
+	 * @param payload - נתוני ההתקדמות
+	 * @param hash - hash של ההתקדמות לזיהוי שינויים
+	 */
+	async writeProgress(payload: SyncProgress, hash: string): Promise<void> {
 		const cached = getCachedHashes();
 		if (cached.progress === hash) {
 			console.log(TAG, 'writeProgress skipped (no change)');
@@ -172,13 +207,23 @@ class GoogleDriveSyncProvider implements SyncProvider {
 		console.log(TAG, 'writeProgress done');
 	}
 
+	/**
+	 * כותב היסטוריית סנכרון ל-Drive.
+	 * @param history - אובייקט היסטוריה לכתיבה
+	 */
 	async writeHistory(history: SyncHistory): Promise<void> {
 		const ids = await this.getIds();
 		await dailyScheduleBackupRepo.writeHistoryJson(ids.historyFileId, history);
 		console.log(TAG, 'writeHistory done');
 	}
 
-	async writeAssets(index: AssetsIndexV2, newBlobs: Map<string, Blob>): Promise<void> {
+	/**
+	 * כותב נכסים חדשים ל-Drive ומעדכן את אינדקס הנכסים.
+	 * מעלה רק blobs חדשים ומדלג על אינדקס ללא שינוי.
+	 * @param index - אינדקס הנכסים המעודכן
+	 * @param newBlobs - מפה של hash → Blob להעלאה
+	 */
+	async writeAssets(index: SyncAssetsIndex, newBlobs: Map<string, Blob>): Promise<void> {
 		const ids = await this.getIds();
 
 		// העלאת blobs חדשים
@@ -222,7 +267,12 @@ class GoogleDriveSyncProvider implements SyncProvider {
 		}
 	}
 
-	async commit(manifest: ManifestV2): Promise<void> {
+	/**
+	 * מבצע commit — כותב את ה-manifest עם appProperties (writeId, hashes וכו').
+	 * זהו השלב האחרון בפעולת push שמסיים את הכתיבה האטומית.
+	 * @param manifest - אובייקט ה-manifest לכתיבה
+	 */
+	async commit(manifest: SyncManifest): Promise<void> {
 		const ids = await this.getIds();
 
 		const appProperties: Record<string, string> = {
@@ -247,6 +297,102 @@ class GoogleDriveSyncProvider implements SyncProvider {
 		// (לא מאפסים כי הIDs עדיין תקפים)
 		console.log(TAG, 'commit done', { writeId: manifest.syncMetadata.writeId });
 	}
+
+	// ─── Lock ────────────────────────────────────────────────────────────────
+
+	/**
+	 * נעילת הענן לכתיבה — שומרת lock כ-appProperties על קובץ ה-manifest.
+	 * אם כבר קיימת נעילה תקפה של מכשיר אחר (TTL 30 שניות) — מחזירה acquired=false.
+	 * אם הנעילה פגה או שייכת לאותו מכשיר — כותבת נעילה חדשה.
+	 * @param device - מזהה ושם המכשיר הנועל
+	 * @returns acquired=true אם הנעילה הצליחה, nonce לזיהוי הנעילה; holder=שם המכשיר שמחזיק אם נכשל
+	 */
+	async acquireLock(device: { deviceId: string; deviceName: string }): Promise<{
+		acquired: boolean;
+		nonce?: string;
+		holder?: string;
+	}> {
+		console.log(TAG, 'acquireLock', device);
+
+		const meta = await dailyScheduleBackupRepo.findManifestMeta();
+		const ap = (meta?.appProperties ?? {}) as Record<string, string>;
+
+		// בדיקה אם יש נעילה תקפה של מכשיר אחר
+		const lockTimestamp = Number(ap.syncLockTimestamp) || 0;
+		const now = Date.now();
+		const isLockValid = lockTimestamp + LOCK_TTL_MS > now;
+		const isOtherDevice = ap.syncLockDeviceId && ap.syncLockDeviceId !== device.deviceId;
+
+		if (isLockValid && isOtherDevice) {
+			console.log(TAG, 'acquireLock: held by another device', ap.syncLockDeviceName);
+			return { acquired: false, holder: ap.syncLockDeviceName || ap.syncLockDeviceId };
+		}
+
+		// נעילה פגה או שלנו — כותבים נעילה חדשה
+		const newNonce = crypto.randomUUID();
+		const ids = await this.getIds();
+
+		await driveFilesApi.updateFileMetadata(ids.manifestFileId, {
+			appProperties: {
+				...ap,
+				syncLockDeviceId: device.deviceId,
+				syncLockDeviceName: device.deviceName,
+				syncLockTimestamp: String(now),
+				syncLockNonce: newNonce
+			}
+		});
+
+		console.log(TAG, 'acquireLock: acquired', { nonce: newNonce });
+		return { acquired: true, nonce: newNonce };
+	}
+
+	/**
+	 * אימות שהנעילה שרכשנו עדיין בתוקף — קורא את ה-appProperties מה-manifest
+	 * ומוודא שה-nonce תואם.
+	 * @param nonce - ה-nonce שחזר מ-acquireLock
+	 * @returns true אם הנעילה עדיין שלנו
+	 */
+	async verifyLock(nonce: string): Promise<boolean> {
+		console.log(TAG, 'verifyLock', { nonce });
+
+		const meta = await dailyScheduleBackupRepo.findManifestMeta();
+		const ap = (meta?.appProperties ?? {}) as Record<string, string>;
+
+		const isValid = ap.syncLockNonce === nonce;
+		console.log(TAG, 'verifyLock:', isValid ? 'valid' : 'invalid');
+		return isValid;
+	}
+
+	/**
+	 * שחרור הנעילה — כותב ערכים ריקים לשדות ה-lock ב-appProperties.
+	 * appProperties של Drive לא תומך במחיקת שדות, לכן כותבים מחרוזות ריקות.
+	 * כישלון בשחרור לא זורק שגיאה — רק warning.
+	 */
+	async releaseLock(): Promise<void> {
+		console.log(TAG, 'releaseLock');
+		try {
+			const ids = await this.getIds();
+
+			// קריאת appProperties הנוכחיים כדי לשמר שדות אחרים
+			const meta = await dailyScheduleBackupRepo.findManifestMeta();
+			const ap = (meta?.appProperties ?? {}) as Record<string, string>;
+
+			await driveFilesApi.updateFileMetadata(ids.manifestFileId, {
+				appProperties: {
+					...ap,
+					syncLockDeviceId: '',
+					syncLockDeviceName: '',
+					syncLockTimestamp: '',
+					syncLockNonce: ''
+				}
+			});
+
+			console.log(TAG, 'releaseLock: done');
+		} catch (e) {
+			console.warn(TAG, 'releaseLock failed (non-fatal)', e);
+		}
+	}
 }
 
+/** singleton של ספק הסנכרון ל-Google Drive */
 export const googleDriveSyncProvider = new GoogleDriveSyncProvider();

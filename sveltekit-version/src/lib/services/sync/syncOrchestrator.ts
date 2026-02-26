@@ -1,9 +1,9 @@
 import type { AppState } from '$lib/types';
 import type { SyncProvider } from './syncProvider';
 import type { SyncHistory, SnapshotEntry, DeltaEntry } from './engine/types';
-import type { ManifestV2, ProgressV2, Sha256 } from './syncTypes';
+import type { SyncManifest, SyncProgress, Sha256 } from './syncTypes';
 import { SyncError } from './syncTypes';
-import { CURRENT_BACKUP_SCHEMA_VERSION } from './constants';
+import { CURRENT_BACKUP_SCHEMA_VERSION, INITIAL_WRITE_ID } from './constants';
 import {
 	calculateDelta,
 	threeWayMerge
@@ -12,7 +12,8 @@ import {
 	createEmptyHistory,
 	shouldCreateSnapshot,
 	appendToHistory,
-	findCommonAncestor
+	findCommonAncestor,
+	mergeHistories
 } from './engine/historyManager';
 import { buildContentPayload, buildProgressPayload, collectAssetIds } from './payloads';
 import { sha256String, sha256Blob, stableStringify } from './crypto';
@@ -20,90 +21,74 @@ import { sha256String, sha256Blob, stableStringify } from './crypto';
 const TAG = '[SyncOrchestrator]';
 
 /**
- * ממיר AppState ל-historyContent — מפשיט שדות אפמריים (isDone, lastModified, syncMetadata)
- * כדי שההיסטוריה תכיל רק נתונים מבניים (בהתאם לתכנון המקורי עם ContentV2).
+ * ממיר AppState ל-historyContent — מפשיט שדות device-local (lastModified, syncMetadata)
+ * כדי שההיסטוריה תכיל רק נתונים מבניים (בהתאם לתכנון עם SyncContent).
+ * @param state - מצב האפליקציה המלא
+ * @returns אובייקט תוכן מבני ללא שדות ספציפיים למכשיר
  */
 export function toHistoryContent(state: AppState): Record<string, any> {
-	const content: Record<string, any> = {
+	return {
 		version: state.version,
 		users: state.users,
 		people: state.people,
-		lists: {},
+		lists: state.lists,
 		images: state.images,
-		activeListId: state.activeListId,
-		currentUserId: state.currentUserId,
-		settings: { childLockEnabled: state.settings?.childLockEnabled ?? false }
-	};
-	// העתקת lists ללא isDone
-	for (const userId of Object.keys(state.lists || {})) {
-		content.lists[userId] = {};
-		for (const [listId, list] of Object.entries(state.lists[userId] || {})) {
-			const tasks: Record<string, any> = {};
-			for (const [taskId, task] of Object.entries((list as any).tasks || {})) {
-				const { isDone, ...rest } = task as any;
-				tasks[taskId] = rest;
-			}
-			content.lists[userId][listId] = { ...list, tasks };
+		settings: {
+			activeListId: state.settings?.activeListId ?? {},
+			currentUserId: state.settings?.currentUserId ?? null,
+			childLockEnabled: state.settings?.childLockEnabled ?? false
 		}
-	}
-	return content;
+	};
 }
 
 /**
- * מחיל isDone מ-source state על target state (last-write-wins)
+ * מחיל progress מ-source state על target state (last-write-wins)
  */
 function applyProgressToState(target: AppState, source: AppState): void {
-	for (const userId of Object.keys(source.lists || {})) {
-		const sourceLists = source.lists[userId] || {};
-		const targetLists = target.lists[userId] || {};
-		for (const [listId, sourceList] of Object.entries(sourceLists)) {
-			const targetList = targetLists[listId] as any;
-			if (!targetList) continue;
-			for (const [taskId, sourceTask] of Object.entries((sourceList as any).tasks || {})) {
-				const targetTask = targetList.tasks?.[taskId];
-				if (targetTask) {
-					targetTask.isDone = (sourceTask as any).isDone;
-				}
-			}
-		}
-	}
+	target.taskProgress = { ...target.taskProgress, ...source.taskProgress };
 }
 
-/** מחילה progress מרוחק (ProgressV2.taskDone) על AppState — last-write-wins */
-function applyRemoteProgress(state: AppState, progress: ProgressV2): void {
+/** מחילה progress מרוחק (SyncProgress.taskDone) על AppState — last-write-wins */
+function applyRemoteProgress(state: AppState, progress: SyncProgress): void {
 	const taskDone: Record<string, boolean> = progress.taskDone || {};
-	for (const userId of Object.keys(state.lists || {})) {
-		const userLists = state.lists[userId] || {};
-		for (const list of Object.values(userLists)) {
-			for (const task of Object.values((list as any).tasks || {})) {
-				const t = task as any;
-				if (t.id in taskDone) {
-					t.isDone = taskDone[t.id];
-				}
-			}
-		}
-	}
+	state.taskProgress = { ...state.taskProgress, ...taskDone };
 }
 
+/** מידע מזהה על המכשיר המבצע את הסנכרון */
 export type DeviceInfo = {
+	/** מזהה ייחודי של המכשיר */
 	deviceId: string;
+	/** שם תצוגה של המכשיר */
 	deviceName: string;
 };
 
+/**
+ * תוצאת פעולת Pull — מכילה את ה-state הסופי ומטא-דאטה על תהליך הסנכרון.
+ */
 export type PullResult = {
+	/** ה-state הסופי לאחר pull (לאחר merge אם בוצע) */
 	state: AppState;
+	/** מזהה הכתיבה המרוחק, או null אם אין גיבוי בענן */
 	remoteWriteId: string | null;
+	/** האם בוצע merge בין state מקומי למרוחק */
 	merged: boolean;
-	/** State מרוחק לפני merge — לשימוש ב-previousState baseline */
+	/** State מרוחק לפני merge — לשימוש כ-previousState baseline בפעולת push הבאה */
 	remoteState?: AppState;
+	/** סוג קונפליקט — 'no-ancestor' כאשר אין common ancestor בהיסטוריה */
+	conflictType?: 'no-ancestor';
 };
 
+/**
+ * תוצאת פעולת Push — מכילה את מזהה הכתיבה החדש וה-manifest שנוצר.
+ */
 export type PushResult = {
+	/** מזהה הכתיבה שנוצר עבור ה-push */
 	writeId: string;
-	manifest: ManifestV2;
+	/** ה-manifest שנכתב לענן, כולל hashes ומטא-דאטה */
+	manifest: SyncManifest;
 };
 
-// ─── Normalization (extracted from driveBackupV2.ts) ────────────────────────
+// ─── Normalization ──────────────────────────────────────────────────────────
 
 function normalizeUsersMap(rawUsers: any): AppState['users'] {
 	const usersMap: AppState['users'] = {};
@@ -175,12 +160,17 @@ function normalizeListsMap(rawLists: any): AppState['lists'] {
 	return listsMap;
 }
 
-function normalizeSettings(rawSettings: any, now: number): AppState['settings'] {
+function normalizeSettings(rawSettings: any): AppState['settings'] {
+	// תמיכה בפורמט ישן (activeListId/currentUserId ב-top-level של content) ובפורמט חדש (בתוך settings)
 	return {
-		lastActiveTime:
-			rawSettings && typeof rawSettings.lastActiveTime === 'number'
-				? rawSettings.lastActiveTime
-				: now,
+		activeListId:
+			rawSettings && typeof rawSettings.activeListId === 'object'
+				? rawSettings.activeListId
+				: {},
+		currentUserId:
+			rawSettings && 'currentUserId' in rawSettings
+				? rawSettings.currentUserId
+				: null,
 		childLockEnabled:
 			rawSettings && typeof rawSettings.childLockEnabled === 'boolean'
 				? rawSettings.childLockEnabled
@@ -190,18 +180,37 @@ function normalizeSettings(rawSettings: any, now: number): AppState['settings'] 
 
 // ─── DB interface ────────────────────────────────────────────────────────────
 
+/**
+ * ממשק לגישה למסד הנתונים המקומי (IndexedDB).
+ * משמש את ה-orchestrator לקריאה וכתיבה של assets והיסטוריית סנכרון.
+ */
 export type SyncDb = {
+	/** שליפת תמונה לפי מזהה IDB */
 	getImage(id: string): Promise<Blob | null>;
+	/** שמירת תמונה במסד הנתונים המקומי */
 	saveImage(blob: Blob, id: string): Promise<string | void>;
+	/** שמירת היסטוריית סנכרון מקומית */
+	saveSyncHistory(history: SyncHistory): Promise<void>;
+	/** קריאת היסטוריית סנכרון מקומית */
+	getSyncHistory(): Promise<SyncHistory | null>;
+	/** מחיקת היסטוריית סנכרון מקומית */
+	deleteSyncHistory(): Promise<void>;
 };
 
 // ─── Pull ────────────────────────────────────────────────────────────────────
 
 /**
  * שלב Pull + Merge.
- * בודק מה יש בענן, מוריד, ומבצע 3-way merge אם נדרש.
+ * בודק מה יש בענן, מוריד את ה-state המרוחק, ומבצע 3-way merge אם נדרש.
+ * כולל אופטימיזציות: דילוג כש-writeIds זהים, הורדת progress בלבד כשרק הוא השתנה.
  *
- * @returns PullResult עם state הסופי ומידע על merge
+ * @param provider - ספק הסנכרון (למשל Google Drive)
+ * @param localState - ה-state המקומי הנוכחי, או null אם אין
+ * @param localWriteId - מזהה הכתיבה המקומי האחרון, או null
+ * @param db - ממשק מסד נתונים מקומי לגישה לתמונות
+ * @param options - אפשרויות נוספות: now (timestamp), needsBaseline (לטעינת remoteState כ-baseline)
+ * @returns תוצאת Pull עם ה-state הסופי ומידע על merge
+ * @throws {SyncError} בעת שגיאת רשת או אימות
  */
 export async function pull(
 	provider: SyncProvider,
@@ -227,7 +236,6 @@ export async function pull(
 		const remoteWriteId = remote.writeId;
 
 		// 2. writeIds זהים → אין שינויי תוכן מרוחקים
-		// אבל progress עשוי להשתנות (progress-only push שומר writeId קיים)
 		if (localWriteId && localWriteId === remoteWriteId) {
 			// בדיקת progress: האם ה-progressHash השתנה?
 			const localPH = await sha256String(stableStringify(buildProgressPayload(localState!)));
@@ -252,56 +260,87 @@ export async function pull(
 			return { state: localState!, remoteWriteId, merged: false };
 		}
 
-		// 3. הורדת state מרוחק
+		// 3. אופטימיזציה: שני מכשירים חדשים — ענן מכיל רק מצב ברירת מחדל
+		if (!localWriteId && remoteWriteId === INITIAL_WRITE_ID) {
+			console.log(TAG, 'pull: remote is INITIAL_WRITE_ID, local is fresh — skipping download');
+			return { state: localState!, remoteWriteId, merged: false };
+		}
+
+		// 4. הורדת state מרוחק
 		const remoteState = await pullAndBuildState(provider, db, now);
 
-		// 4. אין state מקומי → השתמש ב-remote
+		// 5. אין state מקומי → השתמש ב-remote
 		if (!localState || !localWriteId) {
 			console.log(TAG, 'pull: no local state, using remote');
 			return { state: remoteState, remoteWriteId, merged: false };
 		}
 
-		// 5. יש שניהם → 3-way merge
+		// 6. יש שניהם → 3-way merge
 		console.log(TAG, 'pull: different writeIds, performing merge...');
 
-		let history: SyncHistory | null = null;
+		// 6a. טעינת היסטוריה — remote + local, מיזוג
+		let remoteHistory: SyncHistory | null = null;
 		try {
-			history = await provider.pullHistory();
+			remoteHistory = await provider.pullHistory();
 		} catch (e) {
-			console.warn(TAG, 'pull: cannot load history, keeping local state', e);
-			return { state: localState, remoteWriteId, merged: true };
+			console.warn(TAG, 'pull: cannot load remote history', e);
+		}
+
+		let localHistory: SyncHistory | null = null;
+		try {
+			localHistory = await db.getSyncHistory();
+		} catch (e) {
+			console.warn(TAG, 'pull: cannot load local history', e);
+		}
+
+		// מיזוג: remote + local
+		let history: SyncHistory | null = null;
+		if (remoteHistory && localHistory) {
+			history = mergeHistories(localHistory, remoteHistory);
+		} else {
+			history = remoteHistory ?? localHistory;
 		}
 
 		if (!history) {
 			console.warn(TAG, 'pull: no history found, keeping local state');
-			return { state: localState, remoteWriteId, merged: true };
+			return { state: localState, remoteWriteId, merged: true, conflictType: 'no-ancestor' };
+		}
+
+		// שמירת ההיסטוריה המאוחדת מקומית
+		try {
+			await db.saveSyncHistory(history);
+		} catch (e) {
+			console.warn(TAG, 'pull: failed to save merged history locally', e);
 		}
 
 		const ancestor = findCommonAncestor(history, localWriteId, remoteWriteId);
 
 		if (!ancestor.found || !ancestor.state) {
 			console.warn(TAG, 'pull: no common ancestor, keeping local state');
-			return { state: localState, remoteWriteId, merged: true };
+			return { state: localState, remoteWriteId, merged: true, conflictType: 'no-ancestor' };
 		}
 
 		console.log(TAG, 'pull: common ancestor found', { writeId: ancestor.writeId });
 
-		// merge על historyContent (ללא isDone, lastModified, syncMetadata)
+		// merge על historyContent (ללא device-local fields)
 		const mergedContent = threeWayMerge(
-			ancestor.state,                    // כבר historyContent (מההיסטוריה)
+			ancestor.state,
 			toHistoryContent(localState),
 			toHistoryContent(remoteState)
 		);
 		// שחזור ל-AppState מלא
 		const mergedState: AppState = {
-			...localState,                     // basis: per-device fields
 			...(mergedContent as any),
-			settings: localState.settings,     // per-device
-			lastModified: Math.max(localState.lastModified, remoteState.lastModified),
-			syncMetadata: remoteState.syncMetadata
+			taskProgress: { ...localState.taskProgress, ...remoteState.taskProgress },
+			localDevice: {
+				lastModified: Math.max(
+					localState.localDevice.lastModified,
+					remoteState.localDevice.lastModified
+				),
+				lastActiveTime: localState.localDevice.lastActiveTime,
+				syncMetadata: remoteState.localDevice.syncMetadata
+			}
 		};
-		// החזרת isDone מ-progress (last-write-wins: remote)
-		applyProgressToState(mergedState, remoteState);
 
 		console.log(TAG, 'pull: 3-way merge completed');
 		return { state: mergedState, remoteWriteId, merged: true, remoteState };
@@ -329,29 +368,32 @@ async function pullAndBuildState(
 	if (!content) throw new Error('Remote content is missing');
 
 	const contentObj = content as any;
+
+	// תמיכה בפורמט ישן: activeListId/currentUserId ב-top-level ← העברה ל-settings
+	const settingsSource = contentObj.settings || {};
+	if (contentObj.activeListId && !settingsSource.activeListId) {
+		settingsSource.activeListId = contentObj.activeListId;
+	}
+	if ('currentUserId' in contentObj && !('currentUserId' in settingsSource)) {
+		settingsSource.currentUserId = contentObj.currentUserId;
+	}
+
+	const taskDone: Record<string, boolean> = (progress as any)?.taskDone || {};
+
 	const restored: AppState = {
 		version: contentObj.appStateVersion ?? contentObj.version ?? 14,
 		users: normalizeUsersMap(contentObj.users),
 		people: normalizePeopleMap(contentObj.people),
 		lists: normalizeListsMap(contentObj.lists),
 		images: contentObj.images || {},
-		activeListId: contentObj.activeListId || {},
-		currentUserId: contentObj.currentUserId ?? null,
-		settings: normalizeSettings(contentObj.settings, now),
-		lastModified: now,
-		syncMetadata: contentObj.syncMetadata
-	};
-
-	// החלת progress
-	const taskDone: Record<string, boolean> = (progress as any)?.taskDone || {};
-	for (const userId of Object.keys(restored.lists || {})) {
-		const userLists = restored.lists[userId] || {};
-		for (const list of Object.values(userLists)) {
-			for (const task of Object.values((list as any).tasks || {})) {
-				(task as any).isDone = !!taskDone[(task as any).id];
-			}
+		taskProgress: taskDone,
+		settings: normalizeSettings(settingsSource),
+		localDevice: {
+			lastModified: now,
+			lastActiveTime: now,
+			syncMetadata: contentObj.syncMetadata
 		}
-	}
+	};
 
 	// הורדת assets חסרים
 	const neededIdbIds = collectAssetIds(restored);
@@ -408,8 +450,20 @@ export async function importFromProvider(
 // ─── Push ────────────────────────────────────────────────────────────────────
 
 /**
- * שלב Push.
- * בונה payload, מעדכן history, מעלה לספק, ומבצע commit.
+ * שלב Push — העלאת state מקומי לענן.
+ * בונה payload (content + progress + assets), מעדכן את ההיסטוריה ברשומה חדשה
+ * (snapshot או delta לפי הצורך), מעלה הכל לספק הסנכרון, ומבצע commit עם manifest.
+ *
+ * @param provider - ספק הסנכרון (למשל Google Drive)
+ * @param state - ה-state המקומי הנוכחי להעלאה
+ * @param previousState - ה-state הקודם (נדרש ליצירת delta), או null
+ * @param lastKnownWriteId - מזהה הכתיבה האחרון הידוע, או null
+ * @param device - מידע מזהה על המכשיר המבצע את הסנכרון
+ * @param db - ממשק מסד נתונים מקומי לגישה לתמונות
+ * @param options - אפשרויות: forceSnapshot (כפיית snapshot), now (timestamp), generateWriteId (פונקציית יצירת מזהה)
+ * @returns תוצאת Push עם writeId ו-manifest
+ * @throws {Error} אם אין שינויים לגבות ("No changes to backup")
+ * @throws {SyncError} בעת שגיאת רשת או אימות
  */
 export async function push(
 	provider: SyncProvider,
@@ -431,6 +485,30 @@ export async function push(
 	try {
 		await provider.initialize();
 
+		// 0. נעילה (אם הספק תומך)
+		let lockNonce: string | undefined;
+		if (provider.acquireLock) {
+			console.log(TAG, 'acquiring lock...');
+			const lockResult = await provider.acquireLock(device);
+			if (!lockResult.acquired) {
+				throw new SyncError(
+					`Push blocked: locked by "${lockResult.holder || 'unknown'}"`,
+					'conflict'
+				);
+			}
+			lockNonce = lockResult.nonce;
+
+			// write-then-verify: ודא שהנעילה עדיין שלנו
+			if (provider.verifyLock && lockNonce) {
+				const verified = await provider.verifyLock(lockNonce);
+				if (!verified) {
+					throw new SyncError('Push blocked: lock was overridden', 'conflict');
+				}
+			}
+			console.log(TAG, 'lock acquired', { nonce: lockNonce });
+		}
+
+		try {
 		// 1. קריאת history (או יצירת ריק)
 		let history: SyncHistory;
 		try {
@@ -445,7 +523,7 @@ export async function push(
 		const isSnapshot = options?.forceSnapshot || shouldCreateSnapshot(history);
 		console.log(TAG, `entry type: ${isSnapshot ? 'snapshot' : 'delta'}`);
 
-		// 3. יצירת history entry (על historyContent — ללא isDone, lastModified, syncMetadata)
+		// 3. יצירת history entry (על historyContent — ללא device-local fields)
 		const historyContent = toHistoryContent(state);
 
 		let writeId: string;
@@ -470,7 +548,6 @@ export async function push(
 
 			if (contentDelta) {
 				writeId = generateWriteId();
-				// שינויי תוכן → delta entry בהיסטוריה
 				const entry: DeltaEntry = {
 					type: 'delta',
 					writeId,
@@ -482,7 +559,7 @@ export async function push(
 				};
 				appendToHistory(history, entry);
 			} else {
-				// אין שינויי תוכן — בדיקת progress (isDone)
+				// אין שינויי תוכן — בדיקת progress
 				const progressDelta = calculateDelta(
 					buildProgressPayload(previousState),
 					buildProgressPayload(state)
@@ -491,12 +568,10 @@ export async function push(
 					console.log(TAG, 'no changes detected, skipping push');
 					throw new Error('No changes to backup');
 				}
-				// progress-only: שימוש חוזר ב-writeId הקיים — לא מוסיפים entry להיסטוריה
-				// כך B יזהה writeIds תואמים ויבדוק רק progressHash
+				// progress-only: שימוש חוזר ב-writeId הקיים
 				if (lastKnownWriteId) {
 					writeId = lastKnownWriteId;
 				} else {
-					// edge case: אין writeId קודם — ניפול ל-snapshot
 					writeId = generateWriteId();
 					const entry: SnapshotEntry = {
 						type: 'snapshot',
@@ -549,14 +624,21 @@ export async function push(
 		const assetsHash = await sha256String(stableStringify(currentAssetsIndex));
 		console.log(TAG, `assets: ${newBlobs.size} new blobs`);
 
-		// 6. כתיבות — הספק מחליט פנימית אם צריך network call
+		// 6. כתיבות
 		await provider.writeContent(contentPayload, contentHash);
 		await provider.writeProgress(progressPayload, progressHash);
 		await provider.writeAssets(currentAssetsIndex, newBlobs);
 		await provider.writeHistory(history);
 
+		// 6b. שמירת היסטוריה מקומית (fallback למצב offline)
+		try {
+			await db.saveSyncHistory(history);
+		} catch (e) {
+			console.warn(TAG, 'failed to save history locally (non-fatal)', e);
+		}
+
 		// 7. manifest + commit (תמיד אחרון!)
-		const manifest: ManifestV2 = {
+		const manifest: SyncManifest = {
 			backupSchemaVersion: CURRENT_BACKUP_SCHEMA_VERSION,
 			generatedAt: now,
 			syncMetadata: {
@@ -579,6 +661,17 @@ export async function push(
 
 		console.log(TAG, 'push completed', { writeId });
 		return { writeId, manifest };
+		} finally {
+			// שחרור lock (גם אם push נכשל)
+			if (provider.releaseLock && lockNonce) {
+				try {
+					await provider.releaseLock();
+					console.log(TAG, 'lock released');
+				} catch (lockErr) {
+					console.warn(TAG, 'failed to release lock (non-fatal)', lockErr);
+				}
+			}
+		}
 	} catch (e) {
 		if (e instanceof Error && e.message === 'No changes to backup') throw e;
 		const category =
@@ -593,4 +686,33 @@ function createEmptyAssetsIndex() {
 		idToHash: {} as Record<string, Sha256>,
 		hashToFile: {} as Record<Sha256, { fileId: string; mimeType: string; size: number }>
 	};
+}
+
+// ─── Delete History API ──────────────────────────────────────────────────────
+
+/**
+ * מחיקת היסטוריית סנכרון — מקומית ומרוחקת.
+ * לאחר מחיקה, מכשירים אחרים יקבלו conflictType: 'no-ancestor' בסנכרון הבא.
+ * @param provider - ספק הסנכרון
+ * @param db - ממשק מסד נתונים מקומי
+ */
+export async function deleteHistory(provider: SyncProvider, db: SyncDb): Promise<void> {
+	console.log(TAG, 'deleteHistory: clearing local + remote history');
+
+	// מחיקה מקומית
+	try {
+		await db.deleteSyncHistory();
+	} catch (e) {
+		console.warn(TAG, 'deleteHistory: failed to clear local history', e);
+	}
+
+	// מחיקה מרוחקת — כתיבת היסטוריה ריקה
+	try {
+		await provider.initialize();
+		await provider.writeHistory(createEmptyHistory());
+	} catch (e) {
+		console.warn(TAG, 'deleteHistory: failed to clear remote history', e);
+	}
+
+	console.log(TAG, 'deleteHistory: done');
 }

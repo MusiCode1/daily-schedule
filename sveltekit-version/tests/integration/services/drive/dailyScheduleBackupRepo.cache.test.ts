@@ -120,7 +120,7 @@ describe('dailyScheduleBackupRepo cache fallback', () => {
 		};
 
 		const { dailyScheduleBackupRepo } = await import('$lib/services/sync/providers/google-drive/dailyScheduleBackupRepo');
-		const meta = await dailyScheduleBackupRepo.findV2ManifestMeta();
+		const meta = await dailyScheduleBackupRepo.findManifestMeta();
 
 		expect(meta?.id).toBe('file:manifest-fresh');
 

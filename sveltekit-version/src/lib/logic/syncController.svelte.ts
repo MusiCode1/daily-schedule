@@ -243,6 +243,16 @@ export class SyncController {
 				return;
 			}
 
+			if (error instanceof SyncError && error.category === 'conflict') {
+				// lock conflict — retry אחרי 5-10 שניות עם jitter
+				const jitterDelay = 5 + Math.random() * 5; // 5–10 שניות
+				console.log(TAG, `Lock conflict — ניסיון חוזר בעוד ${jitterDelay.toFixed(1)}s`);
+				syncFailed(error.message, this.retryCount + 1, Math.ceil(jitterDelay));
+				this.retryCount++;
+				setTimeout(() => this.sync(options), jitterDelay * 1000);
+				return;
+			}
+
 			// שגיאות רשת/אחר — retry עם exponential backoff
 			if (this.retryCount < MAX_RETRIES) {
 				this.retryCount++;

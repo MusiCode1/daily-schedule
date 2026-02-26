@@ -13,7 +13,7 @@ export type HistoryEntry = SnapshotEntry | DeltaEntry;
 
 /**
  * Snapshot מלא - נקודת ציון
- * state הוא historyContent (ללא isDone, lastModified, syncMetadata)
+ * state הוא historyContent (ללא taskProgress, localDevice)
  */
 export interface SnapshotEntry {
 	type: 'snapshot';

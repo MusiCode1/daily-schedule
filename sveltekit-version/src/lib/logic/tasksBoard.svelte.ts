@@ -1,5 +1,6 @@
 import { listStore } from '$lib/stores/listStore.svelte';
 import { userStore } from '$lib/stores/userStore.svelte';
+import { globalState } from '$lib/stores/globalState.svelte';
 import { boostService } from '$lib/services/boosts';
 import { audioSequencer } from '$lib/services/audioSequencer';
 import { ttsService } from '$lib/services/tts';
@@ -69,7 +70,7 @@ export class TasksBoardController {
 
 	// אינדקס המשימה הפעילה (דילוג על משימות מבוטלות)
 	get activeTaskIndex() {
-		return this.tasks.findIndex((t) => !t.isDone && t.changeType !== 'cancelled');
+		return this.tasks.findIndex((t) => !globalState.state.taskProgress[t.id] && t.changeType !== 'cancelled');
 	}
 
 	// -- פעולות --
@@ -101,16 +102,16 @@ export class TasksBoardController {
 
 		const nextTask = this.tasks[currentTaskIndex + 1];
 
-		// עדכון המשימה ב-object
-		const updatedTask = { ...currentTask, isDone: !currentTask.isDone };
-		const newTasksObj = { ...this.activeList.tasks, [taskId]: updatedTask };
+		// עדכון progress ב-taskProgress
+		const wasDone = globalState.state.taskProgress[taskId] ?? false;
+		globalState.state.taskProgress[taskId] = !wasDone;
 
-		if (updatedTask.isDone) {
+		if (!wasDone) {
 			// טריגר חגיגה (לא מחכים)
 			this.triggerCelebration(currentTask, nextTask);
 		}
 
-		listStore.updateTasks(this.currentUser.id, this.activeList.id, newTasksObj);
+		globalState.save();
 	}
 
 	async playTaskName(task: Task) {
@@ -248,8 +249,7 @@ export class TasksBoardController {
 				id: crypto.randomUUID(),
 				name,
 				imageSrc,
-				isDone: false,
-				order: maxOrder + 1, // שדה order חדש!
+				order: maxOrder + 1,
 				communicationBoardUrl,
 				changeType
 			};
@@ -335,7 +335,6 @@ export class TasksBoardController {
 			id: crypto.randomUUID(),
 			name: originalTask.name,
 			imageSrc: originalTask.imageSrc,
-			isDone: false,
 			order: originalTask.order + 1,
 			communicationBoardUrl: originalTask.communicationBoardUrl,
 			changeType: originalTask.changeType

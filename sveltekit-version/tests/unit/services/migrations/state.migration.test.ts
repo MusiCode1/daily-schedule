@@ -35,16 +35,16 @@ describe('State Migration Fixtures', () => {
 			expect(typeof migrated.lists, `fixture ${fileName} lists should exist`).toBe('object');
 			expect(typeof migrated.images, `fixture ${fileName} images should exist`).toBe('object');
 			expect(typeof migrated.people, `fixture ${fileName} people should be object`).toBe('object');
-			expect(typeof migrated.activeListId, `fixture ${fileName} activeListId should exist`).toBe(
+			expect(typeof migrated.settings?.activeListId, `fixture ${fileName} settings.activeListId should exist`).toBe(
 				'object'
 			);
 			expect(
-				typeof migrated.settings?.lastActiveTime,
-				`fixture ${fileName} settings.lastActiveTime should exist`
+				typeof migrated.localDevice?.lastActiveTime,
+				`fixture ${fileName} localDevice.lastActiveTime should exist`
 			).toBe('number');
 			expect(
-				typeof migrated.lastModified,
-				`fixture ${fileName} lastModified should exist`
+				typeof migrated.localDevice?.lastModified,
+				`fixture ${fileName} localDevice.lastModified should exist`
 			).toBe('number');
 		}
 	});

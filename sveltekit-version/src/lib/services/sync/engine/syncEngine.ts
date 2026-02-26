@@ -9,6 +9,13 @@ const differ = jsondiffpatch.create({
 	}
 });
 
+/**
+ * חישוב delta (הפרש) בין שתי גרסאות של מצב.
+ * משתמש ב-jsondiffpatch לזיהוי שינויים כולל זיהוי הזזות במערכים.
+ * @param oldState - המצב הישן (בסיס)
+ * @param newState - המצב החדש
+ * @returns אובייקט delta המתאר את השינויים, או undefined אם אין שינויים
+ */
 export function calculateDelta(oldState: object, newState: object): object | undefined {
 	const delta = differ.diff(oldState, newState);
 	if (!delta) {
@@ -19,6 +26,13 @@ export function calculateDelta(oldState: object, newState: object): object | und
 	return delta;
 }
 
+/**
+ * החלת delta על מצב בסיס ליצירת מצב חדש.
+ * מבצע deep clone של המצב לפני ההחלה כדי לא לשנות את המקור.
+ * @param baseState - מצב הבסיס להחלה עליו
+ * @param delta - אובייקט ה-delta שחושב על ידי {@link calculateDelta}
+ * @returns מצב חדש עם השינויים מוחלים
+ */
 export function applyDelta(baseState: object, delta: object): object {
 	const result = differ.patch(
 		JSON.parse(JSON.stringify(baseState)),
@@ -29,8 +43,15 @@ export function applyDelta(baseState: object, delta: object): object {
 }
 
 /**
- * 3-way merge - המוח של המערכת
- * מקבל historyContent objects (ללא שדות אפמריים)
+ * מיזוג תלת-כיווני (3-way merge) — הלוגיקה המרכזית של פתרון קונפליקטים.
+ * מחשב delta מה-common ancestor לכל צד (local ו-remote),
+ * ומחיל את שניהם על הבסיס המשותף.
+ * בקונפליקט — remote wins (last-write-wins).
+ * מקבל historyContent objects ללא שדות אפמריים.
+ * @param common - המצב המשותף האחרון (common ancestor)
+ * @param local - המצב המקומי הנוכחי
+ * @param remote - המצב המרוחק הנוכחי
+ * @returns מצב ממוזג ומנורמל
  */
 export function threeWayMerge(common: object, local: object, remote: object): object {
 	console.log(TAG, '3-way merge מתחיל...');
@@ -67,6 +88,12 @@ export function threeWayMerge(common: object, local: object, remote: object): ob
 	return merged;
 }
 
+/**
+ * נרמול מצב ממוזג — מסדר מחדש את ה-order של משימות בכל הרשימות.
+ * מונע פערים או כפילויות ב-order שעלולות להיווצר אחרי merge.
+ * ממיין לפי order קיים, ובמקרה שוויון — לפי id (deterministic).
+ * @param state - אובייקט המצב הממוזג (משתנה in-place)
+ */
 function normalizeMergedState(state: any): void {
 	console.log(TAG, 'מנרמל order...');
 	Object.keys(state.lists).forEach((userId) => {
@@ -85,10 +112,17 @@ function normalizeMergedState(state: any): void {
 	console.log(TAG, 'נורמליזציה הסתיימה');
 }
 
+/**
+ * השוואת שני מצבים תוך התעלמות משדה `localDevice` (אפמרי).
+ * משתמש ב-JSON.stringify להשוואה עמוקה.
+ * @param a - מצב ראשון להשוואה
+ * @param b - מצב שני להשוואה
+ * @returns true אם המצבים זהים (למעט שדות אפמריים)
+ */
 export function areStatesEqual(a: object, b: object): boolean {
 	const aCopy = { ...a };
 	const bCopy = { ...b };
-	delete (aCopy as any).lastModified;
-	delete (bCopy as any).lastModified;
+	delete (aCopy as any).localDevice;
+	delete (bCopy as any).localDevice;
 	return JSON.stringify(aCopy) === JSON.stringify(bCopy);
 }

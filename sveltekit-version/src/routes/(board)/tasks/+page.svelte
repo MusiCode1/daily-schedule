@@ -4,6 +4,7 @@
 	import ImageDisplay from '$lib/components/ImageDisplay.svelte';
 	import ListEditModal from '$lib/components/ListEditModal.svelte';
 	import { listStore } from '$lib/stores/listStore.svelte';
+	import { globalState } from '$lib/stores/globalState.svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import type { List } from '$lib/types';
@@ -282,6 +283,7 @@
 				>
 					<TaskRow
 						{task}
+						isDone={globalState.state.taskProgress[task.id] ?? false}
 						taskNumber={index + 1}
 						isActive={index === board.activeTaskIndex}
 						isEditMode={board.isEditMode}

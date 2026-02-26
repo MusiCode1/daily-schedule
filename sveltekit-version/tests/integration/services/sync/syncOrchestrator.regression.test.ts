@@ -29,10 +29,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import type { AppState } from '$lib/types';
 import type { SyncProvider } from '$lib/services/sync/syncProvider';
 import type {
-	ContentV2,
-	ProgressV2,
-	AssetsIndexV2,
-	ManifestV2,
+	SyncContent,
+	SyncProgress,
+	SyncAssetsIndex,
+	SyncManifest,
 	RemoteMetadata,
 	Sha256
 } from '$lib/services/sync/syncTypes';
@@ -56,11 +56,11 @@ import { buildProgressPayload } from '$lib/services/sync/payloads';
 class FakeRemote implements SyncProvider {
 	readonly id = 'fake';
 
-	private content: ContentV2 | null = null;
-	private progress: ProgressV2 | null = null;
+	private content: SyncContent | null = null;
+	private progress: SyncProgress | null = null;
 	private history: SyncHistory | null = null;
-	private assets: AssetsIndexV2 | null = null;
-	private manifest: ManifestV2 | null = null;
+	private assets: SyncAssetsIndex | null = null;
+	private manifest: SyncManifest | null = null;
 
 	readonly calls = {
 		pullContent: 0,
@@ -89,7 +89,7 @@ class FakeRemote implements SyncProvider {
 		};
 	}
 
-	async pullContent(): Promise<ContentV2 | null> {
+	async pullContent(): Promise<SyncContent | null> {
 		this.calls.pullContent++;
 		if (this.failOnNext.pullContent) {
 			this.failOnNext.pullContent = false;
@@ -98,7 +98,7 @@ class FakeRemote implements SyncProvider {
 		return this.content;
 	}
 
-	async pullProgress(): Promise<ProgressV2 | null> {
+	async pullProgress(): Promise<SyncProgress | null> {
 		return this.progress;
 	}
 
@@ -107,7 +107,7 @@ class FakeRemote implements SyncProvider {
 		return this.history;
 	}
 
-	async pullAssets(): Promise<AssetsIndexV2 | null> {
+	async pullAssets(): Promise<SyncAssetsIndex | null> {
 		return this.assets ?? { backupSchemaVersion: 2, idToHash: {}, hashToFile: {} };
 	}
 
@@ -115,12 +115,12 @@ class FakeRemote implements SyncProvider {
 		throw new Error(`Asset not found: ${hash}`);
 	}
 
-	async writeContent(payload: ContentV2): Promise<void> {
+	async writeContent(payload: SyncContent): Promise<void> {
 		this.calls.writeContent++;
 		this.content = payload;
 	}
 
-	async writeProgress(payload: ProgressV2): Promise<void> {
+	async writeProgress(payload: SyncProgress): Promise<void> {
 		this.progress = payload;
 	}
 
@@ -128,11 +128,11 @@ class FakeRemote implements SyncProvider {
 		this.history = JSON.parse(JSON.stringify(h));
 	}
 
-	async writeAssets(index: AssetsIndexV2): Promise<void> {
+	async writeAssets(index: SyncAssetsIndex): Promise<void> {
 		this.assets = index;
 	}
 
-	async commit(m: ManifestV2): Promise<void> {
+	async commit(m: SyncManifest): Promise<void> {
 		this.calls.commit++;
 		if (this.failOnNext.commit) {
 			this.failOnNext.commit = false;
@@ -154,7 +154,7 @@ class FakeRemote implements SyncProvider {
 
 function makeState(overrides: Partial<AppState> = {}): AppState {
 	return {
-		version: 15,
+		version: 16,
 		users: { u1: { id: 'u1', name: 'Alice', gender: 'girl', avatar: '', themeColor: '#f00' } },
 		people: {},
 		lists: {
@@ -163,18 +163,23 @@ function makeState(overrides: Partial<AppState> = {}): AppState {
 					id: 'list1',
 					name: 'Morning Routine',
 					tasks: {
-						t1: { id: 't1', name: 'Brush teeth', imageSrc: null, isDone: false, order: 0 },
-						t2: { id: 't2', name: 'Get dressed', imageSrc: null, isDone: false, order: 1 }
+						t1: { id: 't1', name: 'Brush teeth', imageSrc: null, order: 0 },
+						t2: { id: 't2', name: 'Get dressed', imageSrc: null, order: 1 }
 					}
 				}
 			}
 		},
 		images: {},
-		activeListId: { u1: 'list1' },
-		currentUserId: 'u1',
-		settings: { lastActiveTime: 1000, childLockEnabled: false },
-		lastModified: 1000,
-		syncMetadata: undefined as any,
+		taskProgress: {},
+		settings: {
+			activeListId: { u1: 'list1' },
+			currentUserId: 'u1',
+			childLockEnabled: false
+		},
+		localDevice: {
+			lastModified: 1000,
+			lastActiveTime: 1000
+		},
 		...overrides
 	} as AppState;
 }
@@ -186,17 +191,19 @@ function addTask(state: AppState, taskId: string, taskName: string): AppState {
 		id: taskId,
 		name: taskName,
 		imageSrc: null,
-		isDone: false,
 		order: Object.keys((s.lists as any).u1.list1.tasks).length
 	};
-	s.lastModified = Date.now();
+	s.localDevice.lastModified = Date.now();
 	return s;
 }
 
 function makeDb(): SyncDb {
 	return {
 		getImage: async () => null,
-		saveImage: async () => {}
+		saveImage: async () => {},
+		saveSyncHistory: async () => {},
+		getSyncHistory: async () => null,
+		deleteSyncHistory: async () => {}
 	};
 }
 
@@ -367,7 +374,7 @@ describe('רגרסיה postmortem כשל #2: previousState=localState → delta 
 			// baseline מה-remote: מנרמלים שדות per-device (lastModified, settings)
 			// כי pullAndBuildState מחזיר lastModified=now ו-settings={} → delta פנטום
 			const baseline = cloneState(pullResult.remoteState);
-			baseline.lastModified = stateForUpload.lastModified;
+			baseline.localDevice.lastModified = stateForUpload.localDevice.lastModified;
 			baseline.settings = cloneState(stateForUpload).settings;
 			ctrl.previousState = baseline;
 		}

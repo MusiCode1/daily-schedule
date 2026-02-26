@@ -267,7 +267,7 @@ describe('historyManager.reconstructState', () => {
 
 function createMinimalState(overrides?: Partial<AppState>): AppState {
 	return {
-		version: 15,
+		version: 16,
 		users: {
 			u1: { id: 'u1', name: 'user', gender: 'boy', avatar: '', themeColor: '#000' }
 		},
@@ -277,17 +277,23 @@ function createMinimalState(overrides?: Partial<AppState>): AppState {
 					id: 'l1',
 					name: 'list',
 					tasks: {
-						t1: { id: 't1', name: 'task', imageSrc: null, isDone: false, order: 0 }
+						t1: { id: 't1', name: 'task', imageSrc: null, order: 0 }
 					}
 				}
 			}
 		},
 		images: {},
 		people: {},
-		activeListId: { u1: 'l1' },
-		currentUserId: 'u1',
-		settings: { lastActiveTime: 1000, childLockEnabled: false },
-		lastModified: 1000,
+		taskProgress: {},
+		settings: {
+			activeListId: { u1: 'l1' },
+			currentUserId: 'u1',
+			childLockEnabled: false
+		},
+		localDevice: {
+			lastModified: 1000,
+			lastActiveTime: 1000
+		},
 		...overrides
 	};
 }
@@ -454,7 +460,9 @@ describe('historyManager.findCommonAncestor', () => {
 
 	it('should find ancestor in branched history', () => {
 		const state = createMinimalState();
-		const delta = calculateDelta(state as any, { ...deepClone(state), lastModified: 999 } as any)!;
+		const modified = deepClone(state);
+		modified.localDevice.lastModified = 999;
+		const delta = calculateDelta(state as any, modified as any)!;
 
 		const h: SyncHistory = {
 			backupSchemaVersion: 3,

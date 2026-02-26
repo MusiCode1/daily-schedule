@@ -7,6 +7,9 @@
  * נקודות קצה:
  *   GET/POST /manifest, /content, /progress, /history, /assets
  *   GET/POST /blobs/:hash   — קבצים בינאריים (תמונות)
+ *   POST     /lock          — רכישת נעילה (device lock)
+ *   POST     /lock/verify   — אימות תקפות הנעילה
+ *   POST     /lock/release  — שחרור הנעילה
  *   POST     /reset         — מחיקת כל הנתונים (לפני כל בדיקה)
  *   GET      /health        — בדיקת זמינות (ל-Playwright webServer)
  *
@@ -79,6 +82,19 @@ function hashToFileName(hash: string): string {
 	return hash.replace(/:/g, '_');
 }
 
+// ─── נעילה (Lock) ────────────────────────────────────────────────────────────
+
+/** מצב הנעילה הנוכחי — נשמר ב-memory בלבד (מתאפס עם restart) */
+let activeLock: {
+	deviceId: string;
+	deviceName: string;
+	nonce: string;
+	timestamp: number;
+} | null = null;
+
+/** משך תוקף הנעילה במילישניות (30 שניות) */
+const LOCK_TTL_MS = 30_000;
+
 // ─── שרת ─────────────────────────────────────────────────────────────────────
 
 const JSON_ROUTES = ['manifest', 'content', 'progress', 'history', 'assets'] as const;
@@ -103,7 +119,48 @@ Bun.serve({
 		if (pathname === '/reset' && method === 'POST') {
 			await rm(STORE_DIR, { recursive: true, force: true });
 			await mkdir(BLOBS_DIR, { recursive: true });
+			activeLock = null;
 			console.log('[MockSyncServer] State reset');
+			return jsonRes({ ok: true });
+		}
+
+		// ── Lock: רכישת נעילה ────────────────────────────────────────────────
+		if (pathname === '/lock' && method === 'POST') {
+			const { deviceId, deviceName, nonce } = (await req.json()) as {
+				deviceId: string;
+				deviceName: string;
+				nonce: string;
+			};
+
+			// בדיקה: האם יש נעילה תקפה של מכשיר אחר?
+			if (
+				activeLock &&
+				activeLock.deviceId !== deviceId &&
+				activeLock.timestamp + LOCK_TTL_MS > Date.now()
+			) {
+				console.log(`[MockSyncServer] Lock denied for ${deviceName} — held by ${activeLock.deviceName}`);
+				return jsonRes({ acquired: false, holder: activeLock.deviceName });
+			}
+
+			// רכישת הנעילה
+			activeLock = { deviceId, deviceName, nonce, timestamp: Date.now() };
+			console.log(`[MockSyncServer] Lock acquired by ${deviceName} (nonce: ${nonce.slice(0, 8)}…)`);
+			return jsonRes({ acquired: true, nonce });
+		}
+
+		// ── Lock: אימות תקפות ────────────────────────────────────────────────
+		if (pathname === '/lock/verify' && method === 'POST') {
+			const { nonce } = (await req.json()) as { nonce: string };
+			const valid = activeLock !== null && activeLock.nonce === nonce;
+			return jsonRes({ valid });
+		}
+
+		// ── Lock: שחרור ──────────────────────────────────────────────────────
+		if (pathname === '/lock/release' && method === 'POST') {
+			if (activeLock) {
+				console.log(`[MockSyncServer] Lock released (was held by ${activeLock.deviceName})`);
+			}
+			activeLock = null;
 			return jsonRes({ ok: true });
 		}
 

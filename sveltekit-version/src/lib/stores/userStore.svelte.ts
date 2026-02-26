@@ -7,7 +7,7 @@ export class UserStore {
 	}
 
 	get currentUserId() {
-		return globalState.state.currentUserId;
+		return globalState.state.settings.currentUserId;
 	}
 
 	get currentUser() {
@@ -17,13 +17,13 @@ export class UserStore {
 	login(userId: string) {
 		const user = this.users[userId];
 		if (user) {
-			globalState.state.currentUserId = userId;
+			globalState.state.settings.currentUserId = userId;
 			globalState.save();
 		}
 	}
 
 	logout() {
-		globalState.state.currentUserId = null;
+		globalState.state.settings.currentUserId = null;
 		globalState.save();
 	}
 

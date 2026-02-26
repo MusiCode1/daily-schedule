@@ -28,7 +28,7 @@ export class ListStore {
 	 * קבלת הרשימה הפעילה
 	 */
 	getActiveList(userId: string): List | undefined {
-		let activeId = globalState.state.activeListId[userId];
+		let activeId = globalState.state.settings.activeListId[userId];
 		const listsObj = globalState.state.lists[userId] || {};
 
 		// אם יש ID פעיל ורשימה קיימת - החזר אותה
@@ -45,7 +45,7 @@ export class ListStore {
 	 * הגדרת רשימה פעילה
 	 */
 	setActiveList(userId: string, listId: string) {
-		globalState.state.activeListId[userId] = listId;
+		globalState.state.settings.activeListId[userId] = listId;
 		globalState.save();
 	}
 
@@ -84,10 +84,10 @@ export class ListStore {
 		delete listsObj[listId]; // delete במקום filter
 
 		// אם מחקנו את הרשימה הפעילה, עבור לרשימה הראשונה
-		if (globalState.state.activeListId[userId] === listId) {
+		if (globalState.state.settings.activeListId[userId] === listId) {
 			const remainingLists = Object.keys(listsObj);
 			if (remainingLists.length > 0) {
-				globalState.state.activeListId[userId] = remainingLists[0];
+				globalState.state.settings.activeListId[userId] = remainingLists[0];
 			}
 		}
 
@@ -151,8 +151,7 @@ export class ListStore {
 			const newTaskId = crypto.randomUUID();
 			duplicatedTasks[newTaskId] = {
 				...task,
-				id: newTaskId,
-				isDone: false // אפס את הסטטוס של המשימות בעותק
+				id: newTaskId
 			};
 		}
 
@@ -179,8 +178,8 @@ export class ListStore {
 		if (!listsObj || !listsObj[listId]) return;
 
 		const list = listsObj[listId];
-		for (const task of Object.values(list.tasks)) {
-			task.isDone = false;
+		for (const taskId of Object.keys(list.tasks)) {
+			delete globalState.state.taskProgress[taskId];
 		}
 		globalState.save();
 	}
@@ -233,8 +232,7 @@ export class ListStore {
 			const newTaskId = crypto.randomUUID();
 			copiedTasks[newTaskId] = {
 				...task,
-				id: newTaskId,
-				isDone: false // אפס את הסטטוס של המשימות בעותק
+				id: newTaskId
 			};
 		}
 

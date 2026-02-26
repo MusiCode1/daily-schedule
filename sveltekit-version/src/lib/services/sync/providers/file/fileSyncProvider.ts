@@ -1,8 +1,8 @@
 import type {
-	ContentV2,
-	ProgressV2,
-	AssetsIndexV2,
-	ManifestV2,
+	SyncContent,
+	SyncProgress,
+	SyncAssetsIndex,
+	SyncManifest,
 	RemoteMetadata
 } from '$lib/services/sync/syncTypes';
 import type { SyncHistory } from '$lib/services/sync/engine/types';
@@ -26,43 +26,56 @@ class FileSyncProvider implements SyncProvider {
 
 	/** state ה-ZIP שנטען — עבור pull operations */
 	private loadedZip: {
-		content: ContentV2 | null;
-		progress: ProgressV2 | null;
+		content: SyncContent | null;
+		progress: SyncProgress | null;
 		history: SyncHistory | null;
-		assets: AssetsIndexV2 | null;
+		assets: SyncAssetsIndex | null;
 		blobs: Map<string, Blob>;
 	} | null = null;
 
+	/** אתחול — ללא פעולה */
 	async initialize(): Promise<void> {
 		// no-op
 	}
 
+	/** תמיד מחזיר true — ייצוא/ייבוא קובץ תמיד זמין */
 	async isAvailable(): Promise<boolean> {
 		return true;
 	}
 
+	/** תמיד null — אין remote מתמשך בספק קובץ */
 	async checkRemote(): Promise<RemoteMetadata | null> {
 		return null;
 	}
 
 	// ─── Pull (מ-ZIP שנטען) ─────────────────────────────────────────────────
 
-	async pullContent(): Promise<ContentV2 | null> {
+	/** מחזיר את התוכן מה-ZIP שנטען */
+	async pullContent(): Promise<SyncContent | null> {
 		return this.loadedZip?.content ?? null;
 	}
 
-	async pullProgress(): Promise<ProgressV2 | null> {
+	/** מחזיר את ההתקדמות מה-ZIP שנטען */
+	async pullProgress(): Promise<SyncProgress | null> {
 		return this.loadedZip?.progress ?? null;
 	}
 
+	/** מחזיר את ההיסטוריה מה-ZIP שנטען */
 	async pullHistory(): Promise<SyncHistory | null> {
 		return this.loadedZip?.history ?? null;
 	}
 
-	async pullAssets(): Promise<AssetsIndexV2 | null> {
+	/** מחזיר את אינדקס הנכסים מה-ZIP שנטען */
+	async pullAssets(): Promise<SyncAssetsIndex | null> {
 		return this.loadedZip?.assets ?? null;
 	}
 
+	/**
+	 * מחזיר נכס מה-ZIP שנטען לפי hash.
+	 * @param hash - hash SHA-256 של הנכס
+	 * @returns Blob עם תוכן הנכס
+	 * @throws {Error} אם הנכס לא נמצא ב-ZIP שנטען
+	 */
 	async downloadMissingAsset(hash: string): Promise<Blob> {
 		const blob = this.loadedZip?.blobs.get(hash);
 		if (!blob) throw new Error(`Asset not found in loaded ZIP: ${hash}`);
@@ -71,25 +84,33 @@ class FileSyncProvider implements SyncProvider {
 
 	// ─── Push (אוסף לזיכרון, commit בונה ZIP) ─────────────────────────────
 
-	private pendingContent: ContentV2 | null = null;
-	private pendingProgress: ProgressV2 | null = null;
+	private pendingContent: SyncContent | null = null;
+	private pendingProgress: SyncProgress | null = null;
 	private pendingHistory: SyncHistory | null = null;
-	private pendingAssets: AssetsIndexV2 | null = null;
+	private pendingAssets: SyncAssetsIndex | null = null;
 	private pendingBlobs = new Map<string, Blob>();
 
-	async writeContent(payload: ContentV2, _hash: string): Promise<void> {
+	/** אוגר תוכן לכתיבה ב-commit (בניית ZIP) */
+	async writeContent(payload: SyncContent, _hash: string): Promise<void> {
 		this.pendingContent = payload;
 	}
 
-	async writeProgress(payload: ProgressV2, _hash: string): Promise<void> {
+	/** אוגר התקדמות לכתיבה ב-commit (בניית ZIP) */
+	async writeProgress(payload: SyncProgress, _hash: string): Promise<void> {
 		this.pendingProgress = payload;
 	}
 
+	/** אוגר היסטוריה לכתיבה ב-commit (בניית ZIP) */
 	async writeHistory(history: SyncHistory): Promise<void> {
 		this.pendingHistory = history;
 	}
 
-	async writeAssets(index: AssetsIndexV2, newBlobs: Map<string, Blob>): Promise<void> {
+	/**
+	 * אוגר נכסים חדשים לכתיבה ב-commit (בניית ZIP).
+	 * @param index - אינדקס הנכסים
+	 * @param newBlobs - מפה של hash → Blob להכללה ב-ZIP
+	 */
+	async writeAssets(index: SyncAssetsIndex, newBlobs: Map<string, Blob>): Promise<void> {
 		this.pendingAssets = index;
 		for (const [hash, blob] of newBlobs) {
 			this.pendingBlobs.set(hash, blob);
@@ -114,7 +135,7 @@ class FileSyncProvider implements SyncProvider {
 	 *   - assets.json
 	 *   - assets/<hash> (blobs)
 	 */
-	async commit(manifest: ManifestV2): Promise<void> {
+	async commit(manifest: SyncManifest): Promise<void> {
 		console.log(TAG, 'commit: building ZIP...');
 
 		const { default: JSZip } = await import('jszip');
@@ -187,10 +208,10 @@ class FileSyncProvider implements SyncProvider {
 			}
 		};
 
-		const content = await readJson<ContentV2>('content.json');
-		const progress = await readJson<ProgressV2>('progress.json');
+		const content = await readJson<SyncContent>('content.json');
+		const progress = await readJson<SyncProgress>('progress.json');
 		const history = await readJson<SyncHistory>('history.json');
-		const assets = await readJson<AssetsIndexV2>('assets.json');
+		const assets = await readJson<SyncAssetsIndex>('assets.json');
 
 		// טעינת blobs מתיקיית assets/
 		const blobs = new Map<string, Blob>();
@@ -225,4 +246,5 @@ class FileSyncProvider implements SyncProvider {
 	}
 }
 
+/** singleton של ספק הסנכרון מבוסס קובץ ZIP */
 export const fileSyncProvider = new FileSyncProvider();

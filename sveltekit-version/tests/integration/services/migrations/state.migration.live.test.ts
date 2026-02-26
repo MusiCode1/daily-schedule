@@ -45,8 +45,8 @@ describe('State Migration (live snapshot, local only)', () => {
 		expect(typeof migrated.lists).toBe('object');
 		expect(typeof migrated.images).toBe('object');
 		expect(typeof migrated.people).toBe('object');
-		expect(typeof migrated.activeListId).toBe('object');
-		expect(typeof migrated.settings?.lastActiveTime).toBe('number');
-		expect(typeof migrated.lastModified).toBe('number');
+		expect(typeof migrated.settings?.activeListId).toBe('object');
+		expect(typeof migrated.localDevice?.lastActiveTime).toBe('number');
+		expect(typeof migrated.localDevice?.lastModified).toBe('number');
 	});
 });

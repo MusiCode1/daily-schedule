@@ -1,5 +1,70 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-27 00:00
+
+### שיפוץ מקיף של מערכת הסנכרון — 4 פאזות
+
+שיפוץ יסודי של מערכת הסנכרון: ניקוי שמות, מבנה AppState חדש, תיעוד מלא, נעילה אטומית, והיסטוריה מקומית.
+
+#### מה בוצע?
+
+**1. פאזה 0 — שינוי שמות + מבנה AppState**
+
+- הסרת `V2` מכל שמות הטיפוסים (132 occurrences): `ContentV2` → `SyncContent`, `ManifestV2` → `SyncManifest` וכו'
+- מבנה AppState חדש: `isDone` יצא מ-`Task` → `taskProgress: Record<string, boolean>`
+- `activeListId`/`currentUserId` עברו ל-`settings`, שדות device-local ל-`localDevice`
+- מיגרציה v16 + עדכון כל קבצי הבדיקות
+- `INITIAL_WRITE_ID` — מזהה קסם להתקנה חדשה, חוסך קריאות API
+- מזהי task דטרמיניסטיים ב-`createDefaultLists()` במקום `crypto.randomUUID()`
+
+**2. פאזה 1 — JSDoc בעברית**
+
+- תיעוד מלא בעברית לכל ~80 exports ב-17 קבצי סנכרון
+- כולל: types, provider, engine, orchestrator, crypto, payloads, Google Drive, mock server, db, deviceState
+
+**3. פאזה 2 — Sync Lock (write-then-verify)**
+
+- 3 methods אופציונליים חדשים ב-`SyncProvider`: `acquireLock`, `verifyLock`, `releaseLock`
+- מימוש ב-Google Drive — appProperties על manifest (TTL 30 שניות, nonce-based)
+- מימוש ב-Mock Server — POST `/lock`, `/lock/verify`, `/lock/release`
+- `push()` עוטף הכל ב-lock → verify → try/finally release
+- `syncController` — lock conflict retry עם jitter 5-10 שניות
+
+**4. פאזה 3 — היסטוריה מקומית + API**
+
+- IndexedDB v2 עם store `sync-history` לאחסון היסטוריה מקומית
+- `SyncDb` הורחב: `saveSyncHistory`, `getSyncHistory`, `deleteSyncHistory`
+- `pull()` — מיזוג remote + local history, שמירה מקומית, `conflictType: 'no-ancestor'`
+- `push()` — שמירת history מקומית אחרי כתיבה מוצלחת
+- API `deleteHistory()` — מחיקה מקומית + מרוחקת
+- מודול `changelogBuilder.ts` — `buildChangelog`, `describeDelta` ליצירת תיאור קריא של שינויים
+
+#### החלטות ארכיטקטורה
+
+- **Lock via appProperties**: ב-Google Drive, ה-lock נשמר כ-appProperties על manifest — חוסך endpoints נפרדים ומצמצם קריאות API (2 קריאות נוספות במקום 4)
+- **היסטוריה מקומית ב-IndexedDB**: מאפשרת merge גם כשה-remote לא זמין, ומשמשת fallback לזיהוי common ancestor
+- **`conflictType: 'no-ancestor'`**: מאפשר ל-UI להציג prompt למשתמש כשאין ancestor — "להישאר עם המקומי או לדרוס עם הענן?"
+- **changelogBuilder נפרד מ-historyManager**: לא מערבבים לוגיקת תצוגה עם לוגיקה קריטית
+
+#### אימות
+
+- `npm run check` — 0 שגיאות, 0 אזהרות
+- 148/151 טסטים עוברים (3 כישלונות TTS pre-existing, לא קשורים)
+- אושר ע"י המשתמש שהכל עובד
+
+#### קבצים מרכזיים שנוצרו/שונו
+
+- `syncTypes.ts` — שינוי שמות V2
+- `syncOrchestrator.ts` — lock, history save, conflictType, deleteHistory
+- `syncProvider.ts` — lock methods + JSDoc
+- `googleDriveSyncProvider.ts` — lock via appProperties
+- `mockServerSyncProvider.ts` — lock methods
+- `e2e/mock-server/server.ts` — lock endpoints
+- `db.ts` — IndexedDB v2 + sync-history store
+- `engine/changelogBuilder.ts` — מודול changelog חדש
+- `types.ts`, `defaults.ts`, `migration.ts` — מבנה AppState חדש + v16
+- `syncController.svelte.ts` — lock conflict retry
+
 ## 2026-02-26 23:30
 
 ### תיקון ייבוא תמונות מ-ZIP + פרמטריזציה של שרת Mock

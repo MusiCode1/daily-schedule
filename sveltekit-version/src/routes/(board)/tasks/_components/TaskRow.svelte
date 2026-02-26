@@ -6,6 +6,7 @@
 
 	let {
 		task,
+		isDone = false,
 		isActive = false,
 		isEditMode = false,
 		isFirst = false,
@@ -21,6 +22,7 @@
 		...rest
 	} = $props<{
 		task: Task;
+		isDone?: boolean;
 		isActive?: boolean;
 		isEditMode?: boolean;
 		isFirst?: boolean;
@@ -51,7 +53,7 @@
 
 <div
 	class="task-row-wrapper"
-	class:completed={task.isDone}
+	class:completed={isDone}
 	class:active={isActive}
 	class:cancelled={task.changeType === 'cancelled'}
 	class:edit-mode={isEditMode}
@@ -102,7 +104,7 @@
 
 			<h3 class="task-name">{task.name}</h3>
 
-			{#if task.communicationBoardUrl && (isActive || task.isDone) && !isEditMode}
+			{#if task.communicationBoardUrl && (isActive || isDone) && !isEditMode}
 				<button
 					class="comm-board-btn"
 					onclick={handleOpenBoard}
@@ -116,11 +118,11 @@
 		<div class="task-status-slot" aria-hidden="true">
 			<div
 				class="status-indicator"
-				class:status-indicator-done={task.isDone}
-				class:status-indicator-active={isActive && !task.isDone}
-				class:status-indicator-empty={!task.isDone && !isActive}
+				class:status-indicator-done={isDone}
+				class:status-indicator-active={isActive && !isDone}
+				class:status-indicator-empty={!isDone && !isActive}
 			>
-				{#if task.isDone}
+				{#if isDone}
 					<span class="status-glyph">✓</span>
 				{:else if isActive}
 					<span class="status-glyph">●</span>

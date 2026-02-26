@@ -174,12 +174,11 @@ export function createDefaultLists(): { [listId: string]: List } {
 			const activity = ACTIVITIES.find((a) => a.id === item.activityId);
 			if (!activity) return;
 
-			const taskId = crypto.randomUUID();
+			const taskId = `${def.id}__${item.activityId}__${index}`;
 			tasks[taskId] = {
 				id: taskId,
 				name: activity.name,
 				imageSrc: `/images/activities/${activity.image}`,
-				isDone: false,
 				order: index // סדר לפי אינדקס המקורי
 			};
 		});
@@ -205,7 +204,7 @@ export function createDefaultLists(): { [listId: string]: List } {
 }
 
 export const INITIAL_STATE: AppState = {
-	version: 15, // עדכון גרסה!
+	version: 16, // עדכון גרסה!
 	users: DEFAULT_USERS_BAR,
 	lists: LISTS_BAR,
 	images: {}, // מאגר מטאדטה של תמונות
@@ -218,15 +217,18 @@ export const INITIAL_STATE: AppState = {
 		p_grandfather: { id: 'p_grandfather', name: 'סבא', avatar: '/images/people/grandfather.png' },
 		p_grandmother: { id: 'p_grandmother', name: 'סבתא', avatar: '/images/people/grandmother.png' }
 	},
-	activeListId: {
-		u_ezra: 'morning_routine',
-		u_tzofia: 'morning_routine',
-		u_adam: 'morning_routine'
-	},
-	currentUserId: null,
+	taskProgress: {},
 	settings: {
-		lastActiveTime: Date.now(),
-		childLockEnabled: false // חדש! מתג נעילת ילדים
+		activeListId: {
+			u_ezra: 'morning_routine',
+			u_tzofia: 'morning_routine',
+			u_adam: 'morning_routine'
+		},
+		currentUserId: null,
+		childLockEnabled: false
 	},
-	lastModified: Date.now()
+	localDevice: {
+		lastModified: Date.now(),
+		lastActiveTime: Date.now()
+	}
 };

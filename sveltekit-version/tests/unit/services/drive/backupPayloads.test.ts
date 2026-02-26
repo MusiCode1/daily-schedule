@@ -7,7 +7,7 @@ import {
 } from '$lib/services/sync/payloads';
 import { CURRENT_BACKUP_SCHEMA_VERSION } from '$lib/services/sync/constants';
 
-describe('Drive V2 backup payload builders', () => {
+describe('Sync backup payload builders', () => {
 	it('buildContentPayload should exclude progress/volatile fields', () => {
 		const state = JSON.parse(JSON.stringify(INITIAL_STATE));
 		const content = buildContentPayload(state);
@@ -15,8 +15,12 @@ describe('Drive V2 backup payload builders', () => {
 		expect(content.backupSchemaVersion).toBe(CURRENT_BACKUP_SCHEMA_VERSION);
 		expect(content.appStateVersion).toBe(state.version);
 
-		// settings אמור להכיל רק childLockEnabled (ללא lastActiveTime)
-		expect(content.settings).toEqual({ childLockEnabled: false });
+		// settings אמור להכיל activeListId, currentUserId, childLockEnabled
+		expect(content.settings).toEqual({
+			activeListId: state.settings.activeListId,
+			currentUserId: state.settings.currentUserId,
+			childLockEnabled: false
+		});
 
 		// בדיקה ש-isDone לא מופיע באף משימה
 		for (const userId of Object.keys(content.lists)) {
@@ -34,7 +38,7 @@ describe('Drive V2 backup payload builders', () => {
 		const firstUserId = Object.keys(state.users)[0];
 		const firstListId = Object.keys(state.lists[firstUserId])[0];
 		const firstTaskId = Object.keys(state.lists[firstUserId][firstListId].tasks)[0];
-		state.lists[firstUserId][firstListId].tasks[firstTaskId].isDone = true;
+		state.taskProgress[firstTaskId] = true;
 
 		const progress = buildProgressPayload(state);
 
@@ -42,15 +46,14 @@ describe('Drive V2 backup payload builders', () => {
 		expect(progress.taskDone[firstTaskId]).toBe(true);
 	});
 
-	it('changing isDone should not change content payload structure', () => {
+	it('changing taskProgress should not change content payload structure', () => {
 		const a = JSON.parse(JSON.stringify(INITIAL_STATE));
 		const b = JSON.parse(JSON.stringify(INITIAL_STATE));
 
 		const firstUserId = Object.keys(b.users)[0];
 		const firstListId = Object.keys(b.lists[firstUserId])[0];
 		const firstTaskId = Object.keys(b.lists[firstUserId][firstListId].tasks)[0];
-		b.lists[firstUserId][firstListId].tasks[firstTaskId].isDone =
-			!b.lists[firstUserId][firstListId].tasks[firstTaskId].isDone;
+		b.taskProgress[firstTaskId] = true;
 
 		const contentA = buildContentPayload(a);
 		const contentB = buildContentPayload(b);

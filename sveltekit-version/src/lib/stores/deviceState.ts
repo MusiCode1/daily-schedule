@@ -1,8 +1,10 @@
 import { browser } from '$app/environment';
 import { migrationService, type GoogleAuthStorage } from '$lib/services/migration';
 
+/** מפתח localStorage לשמירת מצב המכשיר */
 export const DEVICE_STATE_STORAGE_KEY = 'daily-schedule-device-state';
 
+/** גרסה נוכחית של סכימת DeviceState — משמשת למיגרציה */
 export const CURRENT_DEVICE_STATE_VERSION = 2 as const;
 
 export type FloatingBoardPosition = {
@@ -26,7 +28,11 @@ export type GoogleDriveProviderCache = {
 	lastUploadedAssetsHash?: string;
 };
 
-export type DeviceStateV2 = {
+/**
+ * מצב מכשיר — כולל הגדרות סנכרון, cache של ספקים, אימות ו-UI.
+ * נשמר ב-localStorage ומשמש כ-single source of truth לכל מצב מקומי.
+ */
+export type DeviceState = {
 	version: typeof CURRENT_DEVICE_STATE_VERSION;
 	drive: {
 		deviceId: string;
@@ -74,8 +80,7 @@ type DeviceStateV1 = {
 	};
 };
 
-export type DeviceState = DeviceStateV2;
-
+/** ממשק מינימלי לאחסון — מאפשר הזרקת mock בבדיקות */
 export type StorageLike = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
 const LEGACY_KEYS_TO_REMOVE = [
@@ -152,7 +157,7 @@ function validateFloatingBoardPosition(value: any): value is FloatingBoardPositi
 	);
 }
 
-function createDefaultDeviceState(userAgent: string): DeviceStateV2 {
+function createDefaultDeviceState(userAgent: string): DeviceState {
 	return {
 		version: CURRENT_DEVICE_STATE_VERSION,
 		drive: {
@@ -176,14 +181,14 @@ function createDefaultDeviceState(userAgent: string): DeviceStateV2 {
 	};
 }
 
-function normalizeDeviceStateV2(state: any, userAgent: string): DeviceStateV2 {
+function normalizeDeviceState(state: any, userAgent: string): DeviceState {
 	const fallback = createDefaultDeviceState(userAgent);
 	const driveCache =
 		typeof state?.drive?.v2Cache === 'object' && state.drive.v2Cache
 			? state.drive.v2Cache
 			: {};
 
-	const next: DeviceStateV2 = {
+	const next: DeviceState = {
 		version: CURRENT_DEVICE_STATE_VERSION,
 		drive: {
 			deviceId:
@@ -237,7 +242,7 @@ function normalizeDeviceStateV2(state: any, userAgent: string): DeviceStateV2 {
 }
 
 /** מיגרציה מ-V1 ל-V2 (הוספת providers) */
-function migrateV1ToV2(v1: DeviceStateV1): DeviceStateV2 {
+function migrateV1ToV2(v1: DeviceStateV1): DeviceState {
 	return {
 		version: CURRENT_DEVICE_STATE_VERSION,
 		drive: {
@@ -265,10 +270,18 @@ function migrateV1ToV2(v1: DeviceStateV1): DeviceStateV2 {
 	};
 }
 
+/**
+ * מבצעת מיגרציה של מצב המכשיר ב-storage — מ-legacy keys או מגרסה ישנה לגרסה נוכחית.
+ * מנקה מפתחות ישנים לאחר מיגרציה מוצלחת.
+ * @param storage - אובייקט אחסון (localStorage או mock)
+ * @param options - אפשרויות
+ * @param options.userAgent - מחרוזת user agent לזיהוי שם המכשיר
+ * @returns DeviceState מנורמל ומעודכן
+ */
 export function migrateDeviceStateInStorage(
 	storage: StorageLike,
 	options?: { userAgent?: string }
-): DeviceStateV2 {
+): DeviceState {
 	const userAgent = options?.userAgent ?? (typeof navigator !== 'undefined' ? navigator.userAgent : '');
 
 	const existingRaw = storage.getItem(DEVICE_STATE_STORAGE_KEY);
@@ -276,7 +289,7 @@ export function migrateDeviceStateInStorage(
 
 	// V2 קיים ותקין — רק normalize ושמור
 	if (existing && existing.version === CURRENT_DEVICE_STATE_VERSION) {
-		const normalized = normalizeDeviceStateV2(existing, userAgent);
+		const normalized = normalizeDeviceState(existing, userAgent);
 		storage.setItem(DEVICE_STATE_STORAGE_KEY, JSON.stringify(normalized));
 		for (const key of LEGACY_KEYS_TO_REMOVE) {
 			storage.removeItem(key);
@@ -288,7 +301,7 @@ export function migrateDeviceStateInStorage(
 	if (existing && existing.version === 1) {
 		const v1 = normalizeV1ForMigration(existing, userAgent);
 		const v2 = migrateV1ToV2(v1);
-		const normalized = normalizeDeviceStateV2(v2, userAgent);
+		const normalized = normalizeDeviceState(v2, userAgent);
 		storage.setItem(DEVICE_STATE_STORAGE_KEY, JSON.stringify(normalized));
 		for (const key of LEGACY_KEYS_TO_REMOVE) {
 			storage.removeItem(key);
@@ -376,10 +389,18 @@ function normalizeV1ForMigration(state: any, userAgent: string): DeviceStateV1 {
 	};
 }
 
-let cached: DeviceStateV2 | null = null;
+let cached: DeviceState | null = null;
 
+/**
+ * store של מצב המכשיר — קריאה, כתיבה ועדכון אטומי.
+ * משמש את שכבות הסנכרון לשמירת deviceId, writeId, cache של ספקים ואימות.
+ */
 export const deviceState = {
-	load(): DeviceStateV2 {
+	/**
+	 * טוענת את מצב המכשיר (עם cache ומיגרציה חד-פעמית).
+	 * @returns DeviceState נוכחי
+	 */
+	load(): DeviceState {
 		if (!browser) {
 			return createDefaultDeviceState('');
 		}
@@ -391,20 +412,29 @@ export const deviceState = {
 		return migrated;
 	},
 
-	save(next: DeviceStateV2) {
+	/**
+	 * שומרת מצב מכשיר חדש ל-localStorage ול-cache.
+	 * @param next - מצב חדש לשמירה
+	 */
+	save(next: DeviceState) {
 		if (!browser) return;
 		cached = next;
 		localStorage.setItem(DEVICE_STATE_STORAGE_KEY, JSON.stringify(next));
 	},
 
-	update(mutator: (draft: DeviceStateV2) => void): DeviceStateV2 {
+	/**
+	 * עדכון אטומי — משכפלת את המצב הנוכחי, מפעילה mutator, מנרמלת ושומרת.
+	 * @param mutator - פונקציה שמקבלת draft לשינוי in-place
+	 * @returns DeviceState מעודכן ומנורמל
+	 */
+	update(mutator: (draft: DeviceState) => void): DeviceState {
 		const current = this.load();
 		const draft =
 			typeof structuredClone === 'function'
 				? structuredClone(current)
-				: (JSON.parse(JSON.stringify(current)) as DeviceStateV2);
+				: (JSON.parse(JSON.stringify(current)) as DeviceState);
 		mutator(draft);
-		const normalized = normalizeDeviceStateV2(
+		const normalized = normalizeDeviceState(
 			draft,
 			typeof navigator !== 'undefined' ? navigator.userAgent : ''
 		);
@@ -412,6 +442,7 @@ export const deviceState = {
 		return normalized;
 	},
 
+	/** מאפסת את ה-cache הפנימי — הקריאה הבאה ל-load() תקרא מ-localStorage */
 	resetCache() {
 		cached = null;
 	}

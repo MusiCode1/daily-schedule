@@ -9,6 +9,11 @@ import { applyDelta } from './syncEngine';
 const TAG = '[HistoryManager]';
 const SNAPSHOT_INTERVAL = 20;
 
+/**
+ * יוצר אובייקט היסטוריה ריק עם גרסת סכימה נוכחית.
+ * משמש כנקודת התחלה כשאין היסטוריית סנכרון קיימת.
+ * @returns היסטוריית סנכרון ריקה
+ */
 export function createEmptyHistory(): SyncHistory {
 	return {
 		backupSchemaVersion: 3,
@@ -16,11 +21,23 @@ export function createEmptyHistory(): SyncHistory {
 	};
 }
 
+/**
+ * מוסיף רשומה חדשה (snapshot או delta) לסוף ההיסטוריה.
+ * @param history - אובייקט ההיסטוריה לעדכון (מוטציה ישירה)
+ * @param entry - הרשומה להוספה
+ */
 export function appendToHistory(history: SyncHistory, entry: HistoryEntry): void {
 	history.entries.push(entry);
 	console.log(TAG, `Entry נוסף: ${entry.type} (writeId: ${entry.writeId})`);
 }
 
+/**
+ * קובע האם יש ליצור snapshot חדש במקום delta.
+ * מחזיר true אם ההיסטוריה ריקה, אין snapshot קיים,
+ * או שמספר ה-delta entries מאז ה-snapshot האחרון חרג מה-SNAPSHOT_INTERVAL.
+ * @param history - ההיסטוריה לבדיקה
+ * @returns true אם נדרש snapshot חדש
+ */
 export function shouldCreateSnapshot(history: SyncHistory): boolean {
 	if (history.entries.length === 0) return true;
 
@@ -35,6 +52,12 @@ export function shouldCreateSnapshot(history: SyncHistory): boolean {
 	return deltasSinceSnapshot >= SNAPSHOT_INTERVAL;
 }
 
+/**
+ * מאתר רשומת היסטוריה לפי מזהה כתיבה ייחודי.
+ * @param history - ההיסטוריה לחיפוש
+ * @param writeId - מזהה הכתיבה לחיפוש
+ * @returns הרשומה שנמצאה, או null אם לא קיימת
+ */
 export function findEntryByWriteId(
 	history: SyncHistory,
 	writeId: string
@@ -42,6 +65,15 @@ export function findEntryByWriteId(
 	return history.entries.find((e) => e.writeId === writeId) || null;
 }
 
+/**
+ * מוצא את האב הקדמון המשותף (common ancestor) בין שני writeId-ים בהיסטוריה.
+ * בונה שרשרת parentWriteId עבור כל צד ומחפש את הצומת הראשון המשותף.
+ * אם נמצא — משחזר גם את ה-state של אותו אב קדמון (לשימוש ב-3-way merge).
+ * @param history - ההיסטוריה לחיפוש
+ * @param localWriteId - מזהה הכתיבה המקומי
+ * @param remoteWriteId - מזהה הכתיבה המרוחק
+ * @returns תוצאה עם found, writeId, entry ו-state של האב הקדמון (או ערכי null אם לא נמצא)
+ */
 export function findCommonAncestor(
 	history: SyncHistory,
 	localWriteId: string,
@@ -76,6 +108,13 @@ export function findCommonAncestor(
 	return { found: true, writeId: commonWriteId, entry, state };
 }
 
+/**
+ * בונה שרשרת writeId-ים מרשומה נתונה עד ל-root (רשומה ללא parent).
+ * עוקב אחרי parentWriteId כלפי מעלה, עם הגנה מפני מחזורים וחריגה באורך.
+ * @param history - ההיסטוריה לחיפוש
+ * @param writeId - מזהה הכתיבה ממנו מתחילים לבנות את השרשרת
+ * @returns מערך writeId-ים מהנוכחי עד ל-root, או null בעת שגיאה (מחזור, entry חסר, או שרשרת ארוכה מדי)
+ */
 function buildChain(history: SyncHistory, writeId: string): string[] | null {
 	const chain: string[] = [];
 	const visited = new Set<string>();
@@ -107,6 +146,14 @@ function buildChain(history: SyncHistory, writeId: string): string[] | null {
 	return chain;
 }
 
+/**
+ * משחזר את ה-state המלא עבור writeId נתון על ידי חזרה ל-snapshot האחרון בשרשרת
+ * והחלת כל ה-delta entries שבדרך.
+ * אם הרשומה עצמה היא snapshot — מחזיר אותה ישירות.
+ * @param history - ההיסטוריה המכילה את הרשומות
+ * @param writeId - מזהה הכתיבה שעבורו יש לשחזר את ה-state
+ * @returns ה-state המשוחזר, או null אם לא ניתן לשחזר (entry חסר, אין snapshot בשרשרת וכו')
+ */
 export function reconstructState(history: SyncHistory, writeId: string): Record<string, any> | null {
 	console.log(TAG, `משחזר state עבור writeId: ${writeId}`);
 
@@ -172,6 +219,14 @@ export function reconstructState(history: SyncHistory, writeId: string): Record<
 	return state as Record<string, any>;
 }
 
+/**
+ * ממזג שתי היסטוריות (מקומית ומרוחקת) לאחת.
+ * מוסיף רק רשומות שלא קיימות בהיסטוריה המקומית (לפי writeId),
+ * ומסדר את כל הרשומות לפי timestamp.
+ * @param localHistory - ההיסטוריה המקומית
+ * @param remoteHistory - ההיסטוריה המרוחקת
+ * @returns היסטוריה ממוזגת וממוינת
+ */
 export function mergeHistories(
 	localHistory: SyncHistory,
 	remoteHistory: SyncHistory

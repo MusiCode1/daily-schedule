@@ -27,6 +27,10 @@ async function safeExists(fileId: string | undefined): Promise<boolean> {
 	}
 }
 
+/**
+ * מזהי הקבצים והתיקיות של מבנה הגיבוי ב-Google Drive.
+ * מוחזר מ-{@link dailyScheduleBackupRepo.ensureStructure}.
+ */
 export type DriveStructureIds = {
 	backupFolderId: string;
 	assetsFolderId: string;
@@ -55,7 +59,16 @@ function updateCache(updates: Partial<ReturnType<typeof getCache>>) {
 	});
 }
 
+/**
+ * Repository לניהול מבנה הגיבוי של DailySchedule ב-Google Drive.
+ * אחראי על יצירת/מציאת תיקיות וקבצים, קריאה/כתיבה של JSON ונכסים בינאריים.
+ * משתמש ב-cache מקומי ({@link deviceState}) למניעת קריאות API מיותרות.
+ */
 export const dailyScheduleBackupRepo = {
+	/**
+	 * מוצאת (או יוצרת) את תיקיית הגיבוי הראשית ב-Drive.
+	 * @returns מזהה התיקייה
+	 */
 	async findBackupFolderId(): Promise<string> {
 		const cache = getCache();
 		let backupFolderId = cache.backupFolderId;
@@ -66,6 +79,11 @@ export const dailyScheduleBackupRepo = {
 		return backupFolderId!;
 	},
 
+	/**
+	 * מוודאת שכל מבנה הגיבוי קיים ב-Drive (תיקיות + קבצי JSON).
+	 * יוצרת קבצים/תיקיות חסרים ומעדכנת את ה-cache המקומי.
+	 * @returns אובייקט עם כל מזהי הקבצים והתיקיות
+	 */
 	async ensureStructure(): Promise<DriveStructureIds> {
 		const cache = getCache();
 
@@ -121,7 +139,11 @@ export const dailyScheduleBackupRepo = {
 		return ids;
 	},
 
-	async findV2ManifestMeta() {
+	/**
+	 * מחפשת את המטא-דאטה של קובץ ה-manifest ב-Drive.
+	 * @returns אובייקט קובץ עם appProperties, או null אם לא נמצא
+	 */
+	async findManifestMeta() {
 		const cache = getCache();
 		const backupFolderId = await this.findBackupFolderId();
 
@@ -140,16 +162,34 @@ export const dailyScheduleBackupRepo = {
 		return found;
 	},
 
+	/**
+	 * מחפשת קובץ גיבוי ישן (V1) לצורך מיגרציה.
+	 * @returns אובייקט קובץ של הגיבוי הישן, או null אם לא קיים
+	 */
 	async findLegacyV1BackupMeta() {
 		const backupFolderId = await this.findBackupFolderId();
 		const found = await driveFilesApi.findFileByNameInFolder('daily_schedule_backup.json', backupFolderId);
 		return found?.id ? found : null;
 	},
 
+	/**
+	 * קוראת קובץ JSON מ-Drive.
+	 * @param fileId - מזהה הקובץ
+	 * @param onProgress - callback לדיווח אחוז התקדמות
+	 * @returns האובייקט שפורסר
+	 */
 	async readJson(fileId: string, onProgress?: (p: number) => void) {
 		return await driveHttpClient.downloadJson(fileId, onProgress);
 	},
 
+	/**
+	 * כותבת אובייקט כ-JSON לקובץ קיים ב-Drive.
+	 * @param fileId - מזהה הקובץ לעדכון
+	 * @param data - אובייקט לסריאליזציה ל-JSON
+	 * @param options - אפשרויות נוספות
+	 * @param options.appProperties - מטא-דאטה אפליקטיבית לעדכון על הקובץ
+	 * @param options.onProgress - callback לדיווח אחוז התקדמות
+	 */
 	async writeJson(
 		fileId: string,
 		data: any,
@@ -162,10 +202,22 @@ export const dailyScheduleBackupRepo = {
 		}
 	},
 
+	/**
+	 * קוראת את קובץ היסטוריית הסנכרון מ-Drive.
+	 * @param historyFileId - מזהה קובץ ההיסטוריה
+	 * @param onProgress - callback לדיווח אחוז התקדמות
+	 * @returns אובייקט היסטוריית סנכרון
+	 */
 	async readHistoryJson(historyFileId: string, onProgress?: (p: number) => void): Promise<SyncHistory> {
 		return await this.readJson(historyFileId, onProgress) as SyncHistory;
 	},
 
+	/**
+	 * כותבת את היסטוריית הסנכרון לקובץ ב-Drive.
+	 * @param historyFileId - מזהה קובץ ההיסטוריה
+	 * @param history - אובייקט היסטוריית סנכרון לכתיבה
+	 * @param onProgress - callback לדיווח אחוז התקדמות
+	 */
 	async writeHistoryJson(
 		historyFileId: string,
 		history: SyncHistory,
@@ -174,6 +226,16 @@ export const dailyScheduleBackupRepo = {
 		await this.writeJson(historyFileId, history, { onProgress });
 	},
 
+	/**
+	 * מעלה נכס (תמונה/קובץ) לתיקיית הנכסים ב-Drive.
+	 * אם קובץ עם אותו hash כבר קיים — מעדכן אותו במקום ליצור חדש.
+	 * @param params - פרמטרי העלאה
+	 * @param params.hash - hash SHA-256 של הנכס
+	 * @param params.blob - תוכן בינארי
+	 * @param params.mimeType - סוג MIME
+	 * @param params.assetsFolderId - מזהה תיקיית הנכסים
+	 * @returns מזהה הקובץ וגודלו
+	 */
 	async uploadAsset(params: {
 		hash: Sha256;
 		blob: Blob;
@@ -197,6 +259,12 @@ export const dailyScheduleBackupRepo = {
 		return { fileId, size: params.blob.size };
 	},
 
+	/**
+	 * מורידה נכס מ-Drive כ-Blob.
+	 * @param fileId - מזהה הקובץ
+	 * @param onProgress - callback לדיווח אחוז התקדמות
+	 * @returns Blob עם תוכן הנכס
+	 */
 	async downloadAsset(fileId: string, onProgress?: (p: number) => void): Promise<Blob> {
 		return await driveHttpClient.downloadBlob(fileId, onProgress);
 	}

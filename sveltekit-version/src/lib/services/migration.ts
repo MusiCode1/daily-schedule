@@ -455,6 +455,67 @@ function migrateToV15(state: AnyState): AnyState {
 	return state;
 }
 
+function migrateToV16(state: AnyState): AnyState {
+	console.log('[Migration] v15 → v16: הפרדת settings, localDevice, taskProgress');
+
+	// 1. העברת activeListId ו-currentUserId ל-settings
+	if (!state.settings) {
+		state.settings = {};
+	}
+	if (state.activeListId && !state.settings.activeListId) {
+		state.settings.activeListId = state.activeListId;
+	}
+	if (!state.settings.activeListId) {
+		state.settings.activeListId = {};
+	}
+	if (state.currentUserId !== undefined && state.settings.currentUserId === undefined) {
+		state.settings.currentUserId = state.currentUserId;
+	}
+	if (state.settings.currentUserId === undefined) {
+		state.settings.currentUserId = null;
+	}
+	if (state.settings.childLockEnabled === undefined) {
+		state.settings.childLockEnabled = false;
+	}
+	delete state.activeListId;
+	delete state.currentUserId;
+
+	// 2. העברת lastModified, lastActiveTime, syncMetadata ל-localDevice
+	state.localDevice = {
+		lastModified: state.lastModified ?? Date.now(),
+		lastActiveTime: state.lastActiveTime ?? Date.now()
+	};
+	if (state.syncMetadata) {
+		state.localDevice.syncMetadata = state.syncMetadata;
+	}
+	delete state.lastModified;
+	delete state.lastActiveTime;
+	delete state.syncMetadata;
+
+	// 3. חילוץ isDone מכל המשימות ל-taskProgress
+	if (!state.taskProgress) {
+		state.taskProgress = {};
+	}
+	if (state.lists) {
+		Object.values(state.lists).forEach((userLists: any) => {
+			Object.values(userLists).forEach((list: any) => {
+				if (list.tasks && typeof list.tasks === 'object') {
+					Object.values(list.tasks).forEach((task: any) => {
+						if (task.isDone) {
+							state.taskProgress[task.id] = true;
+						}
+						delete task.isDone;
+					});
+				}
+			});
+		});
+	}
+
+	state.version = 16;
+	console.log('[Migration] v16 completed successfully');
+	return state;
+}
+
 export const STATE_MIGRATIONS: Record<number, (state: AnyState) => AnyState> = {
 	2: migrateToV2,
 	3: migrateToV3,
@@ -469,7 +530,8 @@ export const STATE_MIGRATIONS: Record<number, (state: AnyState) => AnyState> = {
 	12: migrateToV12,
 	13: migrateToV13,
 	14: migrateToV14,
-	15: migrateToV15
+	15: migrateToV15,
+	16: migrateToV16
 };
 
 function runStateMigrations(input: AnyState): AnyState {
@@ -538,7 +600,8 @@ export const migrationService = {
 		if (legacyLists) {
 			try {
 				const lists = JSON.parse(legacyLists);
-				const newState: AppState = { ...INITIAL_STATE, version: 15, lastModified: Date.now() };
+				const newState: any = { ...INITIAL_STATE, version: 16 };
+			newState.localDevice = { ...INITIAL_STATE.localDevice, lastModified: Date.now() };
 
 				// המרת רשימות ישנות לפורמט החדש עבור משתמש u1 (ברירת מחדל)
 				const newListsArray: any[] = lists.map((l: any) => ({
@@ -577,7 +640,7 @@ export const migrationService = {
 
 				newState.lists['u1'] = newListsObject;
 				if (newListsArray.length > 0) {
-					newState.activeListId['u1'] = newListsArray[0].id;
+					newState.settings.activeListId['u1'] = newListsArray[0].id;
 				}
 
 				console.log('Migrated legacy lists to user u1');

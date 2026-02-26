@@ -7,7 +7,19 @@ function requireAuthToken(): string {
 	return token;
 }
 
+/**
+ * לקוח HTTP ישיר ל-Google Drive — העלאות והורדות עם דיווח התקדמות.
+ * משתמש ב-XMLHttpRequest במקום gapi.client כדי לתמוך ב-progress events.
+ */
 export const driveHttpClient = {
+	/**
+	 * מעלה מחרוזת JSON לקובץ קיים ב-Drive.
+	 * @param fileId - מזהה הקובץ לעדכון
+	 * @param json - מחרוזת JSON להעלאה
+	 * @param onProgress - callback לדיווח אחוז התקדמות (0-100)
+	 * @returns Promise שמסתיים בסיום ההעלאה
+	 * @throws {Error} אם המשתמש לא מאומת או ההעלאה נכשלה
+	 */
 	uploadJson(fileId: string, json: string, onProgress?: (p: number) => void): Promise<void> {
 		const token = requireAuthToken();
 		return new Promise((resolve, reject) => {
@@ -32,6 +44,15 @@ export const driveHttpClient = {
 		});
 	},
 
+	/**
+	 * מעלה Blob לקובץ קיים ב-Drive.
+	 * @param fileId - מזהה הקובץ לעדכון
+	 * @param blob - תוכן בינארי להעלאה
+	 * @param mimeType - סוג MIME של התוכן
+	 * @param onProgress - callback לדיווח אחוז התקדמות (0-100)
+	 * @returns Promise שמסתיים בסיום ההעלאה
+	 * @throws {Error} אם המשתמש לא מאומת או ההעלאה נכשלה
+	 */
 	uploadBlob(
 		fileId: string,
 		blob: Blob,
@@ -61,6 +82,13 @@ export const driveHttpClient = {
 		});
 	},
 
+	/**
+	 * מורידה קובץ JSON מ-Drive ומפרסרת אותו.
+	 * @param fileId - מזהה הקובץ להורדה
+	 * @param onProgress - callback לדיווח אחוז התקדמות (0-100)
+	 * @returns האובייקט שפורסר מה-JSON
+	 * @throws {Error} אם ההורדה נכשלה או ה-JSON לא תקין
+	 */
 	async downloadJson(fileId: string, onProgress?: (p: number) => void): Promise<any> {
 		const token = requireAuthToken();
 
@@ -103,6 +131,13 @@ export const driveHttpClient = {
 		});
 	},
 
+	/**
+	 * מורידה קובץ מ-Drive כ-Blob בינארי.
+	 * @param fileId - מזהה הקובץ להורדה
+	 * @param onProgress - callback לדיווח אחוז התקדמות (0-100)
+	 * @returns Blob עם תוכן הקובץ
+	 * @throws {Error} אם ההורדה נכשלה
+	 */
 	async downloadBlob(fileId: string, onProgress?: (p: number) => void): Promise<Blob> {
 		const token = requireAuthToken();
 

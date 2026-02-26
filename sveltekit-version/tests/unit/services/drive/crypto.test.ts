@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { sha256Blob, sha256String, stableStringify } from '$lib/services/sync/crypto';
 
-describe('Drive V2 crypto helpers', () => {
+describe('Sync crypto helpers', () => {
 	it('stableStringify should be deterministic regardless of key order', () => {
 		const a = { b: 1, a: 2, nested: { z: 1, y: 2 } };
 		const b = { nested: { y: 2, z: 1 }, a: 2, b: 1 };

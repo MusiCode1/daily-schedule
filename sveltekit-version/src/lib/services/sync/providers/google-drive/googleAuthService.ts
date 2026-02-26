@@ -13,6 +13,7 @@ declare global {
 	}
 }
 
+/** סטטוס אימות Google Drive */
 export type DriveStatus =
 	| 'uninitialized'
 	| 'loading'
@@ -20,6 +21,11 @@ export type DriveStatus =
 	| 'unauthenticated'
 	| 'error';
 
+/**
+ * שירות אימות מול Google OAuth2.
+ * מנהל את מחזור חיי ה-token — אתחול, כניסה, רענון שקט, ניתוק.
+ * משתמש ב-Google Identity Services (GIS) ו-GAPI client.
+ */
 export class GoogleAuthService {
 	private tokenClient: any;
 	private accessToken: string | null = null;
@@ -39,6 +45,11 @@ export class GoogleAuthService {
 		this.notifyListeners();
 	}
 
+	/**
+	 * נרשמת לשינויי סטטוס אימות. ה-listener נקרא מיד עם הסטטוס הנוכחי.
+	 * @param listener - פונקציה שתיקרא בכל שינוי סטטוס
+	 * @returns פונקציית unsubscribe לביטול ההרשמה
+	 */
 	subscribe(listener: (status: DriveStatus) => void) {
 		this.statusListeners.push(listener);
 		listener(this.status);
@@ -51,10 +62,19 @@ export class GoogleAuthService {
 		this.statusListeners.forEach((l) => l(this.status));
 	}
 
+	/**
+	 * מחזירה את ה-access token הנוכחי, או null אם לא מאומת.
+	 * @returns access token או null
+	 */
 	getAccessToken(): string | null {
 		return this.accessToken;
 	}
 
+	/**
+	 * אתחול שירות האימות — טעינת GAPI ו-GIS, שחזור session קיים.
+	 * בודקת גם redirect callback אם חזרנו מ-OAuth redirect flow.
+	 * @param clientIdOverride - מזהה לקוח חלופי (לדריסת ברירת המחדל)
+	 */
 	async initialize(clientIdOverride?: string): Promise<void> {
 		if ((this.status as string) === 'authenticated') return;
 
@@ -102,11 +122,16 @@ export class GoogleAuthService {
 		}
 	}
 
+	/** מתחילה תהליך כניסה באמצעות popup של Google OAuth */
 	signIn() {
 		if (!this.tokenClient) return;
 		this.tokenClient.requestAccessToken({ prompt: 'consent' });
 	}
 
+	/**
+	 * מתחילה תהליך כניסה באמצעות redirect (שימושי במובייל שבו popup נחסם).
+	 * @param clientIdOverride - מזהה לקוח חלופי
+	 */
 	signInWithRedirect(clientIdOverride?: string) {
 		const clientId = clientIdOverride || GOOGLE_CLIENT_ID;
 		const params = new URLSearchParams({
@@ -123,6 +148,7 @@ export class GoogleAuthService {
 		window.location.href = authUrl;
 	}
 
+	/** מנתקת את המשתמש — מבטלת token ומנקה את ה-session המקומי */
 	signOut() {
 		if (this.accessToken) {
 			if (window.google && window.google.accounts && window.google.accounts.oauth2) {
@@ -137,6 +163,10 @@ export class GoogleAuthService {
 		}
 	}
 
+	/**
+	 * מחזירה פרטי משתמש מ-Google Drive API (שם, אימייל, תמונה).
+	 * @returns אובייקט פרטי משתמש, או null אם לא מאומת או נכשל
+	 */
 	async getUserInfo() {
 		if (!this.accessToken) return null;
 		try {
@@ -346,4 +376,5 @@ export class GoogleAuthService {
 	}
 }
 
+/** singleton של שירות האימות — משמש את כלל שכבות ה-Google Drive */
 export const googleAuthService = new GoogleAuthService();

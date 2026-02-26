@@ -8,7 +8,7 @@ import { pull, push, type SyncDb } from '$lib/services/sync/syncOrchestrator';
 
 function makeState(overrides?: Partial<AppState>): AppState {
 	return {
-		version: 15,
+		version: 16,
 		users: { u1: { id: 'u1', name: 'Test', gender: 'boy', avatar: '', themeColor: '#000' } },
 		people: {},
 		lists: {
@@ -17,17 +17,19 @@ function makeState(overrides?: Partial<AppState>): AppState {
 					id: 'list1',
 					name: 'List',
 					tasks: {
-						t1: { id: 't1', name: 'Task 1', imageSrc: null, isDone: false, order: 0 }
+						t1: { id: 't1', name: 'Task 1', imageSrc: null, order: 0 }
 					}
 				}
 			}
 		},
 		images: {},
-		activeListId: { u1: 'list1' },
-		currentUserId: 'u1',
-		settings: { lastActiveTime: 1000, childLockEnabled: false },
-		lastModified: 1000,
-		syncMetadata: { writeId: 'w1', lastModified: 1000, lastModifiedByDeviceId: 'd1', lastModifiedByDeviceName: 'Dev' },
+		taskProgress: { t1: false },
+		settings: { activeListId: { u1: 'list1' }, currentUserId: 'u1', childLockEnabled: false },
+		localDevice: {
+			lastModified: 1000,
+			lastActiveTime: 1000,
+			syncMetadata: { writeId: 'w1', lastModified: 1000, lastModifiedByDeviceId: 'd1', lastModifiedByDeviceName: 'Dev' }
+		},
 		...overrides
 	} as AppState;
 }
@@ -47,7 +49,10 @@ function makeRemoteMeta(writeId: string): RemoteMetadata {
 function makeDb(): SyncDb {
 	return {
 		getImage: async () => null,
-		saveImage: async () => {}
+		saveImage: async () => {},
+		saveSyncHistory: async () => {},
+		getSyncHistory: async () => null,
+		deleteSyncHistory: async () => {}
 	};
 }
 
@@ -125,11 +130,11 @@ describe('syncOrchestrator.pull', () => {
 
 		expect(result.remoteWriteId).toBe('w-remote');
 		expect(result.merged).toBe(false);
-		expect(result.state.currentUserId).toBe('u2');
+		expect(result.state.settings.currentUserId).toBe('u2');
 	});
 
 	it('should keep localState when remote is newer but no history for merge', async () => {
-		const localState = makeState({ lastModified: 2000 });
+		const localState = makeState({ localDevice: { lastModified: 2000, lastActiveTime: 1000 } } as any);
 		const remoteMeta = makeRemoteMeta('w-remote');
 		const remoteContent = {
 			backupSchemaVersion: 2, appStateVersion: 15,
@@ -257,7 +262,7 @@ describe('syncOrchestrator.push', () => {
 		const state = makeState();
 		const previousState = structuredClone(state);
 		// שינוי isDone בלבד — ללא שינוי תוכן
-		(state.lists.u1.list1.tasks.t1 as any).isDone = true;
+		state.taskProgress.t1 = true;
 
 		const { createEmptyHistory, appendToHistory } = await import('$lib/services/sync/engine/historyManager');
 		const history = createEmptyHistory();
@@ -315,7 +320,7 @@ describe('syncOrchestrator.pull — progress detection', () => {
 		expect(result.merged).toBe(false);
 		expect(result.remoteWriteId).toBe('w1');
 		// progress הוחל — t1 צריך להיות true
-		expect((result.state.lists.u1?.list1?.tasks?.t1 as any)?.isDone).toBe(true);
+		expect(result.state.taskProgress?.t1).toBe(true);
 		expect(provider.pullProgress).toHaveBeenCalled();
 	});
 

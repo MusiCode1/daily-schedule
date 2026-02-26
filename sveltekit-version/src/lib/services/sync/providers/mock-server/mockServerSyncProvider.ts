@@ -7,10 +7,10 @@
 
 import type { SyncProvider } from '../../syncProvider';
 import type {
-	ContentV2,
-	ProgressV2,
-	AssetsIndexV2,
-	ManifestV2,
+	SyncContent,
+	SyncProgress,
+	SyncAssetsIndex,
+	SyncManifest,
 	RemoteMetadata,
 	Sha256
 } from '../../syncTypes';
@@ -36,21 +36,43 @@ async function postJson(path: string, data: unknown): Promise<void> {
 	if (!res.ok) throw new Error(`MockServer POST ${path} → ${res.status}`);
 }
 
+/** שליחת POST עם גוף JSON וקבלת תשובה מפורשת מהשרת */
+async function postJsonWithResponse<T>(path: string, data: unknown): Promise<T> {
+	const res = await fetch(`${BASE_URL}${path}`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data)
+	});
+	if (!res.ok) throw new Error(`MockServer POST ${path} → ${res.status}`);
+	return res.json() as Promise<T>;
+}
+
 // ─── Provider ────────────────────────────────────────────────────────────────
 
+/**
+ * ספק סנכרון המדבר עם שרת Mock מקומי.
+ * מממש את {@link SyncProvider} באמצעות קריאות HTTP פשוטות (GET/POST).
+ * שימושי לבדיקות E2E ולפיתוח מקומי ללא תלות ב-Google Drive.
+ */
 class MockServerSyncProvider implements SyncProvider {
 	readonly id = 'mock-server';
 
+	/** אתחול — ללא פעולה, השרת תמיד זמין */
 	async initialize(): Promise<void> {
 		// ללא אתחול — השרת תמיד זמין
 	}
 
+	/** תמיד מחזיר true — השרת המקומי נחשב זמין */
 	async isAvailable(): Promise<boolean> {
 		return true;
 	}
 
+	/**
+	 * בודק את מצב ה-remote — קורא את ה-manifest מהשרת.
+	 * @returns מטא-דאטה מרוחקת, או null אם אין manifest
+	 */
 	async checkRemote(): Promise<RemoteMetadata | null> {
-		const manifest = await getJson<ManifestV2>('/manifest');
+		const manifest = await getJson<SyncManifest>('/manifest');
 		if (!manifest) return null;
 		return {
 			writeId: manifest.syncMetadata.writeId,
@@ -65,22 +87,28 @@ class MockServerSyncProvider implements SyncProvider {
 
 	// ─── Pull ────────────────────────────────────────────────────────────────
 
-	async pullContent(): Promise<ContentV2 | null> {
-		return getJson<ContentV2>('/content');
+	async pullContent(): Promise<SyncContent | null> {
+		return getJson<SyncContent>('/content');
 	}
 
-	async pullProgress(): Promise<ProgressV2 | null> {
-		return getJson<ProgressV2>('/progress');
+	async pullProgress(): Promise<SyncProgress | null> {
+		return getJson<SyncProgress>('/progress');
 	}
 
 	async pullHistory(): Promise<SyncHistory | null> {
 		return getJson<SyncHistory>('/history');
 	}
 
-	async pullAssets(): Promise<AssetsIndexV2 | null> {
-		return getJson<AssetsIndexV2>('/assets');
+	async pullAssets(): Promise<SyncAssetsIndex | null> {
+		return getJson<SyncAssetsIndex>('/assets');
 	}
 
+	/**
+	 * מוריד נכס חסר מהשרת לפי hash.
+	 * @param hash - hash SHA-256 של הנכס
+	 * @returns Blob עם תוכן הנכס
+	 * @throws {Error} אם הנכס לא נמצא בשרת
+	 */
 	async downloadMissingAsset(hash: string): Promise<Blob> {
 		const res = await fetch(`${BASE_URL}/blobs/${encodeURIComponent(hash)}`);
 		if (!res.ok) throw new Error(`MockServer: asset not found: ${hash}`);
@@ -89,11 +117,11 @@ class MockServerSyncProvider implements SyncProvider {
 
 	// ─── Push ────────────────────────────────────────────────────────────────
 
-	async writeContent(payload: ContentV2, _hash: string): Promise<void> {
+	async writeContent(payload: SyncContent, _hash: string): Promise<void> {
 		await postJson('/content', payload);
 	}
 
-	async writeProgress(payload: ProgressV2, _hash: string): Promise<void> {
+	async writeProgress(payload: SyncProgress, _hash: string): Promise<void> {
 		await postJson('/progress', payload);
 	}
 
@@ -101,7 +129,12 @@ class MockServerSyncProvider implements SyncProvider {
 		await postJson('/history', history);
 	}
 
-	async writeAssets(index: AssetsIndexV2, newBlobs: Map<string, Blob>): Promise<void> {
+	/**
+	 * מעלה נכסים חדשים לשרת ושולח את אינדקס הנכסים המעודכן.
+	 * @param index - אינדקס הנכסים
+	 * @param newBlobs - מפה של hash → Blob להעלאה
+	 */
+	async writeAssets(index: SyncAssetsIndex, newBlobs: Map<string, Blob>): Promise<void> {
 		// העלאת blobs חדשים + רישום fileId פיקטיבי ב-index
 		for (const [hash, blob] of newBlobs) {
 			const buf = await blob.arrayBuffer();
@@ -122,9 +155,52 @@ class MockServerSyncProvider implements SyncProvider {
 		await postJson('/assets', index);
 	}
 
-	async commit(manifest: ManifestV2): Promise<void> {
+	/**
+	 * מבצע commit — שולח את ה-manifest לשרת.
+	 * @param manifest - אובייקט ה-manifest לשמירה
+	 */
+	async commit(manifest: SyncManifest): Promise<void> {
 		await postJson('/manifest', manifest);
+	}
+
+	// ─── Lock ────────────────────────────────────────────────────────────────
+
+	/**
+	 * רוכש נעילה על ה-remote עבור המכשיר הנוכחי.
+	 * מייצר nonce ייחודי ושולח בקשה לשרת.
+	 * @param device - מזהה ושם המכשיר המבקש
+	 * @returns acquired=true עם nonce אם הנעילה נרכשה, אחרת acquired=false עם שם המחזיק
+	 */
+	async acquireLock(device: { deviceId: string; deviceName: string }): Promise<{
+		acquired: boolean;
+		nonce?: string;
+		holder?: string;
+	}> {
+		const nonce = crypto.randomUUID();
+		return postJsonWithResponse('/lock', {
+			deviceId: device.deviceId,
+			deviceName: device.deviceName,
+			nonce
+		});
+	}
+
+	/**
+	 * מאמת שהנעילה עדיין תקפה לפי ה-nonce שנשמר.
+	 * @param nonce - ה-nonce שהתקבל בעת רכישת הנעילה
+	 * @returns true אם הנעילה עדיין תקפה
+	 */
+	async verifyLock(nonce: string): Promise<boolean> {
+		const res = await postJsonWithResponse<{ valid: boolean }>('/lock/verify', { nonce });
+		return res.valid;
+	}
+
+	/**
+	 * משחרר את הנעילה הנוכחית מה-remote.
+	 */
+	async releaseLock(): Promise<void> {
+		await postJson('/lock/release', {});
 	}
 }
 
+/** singleton של ספק הסנכרון לשרת Mock */
 export const mockServerSyncProvider = new MockServerSyncProvider();

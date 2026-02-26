@@ -133,7 +133,7 @@ export class DriveBackupSettingsController {
 
 	async refreshLastRemoteBackupTime() {
 		try {
-			const meta = await dailyScheduleBackupRepo.findV2ManifestMeta();
+			const meta = await dailyScheduleBackupRepo.findManifestMeta();
 			if (!meta?.modifiedTime) {
 				this.lastRemoteBackupTime = null;
 				return;

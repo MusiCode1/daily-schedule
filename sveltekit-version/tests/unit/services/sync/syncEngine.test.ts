@@ -13,7 +13,7 @@ function deepClone<T>(value: T): T {
 
 function createMinimalState(overrides?: Partial<AppState>): AppState {
 	return {
-		version: 15,
+		version: 16,
 		users: {
 			u1: {
 				id: 'u1',
@@ -29,19 +29,25 @@ function createMinimalState(overrides?: Partial<AppState>): AppState {
 					id: 'list1',
 					name: 'רשימה א',
 					tasks: {
-						t1: { id: 't1', name: 'משימה 1', imageSrc: null, isDone: false, order: 0 },
-						t2: { id: 't2', name: 'משימה 2', imageSrc: null, isDone: false, order: 1 },
-						t3: { id: 't3', name: 'משימה 3', imageSrc: null, isDone: false, order: 2 }
+						t1: { id: 't1', name: 'משימה 1', imageSrc: null, order: 0 },
+						t2: { id: 't2', name: 'משימה 2', imageSrc: null, order: 1 },
+						t3: { id: 't3', name: 'משימה 3', imageSrc: null, order: 2 }
 					}
 				}
 			}
 		},
 		images: {},
 		people: {},
-		activeListId: { u1: 'list1' },
-		currentUserId: 'u1',
-		settings: { lastActiveTime: 1000, childLockEnabled: false },
-		lastModified: 1000,
+		taskProgress: {},
+		settings: {
+			activeListId: { u1: 'list1' },
+			currentUserId: 'u1',
+			childLockEnabled: false
+		},
+		localDevice: {
+			lastModified: 1000,
+			lastActiveTime: 1000
+		},
 		...overrides
 	};
 }
@@ -70,7 +76,6 @@ describe('syncEngine.calculateDelta', () => {
 			id: 't4',
 			name: 'משימה 4',
 			imageSrc: null,
-			isDone: false,
 			order: 3
 		};
 
@@ -119,7 +124,6 @@ describe('syncEngine.applyDelta', () => {
 			id: 't4',
 			name: 'משימה 4',
 			imageSrc: null,
-			isDone: false,
 			order: 3
 		};
 
@@ -204,15 +208,16 @@ describe('syncEngine.threeWayMerge', () => {
 	});
 
 	it('should use last-write-wins when both sides changed the same field', () => {
-		const ancestor = createMinimalState({ lastModified: 100 });
+		const ancestor = createMinimalState();
+		ancestor.localDevice.lastModified = 100;
 		const local = deepClone(ancestor);
 		const remote = deepClone(ancestor);
 
 		local.lists.u1.list1.tasks.t1.name = 'מקומי';
-		local.lastModified = 200;
+		local.localDevice.lastModified = 200;
 
 		remote.lists.u1.list1.tasks.t1.name = 'מרוחק';
-		remote.lastModified = 150;
+		remote.localDevice.lastModified = 150;
 
 		const merged = threeWayMerge(ancestor, local, remote) as any;
 		// jsondiffpatch patches remote first then local, so local wins when no conflict exception
@@ -229,7 +234,6 @@ describe('syncEngine.threeWayMerge', () => {
 			id: 't_local',
 			name: 'משימה מקומית',
 			imageSrc: null,
-			isDone: false,
 			order: 3
 		};
 
@@ -237,7 +241,6 @@ describe('syncEngine.threeWayMerge', () => {
 			id: 't_remote',
 			name: 'משימה מרוחקת',
 			imageSrc: null,
-			isDone: false,
 			order: 4
 		};
 
@@ -255,14 +258,12 @@ describe('syncEngine.threeWayMerge', () => {
 			id: 't_a',
 			name: 'חדש A',
 			imageSrc: null,
-			isDone: false,
 			order: 3
 		};
 		remote.lists.u1.list1.tasks.t_b = {
 			id: 't_b',
 			name: 'חדש B',
 			imageSrc: null,
-			isDone: false,
 			order: 3 // order כפול
 		};
 
@@ -283,14 +284,12 @@ describe('syncEngine.threeWayMerge', () => {
 			id: 'aaa',
 			name: 'AAA',
 			imageSrc: null,
-			isDone: false,
 			order: 10
 		};
 		remote.lists.u1.list1.tasks.zzz = {
 			id: 'zzz',
 			name: 'ZZZ',
 			imageSrc: null,
-			isDone: false,
 			order: 10
 		};
 
@@ -311,9 +310,11 @@ describe('syncEngine.areStatesEqual', () => {
 		expect(areStatesEqual(state, deepClone(state))).toBe(true);
 	});
 
-	it('should return true when only lastModified differs', () => {
-		const a = createMinimalState({ lastModified: 100 });
-		const b = createMinimalState({ lastModified: 999 });
+	it('should return true when only localDevice.lastModified differs', () => {
+		const a = createMinimalState();
+		a.localDevice.lastModified = 100;
+		const b = createMinimalState();
+		b.localDevice.lastModified = 999;
 		expect(areStatesEqual(a, b)).toBe(true);
 	});
 

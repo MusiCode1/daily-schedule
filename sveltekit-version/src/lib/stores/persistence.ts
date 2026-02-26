@@ -27,7 +27,7 @@ export const persistence = {
 
 	save(state: AppState) {
 		if (browser) {
-			state.lastModified = Date.now();
+			state.localDevice.lastModified = Date.now();
 			localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 		}
 	},

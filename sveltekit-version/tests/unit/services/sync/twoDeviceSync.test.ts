@@ -8,18 +8,18 @@
 import { describe, expect, it } from 'vitest';
 import type { AppState } from '$lib/types';
 import type { SyncProvider } from '$lib/services/sync/syncProvider';
-import type { ContentV2, ProgressV2, AssetsIndexV2, ManifestV2, RemoteMetadata, Sha256 } from '$lib/services/sync/syncTypes';
+import type { SyncContent, SyncProgress, SyncAssetsIndex, SyncManifest, RemoteMetadata, Sha256 } from '$lib/services/sync/syncTypes';
 import type { SyncHistory } from '$lib/services/sync/engine/types';
 import { pull, push, type SyncDb, type DeviceInfo, type PullResult, type PushResult } from '$lib/services/sync/syncOrchestrator';
 
 // ─── אחסון משותף בזיכרון ──────────────────────────────────────────────────
 
 type SharedStorage = {
-	content: ContentV2 | null;
-	progress: ProgressV2 | null;
+	content: SyncContent | null;
+	progress: SyncProgress | null;
 	history: SyncHistory | null;
-	assets: AssetsIndexV2 | null;
-	manifest: ManifestV2 | null;
+	assets: SyncAssetsIndex | null;
+	manifest: SyncManifest | null;
 	assetBlobs: Map<string, Blob>;
 };
 
@@ -68,22 +68,22 @@ function createInMemoryProvider(storage: SharedStorage, providerId: string): Syn
 			return blob;
 		},
 
-		async writeContent(payload: ContentV2, _hash: string) {
+		async writeContent(payload: SyncContent, _hash: string) {
 			storage.content = structuredClone(payload);
 		},
-		async writeProgress(payload: ProgressV2, _hash: string) {
+		async writeProgress(payload: SyncProgress, _hash: string) {
 			storage.progress = structuredClone(payload);
 		},
 		async writeHistory(history: SyncHistory) {
 			storage.history = structuredClone(history);
 		},
-		async writeAssets(index: AssetsIndexV2, newBlobs: Map<string, Blob>) {
+		async writeAssets(index: SyncAssetsIndex, newBlobs: Map<string, Blob>) {
 			storage.assets = structuredClone(index);
 			for (const [hash, blob] of newBlobs) {
 				storage.assetBlobs.set(hash, blob);
 			}
 		},
-		async commit(manifest: ManifestV2) {
+		async commit(manifest: SyncManifest) {
 			storage.manifest = structuredClone(manifest);
 		}
 	};
@@ -94,7 +94,10 @@ function createInMemoryProvider(storage: SharedStorage, providerId: string): Syn
 function createMockDb(): SyncDb {
 	return {
 		async getImage() { return null; },
-		async saveImage() { }
+		async saveImage() { },
+		async saveSyncHistory() { },
+		async getSyncHistory() { return null; },
+		async deleteSyncHistory() { }
 	};
 }
 
@@ -104,7 +107,7 @@ let writeCounter = 0;
 
 function makeState(overrides?: Partial<AppState>): AppState {
 	return {
-		version: 15,
+		version: 16,
 		users: { u1: { id: 'u1', name: 'ילד', gender: 'boy', avatar: '', themeColor: '#3b82f6' } },
 		people: {},
 		lists: {
@@ -113,18 +116,24 @@ function makeState(overrides?: Partial<AppState>): AppState {
 					id: 'list1',
 					name: 'לוח יומי',
 					tasks: {
-						t1: { id: 't1', name: 'ארוחת בוקר', imageSrc: null, isDone: false, order: 0 },
-						t2: { id: 't2', name: 'צחצוח שיניים', imageSrc: null, isDone: false, order: 1 },
-						t3: { id: 't3', name: 'לבישת בגדים', imageSrc: null, isDone: false, order: 2 }
+						t1: { id: 't1', name: 'ארוחת בוקר', imageSrc: null, order: 0 },
+						t2: { id: 't2', name: 'צחצוח שיניים', imageSrc: null, order: 1 },
+						t3: { id: 't3', name: 'לבישת בגדים', imageSrc: null, order: 2 }
 					}
 				}
 			}
 		},
 		images: {},
-		activeListId: { u1: 'list1' },
-		currentUserId: 'u1',
-		settings: { lastActiveTime: 1000, childLockEnabled: false },
-		lastModified: 1000,
+		taskProgress: {},
+		settings: {
+			activeListId: { u1: 'list1' },
+			currentUserId: 'u1',
+			childLockEnabled: false
+		},
+		localDevice: {
+			lastModified: 1000,
+			lastActiveTime: 1000
+		},
 		...overrides
 	} as AppState;
 }
@@ -213,8 +222,8 @@ function getTaskName(state: AppState, taskId: string): string | undefined {
 	return (state.lists.u1?.list1?.tasks?.[taskId] as any)?.name;
 }
 
-function getTaskDone(state: AppState, taskId: string): boolean | undefined {
-	return (state.lists.u1?.list1?.tasks?.[taskId] as any)?.isDone;
+function getTaskDone(state: AppState, taskId: string): boolean {
+	return state.taskProgress[taskId] ?? false;
 }
 
 function getTaskIds(state: AppState): string[] {
@@ -259,7 +268,7 @@ describe('סנכרון בין 2 מכשירים (integration)', () => {
 
 		// A משנה שם משימה
 		(deviceA.state.lists.u1.list1.tasks.t1 as any).name = 'ארוחת בוקר מזינה';
-		deviceA.state.lastModified = Date.now();
+		deviceA.state.localDevice.lastModified = Date.now();
 		await devicePush(deviceA);
 
 		// B מושך ורואה את השינוי
@@ -279,10 +288,10 @@ describe('סנכרון בין 2 מכשירים (integration)', () => {
 		await devicePush(deviceA, true);
 		await deviceSync(deviceB);
 
-		// A מסמן isDone + שינוי תוכן (שניהם ביחד — תרחיש ריאליסטי)
-		(deviceA.state.lists.u1.list1.tasks.t2 as any).isDone = true;
+		// A מסמן taskProgress + שינוי תוכן (שניהם ביחד — תרחיש ריאליסטי)
+		deviceA.state.taskProgress['t2'] = true;
 		(deviceA.state.lists.u1.list1.tasks.t2 as any).name = 'צחצוח שיניים בקפידה';
-		deviceA.state.lastModified = Date.now();
+		deviceA.state.localDevice.lastModified = Date.now();
 		await devicePush(deviceA);
 
 		// B מושך
@@ -306,9 +315,9 @@ describe('סנכרון בין 2 מכשירים (integration)', () => {
 		await devicePush(deviceA, true);
 		await deviceSync(deviceB);
 
-		// A מסמן isDone בלבד (ללא שינוי תוכן)
-		(deviceA.state.lists.u1.list1.tasks.t2 as any).isDone = true;
-		deviceA.state.lastModified = Date.now();
+		// A מסמן taskProgress בלבד (ללא שינוי תוכן)
+		deviceA.state.taskProgress['t2'] = true;
+		deviceA.state.localDevice.lastModified = Date.now();
 		await devicePush(deviceA);
 
 		// B מושך — writeIds תואמים, progress מתעדכן דרך progressHash
@@ -333,8 +342,8 @@ describe('סנכרון בין 2 מכשירים (integration)', () => {
 		await deviceSync(deviceB);
 
 		// A מסמן t1
-		(deviceA.state.lists.u1.list1.tasks.t1 as any).isDone = true;
-		deviceA.state.lastModified = Date.now();
+		deviceA.state.taskProgress['t1'] = true;
+		deviceA.state.localDevice.lastModified = Date.now();
 		await devicePush(deviceA);
 
 		// B מושך — רואה t1 מסומן
@@ -342,8 +351,8 @@ describe('סנכרון בין 2 מכשירים (integration)', () => {
 		expect(getTaskDone(deviceB.state, 't1')).toBe(true);
 
 		// B מסמן t2
-		(deviceB.state.lists.u1.list1.tasks.t2 as any).isDone = true;
-		deviceB.state.lastModified = Date.now();
+		deviceB.state.taskProgress['t2'] = true;
+		deviceB.state.localDevice.lastModified = Date.now();
 		await devicePush(deviceB);
 
 		// A מושך — רואה t2 מסומן (ו-t1 שלו נשאר)
@@ -367,14 +376,14 @@ describe('סנכרון בין 2 מכשירים (integration)', () => {
 		(deviceA.state.lists.u1.list1.tasks as any).t4 = {
 			id: 't4', name: 'שיעורי בית', imageSrc: null, isDone: false, order: 3
 		};
-		deviceA.state.lastModified = Date.now();
+		deviceA.state.localDevice.lastModified = Date.now();
 		await devicePush(deviceA);
 
 		// B מוסיף משימה t5 (עדיין לא ראה את t4)
 		(deviceB.state.lists.u1.list1.tasks as any).t5 = {
 			id: 't5', name: 'אמבטיה', imageSrc: null, isDone: false, order: 3
 		};
-		deviceB.state.lastModified = Date.now();
+		deviceB.state.localDevice.lastModified = Date.now();
 
 		// B מסנכרן — pull יזהה שינוי מרוחק ויבצע merge
 		await deviceSync(deviceB);
@@ -398,12 +407,12 @@ describe('סנכרון בין 2 מכשירים (integration)', () => {
 
 		// A משנה t1
 		(deviceA.state.lists.u1.list1.tasks.t1 as any).name = 'ארוחה בריאה';
-		deviceA.state.lastModified = Date.now();
+		deviceA.state.localDevice.lastModified = Date.now();
 		await devicePush(deviceA);
 
 		// B משנה t2 (עדיין לא ראה את שינויי A)
 		(deviceB.state.lists.u1.list1.tasks.t2 as any).name = 'צחצוח שיניים בזהירות';
-		deviceB.state.lastModified = Date.now();
+		deviceB.state.localDevice.lastModified = Date.now();
 
 		// B מסנכרן
 		await deviceSync(deviceB);
@@ -433,7 +442,7 @@ describe('סנכרון בין 2 מכשירים (integration)', () => {
 
 		// 3. B משנה
 		(deviceB.state.lists.u1.list1.tasks.t1 as any).name = 'שלב B-1';
-		deviceB.state.lastModified = Date.now();
+		deviceB.state.localDevice.lastModified = Date.now();
 		await devicePush(deviceB);
 
 		// 4. A מושך — רואה את השינוי של B
@@ -442,7 +451,7 @@ describe('סנכרון בין 2 מכשירים (integration)', () => {
 
 		// 5. A משנה
 		(deviceA.state.lists.u1.list1.tasks.t1 as any).name = 'שלב A-2';
-		deviceA.state.lastModified = Date.now();
+		deviceA.state.localDevice.lastModified = Date.now();
 		await devicePush(deviceA);
 
 		// 6. B מושך — רואה את השינוי של A
@@ -463,7 +472,7 @@ describe('סנכרון בין 2 מכשירים (integration)', () => {
 
 		// A מוחק t3
 		delete (deviceA.state.lists.u1.list1.tasks as any).t3;
-		deviceA.state.lastModified = Date.now();
+		deviceA.state.localDevice.lastModified = Date.now();
 		await devicePush(deviceA);
 
 		// B מושך
@@ -494,7 +503,7 @@ describe('סנכרון בין 2 מכשירים (integration)', () => {
 		(deviceB.state.lists.u1.list1.tasks as any).t10 = {
 			id: 't10', name: 'משימה חדשה', imageSrc: null, isDone: false, order: 0
 		};
-		deviceB.state.lastModified = Date.now();
+		deviceB.state.localDevice.lastModified = Date.now();
 		await devicePush(deviceB, true);
 
 		// A מושך — רואה את המשימה החדשה
