@@ -1,12 +1,24 @@
 <script lang="ts">
 	import GoogleDriveBackup from './_components/GoogleDriveBackup.svelte';
+	import FileBackup from './_components/FileBackup.svelte';
+	import MockSyncPanel from './_components/MockSyncPanel.svelte';
 	import { TEXTS } from '$lib/services/language';
+
+	const useMock = import.meta.env.VITE_USE_MOCK_SYNC === 'true';
 </script>
 
-<h2>{TEXTS.GOOGLE_DRIVE_TITLE}</h2>
+<h2>{useMock ? 'סנכרון (מצב בדיקה)' : TEXTS.GOOGLE_DRIVE_TITLE}</h2>
 
 <div class="settings-group">
-	<GoogleDriveBackup />
+	{#if useMock}
+		<MockSyncPanel />
+	{:else}
+		<GoogleDriveBackup />
+	{/if}
+</div>
+
+<div class="settings-group" style="margin-top: 2rem;">
+	<FileBackup />
 </div>
 
 <style>

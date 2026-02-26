@@ -1,5 +1,344 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-02-26 23:30
+
+### תיקון ייבוא תמונות מ-ZIP + פרמטריזציה של שרת Mock
+
+#### מה בוצע?
+
+**1. תיקון באג: תמונות לא יובאו מקובץ ZIP**
+
+- הבעיה: `fileSyncProvider.writeAssets()` לא עדכן את `hashToFile` ב-`assets.json`, כך שבייבוא ה-orchestrator דילג על כל התמונות (`asset missing in remote index`)
+- התיקון: `writeAssets()` עכשיו מעדכן `hashToFile` עבור blobs חדשים עם metadata (fileId, mimeType, size)
+- נוספו לוגים מפורטים ל-`pullAndBuildState` (כמה assets נדרשים, קיימים, חסרים, שוחזרו)
+
+**2. פרמטריזציה של שרת ה-Mock Sync**
+
+- `server.ts`: פורט ותיקיית אחסון נקראים מ-CLI args (`--port`, `--store-dir`) → env vars (`MOCK_SYNC_PORT`, `MOCK_SYNC_STORE_DIR`) → defaults
+- `mockServerSyncProvider.ts`: `BASE_URL` נקרא מ-`VITE_MOCK_SYNC_URL` עם fallback
+- `playwright.config.ts`: קורא `MOCK_SYNC_PORT` ומעביר לשרת ולאפליקציה
+- 3 קבצי E2E: `MOCK_SERVER` נבנה מ-`process.env.MOCK_SYNC_PORT` עם `127.0.0.1` במקום `localhost`
+
+#### החלטות ארכיטקטורה
+
+- **`127.0.0.1` במקום `localhost`**: בבדיקות E2E, `localhost` עלול להתפרש כ-IPv6 (`::1`) ולגרום ל-`ECONNREFUSED`. שימוש ב-`127.0.0.1` מבטיח IPv4.
+- **סדר עדיפויות CLI → env → default**: מאפשר גמישות מרבית — Playwright מעביר דרך env, הפעלה ידנית דרך CLI.
+
+## 2026-02-26 22:00
+
+### הוספת ממשק סנכרון באמצעות קובץ (File Sync UI)
+
+הוספת כרטיס UI לעמוד הגיבוי (`/settings/backup`) המאפשר ייצוא וייבוא נתונים באמצעות קובץ ZIP מקומי, לצד האפשרות הקיימת של Google Drive.
+
+#### מה בוצע?
+
+**1. קומפוננטת UI — `FileBackup.svelte`**
+
+- כרטיס בעיצוב זהה ל-`GoogleDriveBackup.svelte` עם אייקון קובץ
+- כפתור "הורד גיבוי (ZIP)" — מפעיל ייצוא דרך ה-orchestrator
+- כפתור "ייבא מקובץ" — פותח בוחר קבצים להעלאת ZIP
+- הודעות הצלחה/שגיאה עם ניקוי אוטומטי אחרי 5 שניות
+
+**2. Controller — `fileSyncSettings.svelte.ts`**
+
+- `exportZip()` — משתמש ב-`push()` של ה-orchestrator עם `fileSyncProvider` ו-`forceSnapshot: true`
+- `importZip(file)` — טוען ZIP דרך `fileSyncProvider.loadZip()`, בונה state דרך `importFromProvider()`, ומחיל על `globalState`
+- State ריאקטיבי: `isExporting`, `isImporting`, `errorMessage`, `successMessage`
+
+**3. `syncOrchestrator.ts` — חשיפת `importFromProvider()`**
+
+- פונקציה ציבורית חדשה שעוטפת את `pullAndBuildState` הפרטית
+- נדרשת כי `pull()` מדלג על file import (ה-`checkRemote()` של `FileSyncProvider` מחזיר `null`)
+
+**4. טקסטים — `texts.ts`**
+
+- 10 מפתחות חדשים ב-`TEXTS_ADMIN` עבור ממשק הסנכרון לקובץ
+
+#### החלטות ארכיטקטורה
+
+- **`importFromProvider` במקום `pull`**: ה-orchestrator של `pull()` מדלג כשאין remote metadata (כי `FileSyncProvider.checkRemote()` מחזיר `null`). במקום לשנות את ההתנהגות של `checkRemote`, נוספה פונקציה ציבורית שקוראת ישירות ל-`pullAndBuildState`.
+- **ייצוא דרך `push()` עם `forceSnapshot`**: שימוש חוזר במנגנון הקיים במקום כתיבת לוגיקת ייצוא נפרדת. ה-commit של `FileSyncProvider` בונה ZIP ומפעיל הורדה בדפדפן.
+
+## 2026-02-25 23:30
+
+### תיקון סנכרון progress-only בין מכשירים (writeId + progressHash)
+
+הקומיט הקודם תיקן את חסימת ה-push עבור שינויי isDone בלבד, אך progress-only push עדיין יצר writeId חדש ללא entry בהיסטוריה — מה שגרם למכשיר B לא למצוא common ancestor ולהישאר עם state ישן.
+
+#### מה בוצע?
+
+**1. `syncOrchestrator.ts` — push() משתמש חוזר ב-writeId ל-progress-only**
+
+- יצירת writeId הועברה ממיקום גלובלי למיקום מותנה: snapshot/content delta מייצרים writeId חדש, progress-only משתמש חוזר ב-`lastKnownWriteId`
+- edge case: אם אין writeId קודם (תיאורטי) — נופל ל-snapshot
+
+**2. `syncOrchestrator.ts` — pull() בודק progressHash כש-writeIds תואמים**
+
+- לפני ההחזרה, מחשב progressHash מקומי ומשווה ל-remote
+- אם שונה — מוריד progress ומחיל עם `applyRemoteProgress()` חדשה
+- פונקציה זו מקבלת `ProgressV2.taskDone` ומחילה על AppState (last-write-wins)
+
+**3. טסטים — twoDeviceSync.test.ts**
+
+- הטסט "באג ידוע: progress-only" הוחלף בטסט עובד שמוודא ש-B מקבל isDone
+- נוסף טסט הלוך-חזור: A מסמן t1 → B מושך → B מסמן t2 → A מושך → שניהם רואים הכל
+
+**4. טסטים — syncOrchestrator.test.ts**
+
+- `push progress-only should reuse lastKnownWriteId` — writeId לא משתנה, history לא גדלה
+- `pull should detect progress change when writeIds match` — progress מורד ומוחל
+- `pull should not download progress when progressHash matches` — אין הורדה מיותרת
+
+#### החלטות ארכיטקטורה
+
+- **writeId לא משתנה ב-progress-only**: כך B רואה writeIds תואמים ולא נכנס ל-merge/findCommonAncestor. במקום זה, progressHash שונה מגלה שיש עדכון ומוריד רק את קובץ ה-progress.
+
+## 2026-02-25 03:10
+
+### תיקון באג 6: שינויי progress (isDone) לא מסתנכרנים בין מכשירים
+
+לאחר יישום `toHistoryContent()` (שמסנן isDone מההיסטוריה), התגלה שסימון/ביטול "בוצע" על משימות חוסם את ה-push לגמרי — כי ה-delta check בודק רק content (ללא isDone), ואם אין שינוי מבני, ה-push נזרק עם "No changes to backup".
+
+#### מה בוצע?
+
+**1. `syncOrchestrator.ts` — push() בודק content + progress**
+
+- החלפת בדיקת delta יחידה בבדיקה כפולה: content delta → history entry; progress delta → push ללא history entry
+- אם אין שינוי לא ב-content ולא ב-progress → throw "No changes"
+- שומר על ההפרדה הארכיטקטונית: history מכיל רק content deltas
+
+**2. `syncController.svelte.ts` — hasLocalChanges כולל progress**
+
+- `hasContentChanges` + `hasProgressChanges` → `hasLocalChanges`
+- מונע דילוג על push כשרק isDone השתנה
+
+**3. תיקוני בדיקות**
+
+- `backupPayloads.test.ts`: ציפיית `settings` מעודכנת ל-`{ childLockEnabled: false }`
+- `vite.config.ts`: הוספת `exclude: ['e2e/**']` למניעת סריקת Playwright ע"י vitest
+- `googleDriveSync.e2e.test.ts`: 2 בדיקות חדשות — progress-only push + no-changes throw
+- `syncOrchestrator.regression.test.ts`: יישור hasLocalChanges עם הלוגיקה החדשה
+
+#### החלטות ארכיטקטורה
+
+- **שינויי progress לא נכנסים להיסטוריה**: isDone משתנה הרבה (מדי יום), אז שמירתו בהיסטוריה תנפח את הדלתאות. במקום זה, progress מסתנכרן כ-last-write-wins payload בלבד.
+
+## 2026-02-25 01:10
+
+### תיקון מערכת סנכרון — יישור עם התכנון המקורי (historyContent)
+
+המימוש של מערכת הסנכרון סטה מהתכנון המקורי (`sync-design-decisions.md`): ההיסטוריה עבדה עם `AppState` מלא במקום `ContentV2` (ללא isDone, lastModified, syncMetadata). סטייה זו גרמה ל-5 באגים מתועדים (phantom deltas, baseline mismatch, ועוד).
+
+#### מה בוצע?
+
+**1. פונקציית המרה `toHistoryContent()` — `syncOrchestrator.ts`**
+
+- מפשיטה שדות אפמריים (`isDone`, `lastModified`, `syncMetadata`) מ-`AppState`
+- מחזירה `Record<string, any>` שמכיל רק נתונים מבניים
+- נוספה גם `applyProgressToState()` — להחזרת `isDone` מ-remote אחרי merge
+
+**2. עדכון טיפוסים — `engine/types.ts`, `engine/syncEngine.ts`, `engine/historyManager.ts`**
+
+- `SnapshotEntry.state` ו-`CommonAncestorResult.state` → `Record<string, any>` (במקום `AppState`)
+- `calculateDelta`, `applyDelta`, `threeWayMerge` → מקבלים `object` (במקום `AppState`)
+- `reconstructState` → מחזיר `Record<string, any> | null`
+
+**3. Push — שימוש ב-historyContent**
+
+- Snapshot: `entry.state = toHistoryContent(state)`
+- Delta: `calculateDelta(toHistoryContent(previousState), toHistoryContent(state))`
+
+**4. Pull — 3-way merge על historyContent**
+
+- Merge על `toHistoryContent(local/remote)` עם ancestor (שכבר historyContent)
+- שחזור ל-AppState מלא: `localState` כ-basis + `mergedContent` + החזרת `isDone` מ-remote
+
+**5. פישוט `syncController.svelte.ts`**
+
+- הסרת נרמול baseline מיותר (lastModified, settings) — `toHistoryContent` מטפל בזה
+- השוואת שינויים מקומיים דרך `toHistoryContent` — מבטלת phantom deltas
+
+**6. עדכונים נלווים**
+
+- `syncTypes.ts`: `ContentV2.settings` → `{ childLockEnabled?: boolean }` (במקום `Record<string, never>`)
+- `payloads.ts`: הכללת `childLockEnabled` ב-payload
+- `MockSyncPanel.svelte`: תיקון `getWriteId()` — הסרת גישות ל-properties לא קיימים
+- `syncEngine.test.ts`: התאמת casts לטיפוסים החדשים
+
+#### החלטות ארכיטקטורה
+
+- **`toHistoryContent` ב-orchestrator ולא ב-engine**: ה-engine גנרי (עובד על objects), ה-orchestrator מכיר את המבנה של AppState — שם ההמרה.
+- **`applyProgressToState` — last-write-wins מ-remote**: אחרי merge מבני, מחילים isDone מ-remote כי progress מנוהל בנפרד (קובץ progress.json) ו-remote הוא מקור האמת.
+- **Conflict fallback → remote**: ב-historyContent אין lastModified לפסיקת LWW, לכן בקונפליקט ננצח עם remote (עדיף לאבד שינוי מקומי מאשר מרוחק).
+
+## 2026-02-23 15:20
+
+### Mock Sync Server — תשתית בדיקות E2E לסנכרון ללא Google Drive
+
+תשתית חדשה המאפשרת בדיקות Playwright E2E של מנגנון הסנכרון המלא בדפדפן, ללא תלות ב-Google Drive API ובאימות OAuth.
+
+#### מה בוצע?
+
+**1. שרת Bun עצמאי — `e2e/mock-server/server.ts`**
+
+- שרת HTTP על פורט 3001 עם `Bun.serve()`
+- שומר נתוני סנכרון בתיקיית temp: `os.tmpdir()/mock-sync/`
+- קבצים: `manifest.json`, `content.json`, `progress.json`, `history.json`, `assets.json`, `blobs/{hash}`
+- `POST /reset` — מחיקה ויצירה מחדש של כל התיקייה (לפני כל בדיקה)
+- `GET /health` — לבדיקת זמינות ע"י Playwright
+- CORS headers מלאים לתקשורת עם ה-app
+
+**2. `MockServerSyncProvider` — `src/lib/services/sync/providers/mock-server/mockServerSyncProvider.ts`**
+
+- מממש את ממשק `SyncProvider` במלואו
+- מדבר עם שרת ה-Bun דרך `fetch()`
+- `isAvailable()` תמיד `true` — ללא OAuth
+- `writeAssets()` מעלה blobs בינאריים ורושם `fileId` פיקטיבי ב-index (כמו `FakeRemote`)
+
+**3. עדכון `SyncController` — `src/lib/logic/syncController.svelte.ts`**
+
+- בוחר ספק לפי `import.meta.env.VITE_USE_MOCK_SYNC === 'true'`
+- בפרודקשן: Vite מחליף בסטטי `false` → Rollup מגזז את ה-import (tree-shaking)
+
+**4. עדכון `playwright.config.ts`**
+
+- שני `webServer` במקביל: האפליקציה (עם `VITE_USE_MOCK_SYNC=true`) + שרת ה-Bun
+- ב-CI: servers חדשים; בפיתוח: `reuseExistingServer`
+
+**5. בדיקות Playwright — `e2e/sync/`**
+
+- `first-sync.test.ts` — אפליקציה מסנכרנת בטעינה ראשונה, `lastKnownWriteId` נשמר
+- `two-devices.test.ts` — שני browser contexts (= שני מכשירים), זרימת נתונים מ-Device A ל-Device B
+
+#### החלטות ארכיטקטורה
+
+- **שרת נפרד ולא SvelteKit API routes**: שרת Bun ב-`e2e/` לא נוגע ל-SvelteKit build לעולם. SvelteKit routes היו נכנסים ל-build גם עם guard.
+- **שמירה לקבצים ולא זיכרון**: מאפשרת debugging (בדיקת קבצים ידנית), ועמידות להפעלה מחדש של השרת בין בדיקות.
+- **tree-shaking סטטי**: הפרדה ברורה בין `FakeRemote` (Vitest — לוגיקה בלבד) ל-`MockServerSyncProvider` (Playwright — app מלאה בדפדפן).
+
+## 2026-02-22 20:45
+
+### בדיקות E2E לסנכרון — FakeRemote + 17 תרחישים
+
+#### מה בוצע?
+
+נוסף קובץ `tests/integration/services/sync/googleDriveSync.e2e.test.ts` עם 17 טסטי integration.
+
+**המנגנון — `FakeRemote`:**
+`SyncProvider` עם "remote" בזיכרון (content, progress, history, assets, manifest). מכשירים שונים משתמשים באותו instance, מה שמאפשר לדמות סצנריות מציאותיות ללא תלות ב-API חיצוני.
+
+**8 תרחישים:**
+1. **סנכרון ראשון** — pull מחזיר localState, push יוצר snapshot
+2. **אין שינויים** — pull מחזיר מיד (לא מוריד קבצים), push זורק "No changes"
+3. **מכשיר חדש** — pull מחזיר state מרוחק ללא merge
+4. **3-way merge** — שני מכשירים שינו, מיזוג עם שמירת שני השינויים
+5. **שגיאת אימות** — SyncError category='auth' ב-pull ו-push
+6. **שגיאת רשת** — SyncError category='network' ב-pull ו-push
+7. **assets** — העלאת blob, הורדה ל-db, skip ב-push חוזר
+8. **מחזור חיים מלא** — 2 מכשירים × 3 סבבי push-pull
+
+#### תיקונים נוספים
+- `googleDriveSyncProvider.ts`: הוסרו dynamic imports מיותרים (`await import('./driveFilesApi')`) → static imports בראש הקובץ
+
+## 2026-02-22 20:30
+
+### ניקוי: מחיקת תיקיית `drive/` — כל קוד Google Drive עבר ל-`sync/providers/google-drive/`
+
+#### מה בוצע?
+
+**1. מחיקת קבצים מיותרים**
+
+- `drive/backupPayloads.ts` — היה re-export בלבד ל-`sync/payloads.ts`
+- `drive/crypto.ts` — היה re-export בלבד ל-`sync/crypto.ts`
+- `drive/types.ts` — הועבר ל-`sync/syncTypes.ts`
+- `drive/constants.ts` — הועבר ל-`sync/constants.ts` ו-`providers/google-drive/constants.ts`
+- `drive/driveBackupV2.ts` — המתזמר הישן, הוחלף ב-`syncOrchestrator.ts`
+- `drive/dailyScheduleBackupRepo.ts` — הועבר ל-`sync/providers/google-drive/`
+
+**2. העברת קבצי Google Drive API**
+
+- `drive/googleAuthService.ts` → `sync/providers/google-drive/googleAuthService.ts`
+- `drive/driveFilesApi.ts` → `sync/providers/google-drive/driveFilesApi.ts`
+- `drive/driveHttpClient.ts` → `sync/providers/google-drive/driveHttpClient.ts`
+- תיקיית `drive/` נמחקה לחלוטין
+
+**3. עדכון imports**
+
+- `sync/providers/google-drive/dailyScheduleBackupRepo.ts` ← imports יחסיים
+- `sync/providers/google-drive/googleDriveSyncProvider.ts` ← imports יחסיים
+- `logic/driveBackupSettings.svelte.ts` ← נתיב חדש לגוגל auth + repo
+- `routes/+layout.svelte` ← נתיב חדש לגוגל auth
+
+**4. טסטים**
+
+- נמחקו: `driveBackupV2.test.ts`, `driveBackupV2.integration.test.ts` (קוד שנמחק)
+- עודכנו imports: `backupPayloads.test.ts`, `crypto.test.ts`, `dailyScheduleBackupRepo.cache.test.ts`
+- הותקן מחדש: `jszip@3.10.1`
+
+#### החלטות ארכיטקטורה
+
+- **אפס תאימות לאחור**: כל re-exports הוסרו. המבנה הנוכחי הוא הסמכותי היחיד. היסטוריית הקוד הישן שמורה בגיט.
+
+## 2026-02-22 19:45
+
+### ריפקטור מרכזי: הפרדת סנכרון מ-Google Drive — ממשק SyncProvider גנרי
+
+הושלם ריפקטור ארכיטקטוני מלא שמנתק את לוגיקת הסנכרון מהתלות הישירה ב-Google Drive. כעת כל לוגיקת הסנכרון (merge, history, delta) מרוכזת ב-`syncOrchestrator` גנרי, ו-Google Drive הוא ספק אחד מתוך ממשק `SyncProvider` שניתן להרחבה.
+
+#### מה בוצע?
+
+**1. מבנה תיקיות חדש `src/lib/services/sync/`**
+
+- `engine/` — אלגוריתמים טהורים: `types.ts`, `syncEngine.ts`, `historyManager.ts` (הועברו מ-`sync/` ישירות)
+- `syncTypes.ts` — טיפוסים משותפים: `ContentV2`, `ProgressV2`, `ManifestV2`, `RemoteMetadata`, `SyncError`
+- `syncProvider.ts` — ממשק `SyncProvider` גנרי
+- `syncOrchestrator.ts` — לוגיקת `pull/merge/push` גנרית (מחולץ מ-`driveBackupV2.ts`)
+- `crypto.ts`, `payloads.ts` — כלי עזר משותפים (הועברו מ-`drive/`)
+- `providers/google-drive/` — מימוש Google Drive, כולל `googleDriveSyncProvider.ts`
+- `providers/file/` — מימוש ZIP: `fileSyncProvider.ts` (ייצוא/ייבוא)
+
+**2. `SyncProvider` Interface**
+
+ממשק גנרי עם: `initialize()` (lazy, ensureStructure), `isAvailable()` (async), `checkRemote()` (metadata זול בלבד), `pullContent/Progress/History/Assets()`, `writeContent/Progress/History/Assets()`, `commit()`.
+
+**3. `syncOrchestrator.ts`**
+
+- `pull()` — בדיקת remote, 3-way merge עם fallbacks בטוחים, נורמליזציה
+- `push()` — בניית payloads, חישוב hashes, history management (snapshot/delta), commit
+
+**4. `GoogleDriveSyncProvider`**
+
+עוטף את `dailyScheduleBackupRepo`. מימש hash caching (skip אם לא השתנה), מעדכן `deviceState.providers['google-drive']`.
+
+**5. `FileSyncProvider`**
+
+מממש `SyncProvider` לייצוא/ייבוא ZIP. `commit()` → מוריד ZIP דרך `<a download>`. `loadZip()` → טוען ZIP לזיכרון לצורך ייבוא.
+
+**6. `deviceState.ts` — V2 + מיגרציה**
+
+הוסף `providers['google-drive']` לcache ספציפי. מיגרציה אוטומטית V1→V2 (נשמר `drive.v2Cache` לתאימות לאחור). הקבצים הישנים ב-`drive/` ממשיכים לעבוד כ-re-exports.
+
+**7. `syncController.svelte.ts`**
+
+עודכן לעבוד עם `syncOrchestrator` + `googleDriveSyncProvider`. שומר:
+- Exponential backoff (1, 2, 4, 8… שניות), MAX_RETRIES=10
+- טיפול `auth` error ללא retry
+- `No changes to backup` → נחשב כהצלחה
+- `syncStore` integration מלא
+
+**8. טסטים**
+
+- 119/119 טסטים קיימים עוברים ללא שינוי
+- נוספו 8 טסטים חדשים ל-`syncOrchestrator.test.ts` (pull + push)
+- `jszip` הותקן כתלות חדשה
+
+#### החלטות ארכיטקטורה
+
+- **"Thin Provider with Smart Write"**: הספק מחליט פנימית אם צריך network call (hash cache), אבל הלוגיקה הגנרית (merge, history, normalization) נשארת ב-orchestrator
+- **FileSyncProvider כ-SyncProvider**: גם ספק ZIP מממש את הממשק המלא אם כי חלק מהמתודות הן no-op — מאפשר להשתמש בו עם אותו orchestrator
+- **תאימות לאחור**: קבצי `drive/` נשארו כ-re-exports כדי שכל הטסטים הקיימים יעברו ללא שינוי
+- **`deviceState` V2 עם שמירת `drive.v2Cache`**: במקום שבירת שינויים, הנתונים נשמרים בשני מקומות (providers + v2Cache) במהלך המעבר
+
 ## 2026-02-24 23:55
 
 ### מעבר לעיצוב Tailwind CSS עבור סרגל הכלים של המשימות
@@ -5873,3 +6212,61 @@ sveltekit-version/
 - הורץ `npx @sveltejs/mcp svelte-autofixer ...TaskRow.svelte --svelte-version 5`:
   - `issues: []`
   - `suggestions: []`
+
+---
+
+> [!NOTE]
+> 2026-02-23 14:02
+
+## הוספת מדריך Git Worktree
+
+נוסף מסמך תיעוד קצר שמרכז עבודה יומיומית עם `git worktree`, כולל תשובות ממוקדות לשאלות על יצירת ענף אוטומטית ועל יעד הקומיט.
+
+### מה בוצע?
+
+- נוצר קובץ `docs/git-worktree-guide.md` עם הסבר על יצירה, מחיקה ו-detached HEAD.
+- נוספה הבהרה מפורשת: קומיט נכנס לענף הפעיל ב-worktree ולא אוטומטית ל-`main`.
+
+### קבצים שנוצרו
+
+- `docs/git-worktree-guide.md`
+
+---
+
+> [!NOTE]
+> 2026-02-23 14:05
+
+## הרחבת מדריך Worktree: הסבר `HEAD` ו-`index`
+
+נוספה הרחבה ממוקדת למדריך `git worktree` כדי להסביר מה המשמעות של "`תיקייה עם HEAD/index משלה`" ברמת עבודה יומיומית.
+
+### מה בוצע?
+
+- נוספה תת-כותרת חדשה ב-`docs/git-worktree-guide.md`:
+  - הגדרה קצרה של `HEAD`.
+  - הגדרה קצרה של `index` (Staging).
+  - הסבר מה עצמאי ומה משותף בין Worktrees.
+  - דוגמה מעשית של `main` מול `feature-login`.
+
+### קבצים ששונו
+
+- `docs/git-worktree-guide.md`
+
+---
+
+> [!NOTE]
+> 2026-02-23 14:21
+
+## הרחבת מדריך Worktree: צפייה ברשימת Worktrees
+
+נוספה למדריך פסקה ייעודית שמסבירה איך להציג את כל ה-worktrees הפעילים ומה כולל הפלט.
+
+### מה בוצע?
+
+- נוספה כותרת `איך מקבלים רשימת Worktrees?` ב-`docs/git-worktree-guide.md`.
+- נוספה הפקודה `git worktree list`.
+- נוספה גם גרסה מפורטת `git worktree list --porcelain` עבור שימוש סקריפטי.
+
+### קבצים ששונו
+
+- `docs/git-worktree-guide.md`

@@ -4,8 +4,8 @@ import {
 	buildContentPayload,
 	buildProgressPayload,
 	collectAssetIds
-} from '$lib/services/drive/backupPayloads';
-import { CURRENT_BACKUP_SCHEMA_VERSION } from '$lib/services/drive/constants';
+} from '$lib/services/sync/payloads';
+import { CURRENT_BACKUP_SCHEMA_VERSION } from '$lib/services/sync/constants';
 
 describe('Drive V2 backup payload builders', () => {
 	it('buildContentPayload should exclude progress/volatile fields', () => {
@@ -15,8 +15,8 @@ describe('Drive V2 backup payload builders', () => {
 		expect(content.backupSchemaVersion).toBe(CURRENT_BACKUP_SCHEMA_VERSION);
 		expect(content.appStateVersion).toBe(state.version);
 
-		// settings אמור להיות אובייקט ריק (ללא lastActiveTime)
-		expect(content.settings).toEqual({});
+		// settings אמור להכיל רק childLockEnabled (ללא lastActiveTime)
+		expect(content.settings).toEqual({ childLockEnabled: false });
 
 		// בדיקה ש-isDone לא מופיע באף משימה
 		for (const userId of Object.keys(content.lists)) {

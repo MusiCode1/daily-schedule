@@ -1,3 +1,8 @@
+/**
+ * טיפוסים משותפים לכל ספקי הסנכרון (payload types).
+ * הקוד הגנרי ב-syncOrchestrator ובספקים משתמש בהם.
+ */
+
 export type Sha256 = `sha256:${string}`;
 
 export type ManifestV2 = {
@@ -23,17 +28,16 @@ export type ManifestV2 = {
 	};
 };
 
-// AppStateVersion נועד לתאימות מיגרציה של ה-state עצמו
 export type ContentV2 = {
 	backupSchemaVersion: number;
 	appStateVersion: number;
-	users: any[]; // בגיבוי זה נשאר מערך (Object.values)
-	people: any[]; // בגיבוי זה נשאר מערך (Object.values)
-	lists: Record<string, Record<string, any>>; // objects של רשימות
+	users: any[];
+	people: any[];
+	lists: Record<string, Record<string, any>>;
 	images: Record<string, any>;
 	activeListId: Record<string, string>;
 	currentUserId: string | null;
-	settings: Record<string, never>;
+	settings: { childLockEnabled?: boolean };
 };
 
 export type ProgressV2 = {
@@ -54,3 +58,31 @@ export type AssetsIndexV2 = {
 	>;
 };
 
+/**
+ * מטא-דאטה על הגרסה המרוחקת — נקרא בזול (metadata בלבד, בלי הורדת קבצים)
+ */
+export type RemoteMetadata = {
+	writeId: string;
+	parentWriteId: string | null;
+	contentHash: Sha256;
+	progressHash: Sha256;
+	assetsHash: Sha256;
+	timestamp: number;
+	deviceId: string;
+};
+
+/**
+ * קטגוריות שגיאה לטיפול שונה ב-syncController
+ */
+export type SyncErrorCategory = 'network' | 'auth' | 'conflict' | 'unknown';
+
+export class SyncError extends Error {
+	constructor(
+		message: string,
+		public readonly category: SyncErrorCategory,
+		public readonly cause?: unknown
+	) {
+		super(message);
+		this.name = 'SyncError';
+	}
+}

@@ -6,7 +6,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { userStore } from '$lib/stores/userStore.svelte';
 	import { TEXTS } from '$lib/services/language';
-	import { googleAuthService } from '$lib/services/drive/googleAuthService';
+	import { googleAuthService } from '$lib/services/sync/providers/google-drive/googleAuthService';
 	import type { ThemeType } from '$lib/types';
 
 	let { children } = $props();

@@ -1,6 +1,6 @@
 import type { AppState, List, Task } from '$lib/types';
 import { CURRENT_BACKUP_SCHEMA_VERSION } from './constants';
-import type { ContentV2, ProgressV2 } from './types';
+import type { ContentV2, ProgressV2 } from './syncTypes';
 
 function cloneTaskWithoutProgress(task: Task) {
 	const { isDone, ...rest } = task;
@@ -8,12 +8,10 @@ function cloneTaskWithoutProgress(task: Task) {
 }
 
 function cloneListWithoutProgress(list: List) {
-	// המרת tasks object ל-object חדש ללא progress
 	const tasksWithoutProgress: Record<string, any> = {};
 	for (const [taskId, task] of Object.entries(list.tasks)) {
 		tasksWithoutProgress[taskId] = cloneTaskWithoutProgress(task);
 	}
-
 	return {
 		...list,
 		tasks: tasksWithoutProgress
@@ -39,8 +37,9 @@ export function buildContentPayload(state: AppState): ContentV2 {
 		images: state.images,
 		activeListId: state.activeListId,
 		currentUserId: state.currentUserId,
-		// intentionally empty: lastActiveTime הוא דינמי ותכוף
-		settings: {}
+		settings: {
+			childLockEnabled: state.settings?.childLockEnabled ?? false
+		}
 	};
 }
 
@@ -83,7 +82,6 @@ export function collectAssetIds(state: AppState): string[] {
 			if (typeof (list as any).logo === 'string' && (list as any).logo.startsWith('idb:')) {
 				set.add((list as any).logo);
 			}
-
 			for (const task of Object.values(list.tasks)) {
 				if (typeof task.imageSrc === 'string' && task.imageSrc.startsWith('idb:')) {
 					set.add(task.imageSrc);
@@ -92,11 +90,9 @@ export function collectAssetIds(state: AppState): string[] {
 		}
 	}
 
-	// גם keys של images (רק אלו שמתחילים ב-idb:)
 	for (const key of Object.keys(state.images || {})) {
 		if (key.startsWith('idb:')) set.add(key);
 	}
 
 	return [...set];
 }
-

@@ -3,7 +3,6 @@
 
 import { googleAuthService } from './googleAuthService';
 
-// שימוש בטיפוסים הרשמיים
 export type GFile = gapi.client.drive.File;
 
 const TAG = '[DriveFilesApi]';

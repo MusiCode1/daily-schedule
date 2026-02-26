@@ -347,4 +347,3 @@ export class GoogleAuthService {
 }
 
 export const googleAuthService = new GoogleAuthService();
-

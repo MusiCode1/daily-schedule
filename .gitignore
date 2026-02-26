@@ -34,6 +34,7 @@ temp
 temp/**
 tmp
 tmp/**
+**/temp/**
 .agent
 **/.obsidian/**
 .localappdata
@@ -72,7 +73,7 @@ scripts/screenshots/
 
 .agents/skills/excalidraw-mcp
 
-
+.playwright-cli
 
 .playwright-cli
 .worktrees

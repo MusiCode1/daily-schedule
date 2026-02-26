@@ -107,7 +107,7 @@ describe('syncEngine.applyDelta', () => {
 		modified.lists.u1.list1.tasks.t1.name = 'שם חדש';
 
 		const delta = calculateDelta(base, modified)!;
-		const result = applyDelta(base, delta);
+		const result = applyDelta(base, delta) as any;
 
 		expect(result.lists.u1.list1.tasks.t1.name).toBe('שם חדש');
 	});
@@ -124,7 +124,7 @@ describe('syncEngine.applyDelta', () => {
 		};
 
 		const delta = calculateDelta(base, modified)!;
-		const result = applyDelta(base, delta);
+		const result = applyDelta(base, delta) as any;
 
 		expect(result.lists.u1.list1.tasks.t4).toBeDefined();
 		expect(result.lists.u1.list1.tasks.t4.name).toBe('משימה 4');
@@ -138,7 +138,7 @@ describe('syncEngine.applyDelta', () => {
 		target.settings.childLockEnabled = true;
 
 		const delta = calculateDelta(base, target)!;
-		const result = applyDelta(base, delta);
+		const result = applyDelta(base, delta) as any;
 
 		expect(result.lists.u1.list1.tasks.t1.name).toBe('שם אחר');
 		expect(result.lists.u1.list1.tasks.t2.order).toBe(5);
@@ -176,7 +176,7 @@ describe('syncEngine.threeWayMerge', () => {
 		const remote = deepClone(ancestor);
 		remote.lists.u1.list1.tasks.t1.name = 'שם מרוחק';
 
-		const merged = threeWayMerge(ancestor, local, remote);
+		const merged = threeWayMerge(ancestor, local, remote) as any;
 		expect(merged.lists.u1.list1.tasks.t1.name).toBe('שם מרוחק');
 	});
 
@@ -186,7 +186,7 @@ describe('syncEngine.threeWayMerge', () => {
 		const remote = deepClone(ancestor);
 		local.lists.u1.list1.tasks.t1.name = 'שם מקומי';
 
-		const merged = threeWayMerge(ancestor, local, remote);
+		const merged = threeWayMerge(ancestor, local, remote) as any;
 		expect(merged.lists.u1.list1.tasks.t1.name).toBe('שם מקומי');
 	});
 
@@ -198,7 +198,7 @@ describe('syncEngine.threeWayMerge', () => {
 		local.lists.u1.list1.tasks.t1.name = 'שם מקומי';
 		remote.lists.u1.list1.tasks.t2.name = 'שם מרוחק';
 
-		const merged = threeWayMerge(ancestor, local, remote);
+		const merged = threeWayMerge(ancestor, local, remote) as any;
 		expect(merged.lists.u1.list1.tasks.t1.name).toBe('שם מקומי');
 		expect(merged.lists.u1.list1.tasks.t2.name).toBe('שם מרוחק');
 	});
@@ -214,7 +214,7 @@ describe('syncEngine.threeWayMerge', () => {
 		remote.lists.u1.list1.tasks.t1.name = 'מרוחק';
 		remote.lastModified = 150;
 
-		const merged = threeWayMerge(ancestor, local, remote);
+		const merged = threeWayMerge(ancestor, local, remote) as any;
 		// jsondiffpatch patches remote first then local, so local wins when no conflict exception
 		// If it throws (conflict) -> last-write-wins by timestamp -> local wins (200 > 150)
 		expect(merged.lists.u1.list1.tasks.t1.name).toBe('מקומי');
@@ -241,7 +241,7 @@ describe('syncEngine.threeWayMerge', () => {
 			order: 4
 		};
 
-		const merged = threeWayMerge(ancestor, local, remote);
+		const merged = threeWayMerge(ancestor, local, remote) as any;
 		expect(merged.lists.u1.list1.tasks.t_local).toBeDefined();
 		expect(merged.lists.u1.list1.tasks.t_remote).toBeDefined();
 	});
@@ -266,9 +266,9 @@ describe('syncEngine.threeWayMerge', () => {
 			order: 3 // order כפול
 		};
 
-		const merged = threeWayMerge(ancestor, local, remote);
-		const orders = Object.values(merged.lists.u1.list1.tasks).map((t) => t.order);
-		orders.sort((a, b) => a - b);
+		const merged = threeWayMerge(ancestor, local, remote) as any;
+		const orders = Object.values(merged.lists.u1.list1.tasks).map((t: any) => t.order);
+		orders.sort((a: number, b: number) => a - b);
 
 		// verify sequential: 0, 1, 2, 3, 4
 		expect(orders).toEqual([0, 1, 2, 3, 4]);
@@ -294,7 +294,7 @@ describe('syncEngine.threeWayMerge', () => {
 			order: 10
 		};
 
-		const merged = threeWayMerge(ancestor, local, remote);
+		const merged = threeWayMerge(ancestor, local, remote) as any;
 		const taskAaa = merged.lists.u1.list1.tasks.aaa;
 		const taskZzz = merged.lists.u1.list1.tasks.zzz;
 

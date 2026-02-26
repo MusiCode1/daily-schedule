@@ -1,4 +1,4 @@
-import type { Sha256 } from './types';
+import type { Sha256 } from './syncTypes';
 
 function isPlainObject(value: any): value is Record<string, unknown> {
 	if (!value || typeof value !== 'object') return false;
@@ -10,7 +10,6 @@ function canonicalize(value: any): any {
 	if (Array.isArray(value)) {
 		return value.map(canonicalize);
 	}
-
 	if (isPlainObject(value)) {
 		const out: Record<string, any> = {};
 		const keys = Object.keys(value).sort();
@@ -19,7 +18,6 @@ function canonicalize(value: any): any {
 		}
 		return out;
 	}
-
 	return value;
 }
 
@@ -45,4 +43,3 @@ export async function sha256Blob(blob: Blob): Promise<Sha256> {
 	const digest = await crypto.subtle.digest('SHA-256', buf);
 	return `sha256:${toHex(digest)}`;
 }
-
