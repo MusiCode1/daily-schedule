@@ -67,9 +67,14 @@ scripts/screenshots/
 # נחריג את כולם חוץ מקורסור שישמש כמקור.
 .qoder
 .agent
+.agents
 .claude
 
 .agents/skills/excalidraw-mcp
 
 
 
+.playwright-cli
+.worktrees
+.worktrees/**
+.gitnexus
