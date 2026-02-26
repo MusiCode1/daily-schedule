@@ -358,14 +358,26 @@ async function pullAndBuildState(
 	const idToHash = (assetsIndex as any)?.idToHash || {};
 	const hashToFile = (assetsIndex as any)?.hashToFile || {};
 
+	console.log(TAG, 'assets restore:', {
+		needed: neededIdbIds.length,
+		idToHashKeys: Object.keys(idToHash).length,
+		hashToFileKeys: Object.keys(hashToFile).length
+	});
+
 	let restoredCount = 0;
+	let skippedExisting = 0;
+	let skippedMissing = 0;
 	for (const idbId of neededIdbIds) {
 		const existing = await db.getImage(idbId);
-		if (existing) continue;
+		if (existing) {
+			skippedExisting++;
+			continue;
+		}
 
 		const hash = idToHash[idbId] as Sha256 | undefined;
 		if (!hash || !hashToFile[hash]) {
-			console.warn(TAG, 'asset missing in remote index', idbId);
+			skippedMissing++;
+			console.warn(TAG, 'asset missing in remote index', idbId, { hash, inHashToFile: !!hashToFile[hash!] });
 			continue;
 		}
 
@@ -374,7 +386,7 @@ async function pullAndBuildState(
 		restoredCount++;
 	}
 
-	console.log(TAG, 'remote state downloaded', { assetsRestored: restoredCount });
+	console.log(TAG, 'remote state downloaded', { assetsRestored: restoredCount, skippedExisting, skippedMissing });
 	return restored;
 }
 

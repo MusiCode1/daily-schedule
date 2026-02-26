@@ -93,6 +93,14 @@ class FileSyncProvider implements SyncProvider {
 		this.pendingAssets = index;
 		for (const [hash, blob] of newBlobs) {
 			this.pendingBlobs.set(hash, blob);
+			// עדכון hashToFile כדי שה-assets.json ב-ZIP יהיה שלם לייבוא
+			if (!index.hashToFile[hash as `sha256:${string}`]) {
+				index.hashToFile[hash as `sha256:${string}`] = {
+					fileId: hash,
+					mimeType: blob.type || 'application/octet-stream',
+					size: blob.size
+				};
+			}
 		}
 	}
 
