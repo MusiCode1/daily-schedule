@@ -218,7 +218,7 @@
 		font-family: inherit;
 		cursor: pointer;
 		transition: all 0.15s;
-		white-space: nowrap;
+		white-space: normal;
 	}
 
 	.action-btn:not(:disabled):hover {
