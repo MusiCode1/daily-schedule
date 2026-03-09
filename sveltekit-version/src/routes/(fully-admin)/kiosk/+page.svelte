@@ -12,9 +12,17 @@
 	let initialized = $state(false);
 
 	onMount(async () => {
-		ctrl.loadFromStorage();
-		if (ctrl.baseUrl) {
+		const params = new URLSearchParams(location.search);
+		const fromQr = ctrl.loadFromUrlParam(params);
+		if (fromQr) {
+			// ניקוי ה-auth מה-URL כדי שלא ישמר בהיסטוריה
+			history.replaceState(null, '', location.pathname);
 			await ctrl.connect();
+		} else {
+			ctrl.loadFromStorage();
+			if (ctrl.baseUrl) {
+				await ctrl.connect();
+			}
 		}
 		initialized = true;
 	});
@@ -176,6 +184,16 @@
 		</div>
 	</div>
 {/if}
+
+<svelte:head>
+	<title>{KIOSK_TEXTS.PAGE_TITLE}</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+	<link
+		href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;900&display=swap"
+		rel="stylesheet"
+	/>
+</svelte:head>
 
 <style>
 	/* ===== ספינר טעינה ===== */

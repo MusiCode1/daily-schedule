@@ -1,5 +1,41 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-03-09 23:00
+
+### QR Code לחיבור מהיר לממשק ניהול הקיוסק
+
+הוספת פיצ'ר שמאפשר חיבור אוטומטי לממשק ניהול הקיוסק דרך סריקת QR — ללא הקלדת IP וסיסמא.
+
+#### מה בוצע?
+
+**1. כרטיסיה חדשה "קיוסק" בהגדרות המערכת**
+
+- נוספה כרטיסיה `🖥️ קיוסק` ל-`settings/+layout.svelte` (לפני "כללי")
+- נוספו 7 טקסטים חדשים ל-`texts.ts`: `KIOSK_TAB`, `KIOSK_QR_TITLE`, `KIOSK_QR_SUBTITLE`, `KIOSK_QR_NOT_AVAILABLE`, `KIOSK_QR_LOADING`, `KIOSK_QR_ERROR`, `KIOSK_QR_REFRESH`
+
+**2. `settings/kiosk/+page.svelte` ו-`kioskQrController.svelte.ts` — דף QR חדש**
+
+- `kioskQrController.svelte.ts`: class עם `$state` המכיל את כל הלוגיקה — בדיקת סביבת Fully Kiosk, קריאת סיסמא דרך `window.fully.getStringRawSetting("remoteAdminPassword")`, קריאת IP דרך `http://127.0.0.1:${port}/?cmd=deviceInfo`, קידוד base64 ויצירת QR
+- `+page.svelte`: תצוגה טהורה בלבד — מציגה spinner / הודעת "לא זמין" / שגיאה / QR עם כתובת IP וכפתור רענן
+- QR מפנה ל-`${window.location.origin}/kiosk?auth=<base64>` — דומיין דינמי תומך ב-dev וב-production
+
+**3. `kioskController.svelte.ts` — auto-login מ-URL**
+
+- נוספה מתודת `loadFromUrlParam(searchParams)` שמפענחת `?auth=<base64>` ל-`baseUrl` ו-`password`
+
+**4. `(fully-admin)/kiosk/+page.svelte` — חיבור אוטומטי בטעינה**
+
+- `onMount` מנסה קודם לקרוא `?auth=` מה-URL; אם קיים — מחבר אוטומטית ומנקה את הפרמטר מהיסטוריה (`history.replaceState`); אחרת — נופל בחזרה ל-localStorage כרגיל
+
+#### החלטות ארכיטקטורה
+
+- **base64 ולא הצפנה**: הרשת מקומית בלבד, ה-QR פיזי, והסיסמא ממילא מועברת ב-HTTP ברשת — הצפנה לא מוסיפה ערך אמיתי
+- **דומיין דינמי**: `window.location.origin` במקום hardcoded URL — תומך גם ב-`dev.daily-schedule.pages.dev` וגם ב-production
+- **ניקוי URL**: `history.replaceState` מיד אחרי חיבור — מונע שמירת הסיסמא בהיסטוריה הדפדפן
+- **פורט דרך `KIOSK_PROXY_PORT`**: ריכוז הפורט בקובץ config במקום hardcode
+
+---
+
 ## 2026-03-09 21:00
 
 ### שיפורים שונים: TTS init, גלאסמורפיזם, CORS proxy, workspace

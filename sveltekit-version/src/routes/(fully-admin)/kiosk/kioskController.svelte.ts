@@ -243,6 +243,21 @@ class KioskController {
 		this.saveWebsitesToStorage();
 	}
 
+	// קורא פרמטר ?auth=<base64> מה-URL ומאכלס baseUrl ו-password
+	loadFromUrlParam(searchParams: URLSearchParams): boolean {
+		const auth = searchParams.get('auth');
+		if (!auth) return false;
+		try {
+			const decoded = JSON.parse(atob(auth));
+			if (!decoded.ip || !decoded.password) return false;
+			this.baseUrl = `http://${decoded.ip}:${decoded.port ?? 2323}`;
+			this.password = decoded.password;
+			return true;
+		} catch {
+			return false;
+		}
+	}
+
 	disconnect() {
 		this.deviceInfo = null;
 	}

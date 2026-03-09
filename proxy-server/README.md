@@ -21,10 +21,10 @@ caddy run --config Caddyfile
 
 ## משתני סביבה
 
-| משתנה | ברירת מחדל | תיאור |
-|---|---|---|
-| `KIOSK_URL` | `http://localhost:2323` | כתובת המכשיר / פרוקסי |
-| `PROXY_PORT` | `8765` | פורט מאזין מקומי |
+| משתנה        | ברירת מחדל              | תיאור                 |
+| ------------ | ----------------------- | --------------------- |
+| `KIOSK_URL`  | `http://localhost:2323` | כתובת המכשיר / פרוקסי |
+| `PROXY_PORT` | `8765`                  | פורט מאזין מקומי      |
 
 **דוגמאות:**
 
@@ -53,6 +53,9 @@ pkg install caddy termux-services
 
 ```bash
 cp /path/to/Caddyfile ~/caddy/Caddyfile
+# or
+mkdir -p ~/caddy
+nano ~/caddy/Caddyfile
 ```
 
 ### 3. יצירת הסרוויס
@@ -74,6 +77,9 @@ EOF
 
 chmod +x $PREFIX/var/service/caddy/run
 chmod +x $PREFIX/var/service/caddy/log/run
+
+# יצירת תיקיית הלוגים (נדרשת עבור svlogd)
+mkdir -p $PREFIX/var/log/caddy
 ```
 
 ### 4. הפעלה
@@ -100,3 +106,33 @@ sv restart caddy  # הפעל מחדש
 4. הסרוויסים של `termux-services` יעלו אוטומטית עם הפעלת המכשיר
 
 > **שים לב:** ב-Android 12+ יתכן שיש להגדיר גם חריג מ-Battery Optimization עבור Termux.
+
+---
+
+פתיחה מרחוק של פולי
+
+```sh
+am start -n com.fullykiosk.emm/de.ozerov.fully.MainActivity
+```
+
+```sh
+settings put global adb_wifi_enabled 1
+settings put global adb_wifi_port 5555
+```
+
+```js
+"https://dev.daily-schedule.pages.dev/kiosk?auth=" + btoa(JSON.stringify({
+  "ip": "192.168.68.58",
+    "port": 8765,
+    "password": "1234"
+}))
+```
+
+```js
+"https://dev.daily-schedule.pages.dev/kiosk?auth=" + btoa(JSON.stringify({
+  "ip": "192.168.33.98",
+    "port": 8765,
+    "password": "V64P^BgiiynM"
+}))
+```
+

@@ -10,3 +10,5 @@ export const GOOGLE_CLIENT_ID =
 export const GOOGLE_SCOPES = 'https://www.googleapis.com/auth/drive.file';
 export const BACKUP_FILE_NAME = 'daily_schedule_backup.json';
 export const BACKUP_FOLDER_NAME = 'DailyScheduleBackup';
+
+export const KIOSK_PROXY_PORT = import.meta.env.VITE_KIOSK_PROXY_PORT || 8765; // פורט ברירת המחדל של Fully Kiosk Remote Admin
