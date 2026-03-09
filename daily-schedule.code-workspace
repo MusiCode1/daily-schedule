@@ -3,6 +3,9 @@
 	{
 		"name": "daily-schedule",
 		"path": "."
+	},
+	{
+		"path": "../fully-kiosk"
 	}
 ],
   "settings": {

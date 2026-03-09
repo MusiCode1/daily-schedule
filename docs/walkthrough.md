@@ -1,5 +1,37 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-03-09 21:00
+
+### שיפורים שונים: TTS init, גלאסמורפיזם, CORS proxy, workspace
+
+עדכונים בתחומים שונים שנצברו: אתחול דינמי של שירות TTS, עיצוב גלאסמורפיזם לפאנל פעולות הרשימה, פרוקסי CORS ב-Node.js, ועדכון workspace.
+
+#### מה בוצע?
+
+**1. שירות TTS — טעינה דינמית בזמן ריצה**
+
+- נוספה מתודת `init()` ל-`ttsService` — טוענת `/tts-registry.json` מה-static directory בזמן ריצה
+- `tts-registry.json` ב-`src/lib/data/` עודכן עם כל הנכסים הקיימים (1400+ רשומות)
+- נוסף `static/tts-registry.json` — עותק שמוגש כקובץ סטטי לdynamic runtime load
+- `tts-scanner.ts` — ללא שינויי תוכן (רק line endings)
+
+**2. עיצוב גלאסמורפיזם לפאנל פעולות הרשימות (`tasks/+page.svelte`)**
+
+- `.list-actions-panel`: עבר מ-`background: white` ל-`background: rgba(255,255,255,0.4)` + `backdrop-filter: blur(16px)`, border מינימלי
+- כפתורי פעולות: glassmorphism רך, `border-radius: 16px`, `backdrop-filter: blur(8px)`, `box-shadow` עדין
+- פירוק שורות ארוכות של JSX לשורות קצרות (formattig בלבד)
+
+**3. `scripts/cors-proxy.mjs` — פרוקסי CORS ב-Node.js**
+
+- סקריפט עצמאי להרצה מקומית: `node cors-proxy.mjs <target-url> [port]`
+- משמש לפיתוח מקומי כשיש בעיות CORS מול שרת Fully Kiosk
+
+**4. `daily-schedule.code-workspace` — הוספת נתיב `fully-kiosk`**
+
+- הוסף folder `../fully-kiosk` ל-workspace כדי לעבוד על שני הפרויקטים מאותו VSCode window
+
+---
+
 ## 2026-03-09 20:00
 
 ### ממשק ניהול Fully Kiosk — קומפוננטות, פעולות ורשימת אפליקציות
