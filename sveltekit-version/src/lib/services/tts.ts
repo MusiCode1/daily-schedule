@@ -20,9 +20,31 @@ export interface TtsPlaybackSession {
 }
 
 // Cast registry to typed array
-const assets = registry as TtsAsset[];
+let assets = registry as TtsAsset[];
+
+
 
 export const ttsService = {
+
+	async init() {
+		const ttsRegistry = fetch('/tts-registry.json')
+			.then((res) => res.json())
+			.then((data) => {
+				console.log('TTS registry loaded:', data);
+				assets = data as TtsAsset[];
+				return data as TtsAsset[];
+			})
+			.catch((err) => {
+				console.error('Failed to load TTS registry:', err);
+				return [];
+			});
+
+			return ttsRegistry.then((loadedAssets) => {
+				assets = loadedAssets;
+				console.log('TTS service initialized with assets:', assets);
+			});
+	},
+
 	createPlaybackSession(seedAssetId?: string): TtsPlaybackSession {
 		const session: TtsPlaybackSession = { voice: null };
 
