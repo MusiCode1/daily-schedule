@@ -55,12 +55,14 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.75rem;
+		overflow: hidden;
 	}
 
 	.info-row {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		min-width: 0;
 	}
 
 	.info-row-end {
@@ -93,6 +95,10 @@
 		font-weight: 700;
 		font-size: 1rem;
 		color: #0c4a6e;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		min-width: 0;
 	}
 
 	.app-version {
@@ -148,6 +154,8 @@
 		gap: 0.5rem;
 		font-size: 0.85rem;
 		align-items: flex-start;
+		overflow: hidden;
+		min-width: 0;
 	}
 
 	.url-label {
@@ -160,7 +168,8 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-		max-width: 400px;
+		flex: 1;
+		min-width: 0;
 		direction: ltr;
 	}
 </style>
