@@ -121,7 +121,10 @@
 				</BoardIconButton>
 			{/if}
 
-			<BoardIconButton onclick={() => board.toggleEditMode()} title={board.isEditMode ? TEXTS.EDIT_MODE_EXIT : TEXTS.EDIT_MODE_ENTER}>
+			<BoardIconButton
+				onclick={() => board.toggleEditMode()}
+				title={board.isEditMode ? TEXTS.EDIT_MODE_EXIT : TEXTS.EDIT_MODE_ENTER}
+			>
 				{board.isEditMode ? '🔓' : '🔒'}
 			</BoardIconButton>
 
@@ -254,7 +257,12 @@
 							{/if}
 						{/if}
 
-						<BoardActionCard variant="danger" icon="🗑️" label={TEXTS.DELETE_LIST_ACTION} onclick={() => nav.deleteCurrentList()} />
+						<BoardActionCard
+							variant="danger"
+							icon="🗑️"
+							label={TEXTS.DELETE_LIST_ACTION}
+							onclick={() => nav.deleteCurrentList()}
+						/>
 
 						<BoardActionCard
 							variant="warning"
@@ -461,11 +469,13 @@
 	.list-actions-panel {
 		width: 100%;
 		max-width: 600px;
-		background: white;
-		border-radius: 20px;
+		background: rgba(255, 255, 255, 0.4);
+		backdrop-filter: blur(16px);
+		-webkit-backdrop-filter: blur(16px);
+		border-radius: 24px;
 		padding: 1.5rem;
-		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-		border: 2px solid #e2e8f0;
+		box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
+		border: 1px solid rgba(255, 255, 255, 0.5);
 		margin-top: 1rem;
 	}
 
@@ -475,7 +485,7 @@
 		gap: 0.75rem;
 		margin-bottom: 1.25rem;
 		padding-bottom: 1rem;
-		border-bottom: 2px solid #f1f5f9;
+		border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 	}
 
 	.panel-icon {
@@ -500,13 +510,16 @@
 		align-items: center;
 		gap: 0.35rem;
 		padding: 0.6rem 0.5rem;
-		border: 2px solid;
-		border-radius: 12px;
-		background: white;
+		border: 1px solid rgba(255, 255, 255, 0.4);
+		border-radius: 16px;
+		background: rgba(255, 255, 255, 0.6);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
 		cursor: pointer;
-		transition: all 0.2s ease;
-		font-size: 0.7rem;
-		font-weight: 500;
+		transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+		font-size: 0.75rem;
+		font-weight: 600;
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 	}
 
 	:global(.action-icon) {
@@ -521,81 +534,81 @@
 	}
 
 	:global(.action-card.primary) {
-		border-color: #6366f1;
-		color: #6366f1;
-		background: #f5f7ff;
+		color: #4f46e5;
+		background: rgba(99, 102, 241, 0.08);
+		border-color: rgba(99, 102, 241, 0.15);
 	}
 
 	:global(.action-card.primary:hover) {
-		background: #6366f1;
-		color: white;
-		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+		background: rgba(99, 102, 241, 0.15);
+		transform: translateY(-3px);
+		box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+		border-color: rgba(99, 102, 241, 0.3);
 	}
 
 	:global(.action-card.edit) {
-		border-color: #8b5cf6;
-		color: #8b5cf6;
-		background: #faf5ff;
+		color: #7c3aed;
+		background: rgba(139, 92, 246, 0.08);
+		border-color: rgba(139, 92, 246, 0.15);
 	}
 
 	:global(.action-card.edit:hover) {
-		background: #8b5cf6;
-		color: white;
-		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(139, 92, 246, 0.3);
+		background: rgba(139, 92, 246, 0.15);
+		transform: translateY(-3px);
+		box-shadow: 0 8px 20px rgba(139, 92, 246, 0.2);
+		border-color: rgba(139, 92, 246, 0.3);
 	}
 
 	:global(.action-card.visibility) {
-		border-color: #f59e0b;
-		color: #f59e0b;
-		background: #fffbeb;
+		color: #d97706;
+		background: rgba(245, 158, 11, 0.08);
+		border-color: rgba(245, 158, 11, 0.15);
 	}
 
 	:global(.action-card.visibility:hover) {
-		background: #f59e0b;
-		color: white;
-		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+		background: rgba(245, 158, 11, 0.15);
+		transform: translateY(-3px);
+		box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2);
+		border-color: rgba(245, 158, 11, 0.3);
 	}
 
 	:global(.action-card.danger) {
-		border-color: #ef4444;
-		color: #ef4444;
-		background: #fef2f2;
+		color: #dc2626;
+		background: rgba(239, 68, 68, 0.08);
+		border-color: rgba(239, 68, 68, 0.15);
 	}
 
 	:global(.action-card.danger:hover) {
-		background: #ef4444;
-		color: white;
-		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
+		background: rgba(239, 68, 68, 0.15);
+		transform: translateY(-3px);
+		box-shadow: 0 8px 20px rgba(239, 68, 68, 0.2);
+		border-color: rgba(239, 68, 68, 0.3);
 	}
 
 	:global(.action-card.warning) {
-		border-color: #eab308;
-		color: #92400e;
-		background: #fefce8;
+		color: #b45309;
+		background: rgba(234, 179, 8, 0.08);
+		border-color: rgba(234, 179, 8, 0.15);
 	}
 
 	:global(.action-card.warning:hover) {
-		background: #eab308;
-		color: white;
-		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(234, 179, 8, 0.3);
+		background: rgba(234, 179, 8, 0.15);
+		transform: translateY(-3px);
+		box-shadow: 0 8px 20px rgba(234, 179, 8, 0.2);
+		border-color: rgba(234, 179, 8, 0.3);
 	}
 
 	:global(.action-card.lock) {
-		border-color: #64748b;
-		color: #64748b;
-		background: #f8fafc;
+		color: #475569;
+		background: rgba(100, 116, 139, 0.08);
+		border-color: rgba(100, 116, 139, 0.15);
 	}
 
 	:global(.action-card.lock:hover) {
-		background: #64748b;
-		color: white;
-		transform: translateY(-2px);
-		box-shadow: 0 6px 16px rgba(100, 116, 139, 0.3);
+		background: rgba(100, 116, 139, 0.15);
+		transform: translateY(-3px);
+		box-shadow: 0 8px 20px rgba(100, 116, 139, 0.2);
+		border-color: rgba(100, 116, 139, 0.3);
 	}
 
 	@media (max-width: 600px) {
