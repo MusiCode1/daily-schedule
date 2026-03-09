@@ -98,6 +98,7 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+		flex: 1;
 		min-width: 0;
 	}
 

@@ -256,6 +256,7 @@
 	.scroll-area {
 		flex: 1;
 		overflow-y: auto;
+		overflow-x: hidden;
 		padding: 1.5rem;
 		display: flex;
 		flex-direction: column;
