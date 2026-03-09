@@ -1,0 +1,63 @@
+// טקסטים מקומיים למסך ניהול קיוסק פולי
+
+export const KIOSK_TEXTS = {
+	PAGE_TITLE: 'ניהול קיוסק פולי',
+
+	CONNECTION_SECTION: 'הגדרות חיבור',
+	ADDRESS_LABEL: 'כתובת המכשיר',
+	ADDRESS_PLACEHOLDER: 'http://192.168.1.50:2323',
+	PASSWORD_LABEL: 'סיסמת מנהל',
+	CONNECT_BTN: 'התחבר',
+	CONNECTING: 'מתחבר...',
+
+	DEVICE_INFO_TITLE: 'מידע מכשיר',
+	KIOSK_STATUS_LOCKED: 'נעול',
+	KIOSK_STATUS_UNLOCKED: 'פתוח',
+	SCREEN_ON: 'מסך פעיל',
+	SCREEN_OFF: 'מסך כבוי',
+	BATTERY: (level: number) => `סוללה: ${level}%`,
+	PLUGGED: 'בטעינה',
+	CURRENT_URL: 'דף פעיל',
+
+	KIOSK_SECTION: 'מצב קיוסק',
+	LOCK_KIOSK: 'הפעל מצב קיוסק',
+	UNLOCK_KIOSK: 'כבה מצב קיוסק',
+
+	WEBSITES_SECTION: 'ניווט לאתרים',
+	ADD_WEBSITE_SECTION: 'הוסף אתר',
+	WEBSITE_LABEL_PLACEHOLDER: 'שם האתר',
+	WEBSITE_URL_PLACEHOLDER: 'https://...',
+	WEBSITE_LOGO_PLACEHOLDER: 'כתובת לוגו (אופציונלי)',
+	ADD_BTN: 'הוסף',
+
+	ERROR_CONNECTION: 'שגיאת חיבור — בדוק כתובת וסיסמה',
+	ERROR_COMMAND: 'שגיאה בביצוע הפקודה',
+	SUCCESS_LOCKED: 'הקיוסק ננעל',
+	SUCCESS_UNLOCKED: 'הקיוסק שוחרר',
+	SUCCESS_NAVIGATED: 'ניווט בוצע',
+
+	DISCONNECT: 'התנתק',
+	LOGIN_SUBTITLE: 'הזן את פרטי המכשיר להתחברות',
+	REFRESH: 'רענן',
+
+	ACTIONS_SECTION: 'פעולות מכשיר',
+	SCREEN_TOGGLE_ON: 'הדלק מסך',
+	SCREEN_TOGGLE_OFF: 'כבה מסך',
+	TO_FOREGROUND: 'הבא פולי לקדמה',
+	TO_BACKGROUND: 'שלח פולי לרקע',
+	LAUNCH_APP_BTN: 'הפעל',
+	PACKAGE_PLACEHOLDER: 'com.example.app',
+	LOAD_START_URL_BTN: 'פתח כתובת בית',
+	LOAD_CUSTOM_URL_BTN: 'פתח',
+	SUCCESS_SCREEN_ON: 'המסך הודלק',
+	SUCCESS_SCREEN_OFF: 'המסך כובה',
+	SUCCESS_FOREGROUND: 'פולי הועבר לקדמה',
+	SUCCESS_BACKGROUND: 'פולי הועבר לרקע',
+	SUCCESS_APP_LAUNCHED: 'האפליקציה הופעלה',
+	SUCCESS_START_URL: 'כתובת הבית נפתחה',
+	LOAD_APPS_BTN: 'טען רשימה',
+	SELECT_APP_PLACEHOLDER: 'בחר אפליקציה...',
+	RECENT_APPS: 'אחרונות',
+	APP_SEARCH_PLACEHOLDER: 'חיפוש...',
+	NO_RESULTS: 'לא נמצאו תוצאות',
+} as const;
