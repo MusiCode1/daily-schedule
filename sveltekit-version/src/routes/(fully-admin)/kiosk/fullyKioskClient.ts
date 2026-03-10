@@ -81,6 +81,43 @@ export class FullyKioskClient {
 		return this.request<BaseResponse>('toBackground');
 	}
 
+	async lockKiosk(): Promise<BaseResponse> {
+		return this.request<BaseResponse>('lockKiosk');
+	}
+
+	async unlockKiosk(): Promise<BaseResponse> {
+		return this.request<BaseResponse>('unlockKiosk');
+	}
+
+	async enableLockedMode(): Promise<BaseResponse> {
+		return this.request<BaseResponse>('enableLockedMode');
+	}
+
+	async disableLockedMode(): Promise<BaseResponse> {
+		return this.request<BaseResponse>('disableLockedMode');
+	}
+
+	async restartApp(): Promise<BaseResponse> {
+		return this.request<BaseResponse>('restartApp');
+	}
+
+	async rebootDevice(): Promise<BaseResponse> {
+		return this.request<BaseResponse>('rebootDevice');
+	}
+
+	async setAudioVolume(level: number, stream: number = 3): Promise<BaseResponse> {
+		return this.request<BaseResponse>('setAudioVolume', { level, stream });
+	}
+
+	async getScreenshot(): Promise<Blob> {
+		const url = new URL(this.baseUrl + '/');
+		url.searchParams.append('cmd', 'getScreenshot');
+		url.searchParams.append('password', this.password);
+		const response = await fetch(url.toString());
+		if (!response.ok) throw new Error(`HTTP ${response.status}`);
+		return response.blob();
+	}
+
 	async startApplication(packageName: string): Promise<BaseResponse> {
 		return this.request<BaseResponse>('startApplication', { package: packageName });
 	}

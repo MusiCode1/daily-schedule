@@ -20,42 +20,19 @@
 </script>
 
 <div class="actions">
-	<!-- טאגל מסך -->
-	<div class="action-group">
-		<button
-			class="action-btn screen-btn"
-			onclick={() => ctrl.toggleScreen()}
-			disabled={ctrl.isLoading}
-		>
-			{ctrl.deviceInfo?.screenOn ? '🌑 ' + KIOSK_TEXTS.SCREEN_TOGGLE_OFF : '💡 ' + KIOSK_TEXTS.SCREEN_TOGGLE_ON}
-		</button>
-	</div>
-
 	<!-- קדמה / רקע -->
 	<div class="action-group">
-		<button
-			class="action-btn"
-			onclick={() => ctrl.toForeground()}
-			disabled={ctrl.isLoading}
-		>
+		<button class="action-btn" onclick={() => ctrl.toForeground()} disabled={ctrl.isLoading}>
 			🟢 {KIOSK_TEXTS.TO_FOREGROUND}
 		</button>
-		<button
-			class="action-btn"
-			onclick={() => ctrl.toBackground()}
-			disabled={ctrl.isLoading}
-		>
+		<button class="action-btn" onclick={() => ctrl.toBackground()} disabled={ctrl.isLoading}>
 			⬛ {KIOSK_TEXTS.TO_BACKGROUND}
 		</button>
 	</div>
 
 	<!-- כתובת בית -->
 	<div class="action-group">
-		<button
-			class="action-btn"
-			onclick={() => ctrl.loadStartUrl()}
-			disabled={ctrl.isLoading}
-		>
+		<button class="action-btn" onclick={() => ctrl.loadStartUrl()} disabled={ctrl.isLoading}>
 			🏠 {KIOSK_TEXTS.LOAD_START_URL_BTN}
 		</button>
 	</div>
@@ -99,11 +76,7 @@
 			{#if ctrl.appList.length > 0}
 				<AppDropdown apps={ctrl.appList} bind:value={selectedPackage} disabled={ctrl.isLoading} />
 			{:else}
-				<button
-					class="action-btn"
-					onclick={() => ctrl.loadApps()}
-					disabled={ctrl.appsLoading}
-				>
+				<button class="action-btn" onclick={() => ctrl.loadApps()} disabled={ctrl.appsLoading}>
 					{ctrl.appsLoading ? '⏳...' : '📋 ' + KIOSK_TEXTS.LOAD_APPS_BTN}
 				</button>
 			{/if}
@@ -240,15 +213,5 @@
 	.action-btn.primary:not(:disabled):hover {
 		background: #4f46e5;
 		border-color: #4f46e5;
-	}
-
-	.screen-btn {
-		background: #fef9c3;
-		color: #854d0e;
-		border-color: #fde68a;
-	}
-
-	.screen-btn:not(:disabled):hover {
-		background: #fde68a;
 	}
 </style>

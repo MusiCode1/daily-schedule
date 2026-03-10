@@ -60,4 +60,52 @@ export const KIOSK_TEXTS = {
 	RECENT_APPS: 'אחרונות',
 	APP_SEARCH_PLACEHOLDER: 'חיפוש...',
 	NO_RESULTS: 'לא נמצאו תוצאות',
+
+	// טאבים
+	TAB_DEVICE: 'מכשיר',
+	TAB_NAV: 'ניווט',
+	TAB_SCREEN: 'מסך חי',
+
+	// מצב קיוסק — הגדרות (kioskMode)
+	KIOSK_MODE_LABEL: 'מצב קיוסק',
+	KIOSK_MODE_ENABLED: 'מופעל',
+	KIOSK_MODE_DISABLED: 'כבוי',
+	KIOSK_MODE_WARNING: '⚠️ כיבוי יסגור את אפליקציית פולי קיוסק',
+	CONFIRM_DISABLE_KIOSK: '⚠️ כיבוי מצב קיוסק יסגור את אפליקציית פולי קיוסק!\nהאם להמשיך?',
+	SUCCESS_KIOSK_MODE_ON: 'מצב קיוסק הופעל',
+	SUCCESS_KIOSK_MODE_OFF: 'מצב קיוסק כובה',
+
+	// נעילה זמנית — lock/unlock (kioskLocked)
+	KIOSK_LOCK_LABEL: 'נעילה זמנית',
+	KIOSK_LOCK_LOCKED: 'נעול',
+	KIOSK_LOCK_UNLOCKED: 'מושהה',
+	KIOSK_LOCK_HINT: 'פועל רק כשמצב קיוסק מופעל',
+
+	// Maintenance Mode
+	MAINTENANCE_LABEL: 'מצב תחזוקה',
+	MAINTENANCE_ON_STATE: 'פעיל',
+	MAINTENANCE_OFF_STATE: 'כבוי',
+	SUCCESS_MAINTENANCE_ON: 'מצב תחזוקה הופעל',
+	SUCCESS_MAINTENANCE_OFF: 'מצב תחזוקה כובה',
+
+	// ווליום
+	VOLUME_LABEL: 'עוצמת שמע',
+	VOLUME_DOWN: 'הנמך',
+	VOLUME_UP: 'הגבה',
+	VOLUME_MUTE: 'השתק',
+	VOLUME_UNMUTE: 'בטל השתקה',
+
+	// ריסטארט
+	RESTART_APP_BTN: 'ריסטארט אפליקציה',
+	REBOOT_DEVICE_BTN: 'ריסטארט מכשיר',
+	CONFIRM_RESTART_APP: 'להפעיל מחדש את אפליקציית פולי?',
+	CONFIRM_REBOOT_DEVICE: '⚠️ האם לאתחל את המכשיר?\nפעולה זו תנתק את החיבור.',
+	SUCCESS_RESTART_APP: 'האפליקציה מופעלת מחדש',
+	SUCCESS_REBOOT_DEVICE: 'המכשיר מאתחל...',
+
+	// מסך חי
+	SCREENSHOT_BTN: 'צלם מסך',
+	LIVE_VIEW_START: 'הפעל מסך חי',
+	LIVE_VIEW_STOP: 'עצור מסך חי',
+	SCREENSHOT_EMPTY: 'לחץ על "צלם מסך" להצגת תמונה',
 } as const;

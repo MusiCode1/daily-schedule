@@ -44,6 +44,10 @@ class KioskController {
 	appList = $state<AppListItem[]>([]);
 	recentApps = $state<RecentApp[]>([]);
 	feedback = $state<{ type: 'success' | 'error'; message: string } | null>(null);
+	// state ווליום מקומי (אין API לקריאה)
+	volumeLevel = $state(70);
+	isMuted = $state(false);
+	private prevVolume = 70;
 
 	private feedbackTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -103,11 +107,20 @@ class KioskController {
 		}
 	}
 
-	async enableKioskMode() {
+	async toggleKioskMode() {
+		if (!this.deviceInfo) return;
+		if (this.deviceInfo.kioskMode) {
+			if (!window.confirm(KIOSK_TEXTS.CONFIRM_DISABLE_KIOSK)) return;
+		}
 		this.isLoading = true;
 		try {
-			await this.getClient().enableKioskMode();
-			this.showFeedback('success', KIOSK_TEXTS.SUCCESS_LOCKED);
+			if (this.deviceInfo.kioskMode) {
+				await this.getClient().disableKioskMode();
+				this.showFeedback('success', KIOSK_TEXTS.SUCCESS_KIOSK_MODE_OFF);
+			} else {
+				await this.getClient().enableKioskMode();
+				this.showFeedback('success', KIOSK_TEXTS.SUCCESS_KIOSK_MODE_ON);
+			}
 			const info = await this.getClient().getDeviceInfo();
 			if (info?.deviceId || info?.deviceName) this.deviceInfo = info;
 		} catch {
@@ -117,17 +130,102 @@ class KioskController {
 		}
 	}
 
-	async disableKioskMode() {
+	async toggleKiosk() {
+		if (!this.deviceInfo) return;
 		this.isLoading = true;
 		try {
-			await this.getClient().disableKioskMode();
-			this.showFeedback('success', KIOSK_TEXTS.SUCCESS_UNLOCKED);
+			if (this.deviceInfo.kioskLocked) {
+				await this.getClient().unlockKiosk();
+				this.showFeedback('success', KIOSK_TEXTS.SUCCESS_UNLOCKED);
+			} else {
+				await this.getClient().lockKiosk();
+				this.showFeedback('success', KIOSK_TEXTS.SUCCESS_LOCKED);
+			}
 			const info = await this.getClient().getDeviceInfo();
 			if (info?.deviceId || info?.deviceName) this.deviceInfo = info;
 		} catch {
 			this.showFeedback('error', KIOSK_TEXTS.ERROR_COMMAND);
 		} finally {
 			this.isLoading = false;
+		}
+	}
+
+	async toggleMaintenance() {
+		if (!this.deviceInfo) return;
+		this.isLoading = true;
+		try {
+			if (this.deviceInfo.maintenanceMode) {
+				await this.getClient().disableLockedMode();
+				this.showFeedback('success', KIOSK_TEXTS.SUCCESS_MAINTENANCE_OFF);
+			} else {
+				await this.getClient().enableLockedMode();
+				this.showFeedback('success', KIOSK_TEXTS.SUCCESS_MAINTENANCE_ON);
+			}
+			const info = await this.getClient().getDeviceInfo();
+			if (info?.deviceId || info?.deviceName) this.deviceInfo = info;
+		} catch {
+			this.showFeedback('error', KIOSK_TEXTS.ERROR_COMMAND);
+		} finally {
+			this.isLoading = false;
+		}
+	}
+
+	async setVolume(level: number) {
+		const clamped = Math.max(0, Math.min(100, level));
+		this.volumeLevel = clamped;
+		this.isMuted = clamped === 0;
+		try {
+			await this.getClient().setAudioVolume(clamped);
+		} catch {
+			this.showFeedback('error', KIOSK_TEXTS.ERROR_COMMAND);
+		}
+	}
+
+	volumeUp() { this.setVolume(this.isMuted ? this.prevVolume : this.volumeLevel + 10); }
+	volumeDown() { this.setVolume(this.volumeLevel - 10); }
+
+	toggleMute() {
+		if (this.isMuted) {
+			this.setVolume(this.prevVolume || 50);
+		} else {
+			this.prevVolume = this.volumeLevel;
+			this.setVolume(0);
+		}
+	}
+
+	async restartApp() {
+		if (!window.confirm(KIOSK_TEXTS.CONFIRM_RESTART_APP)) return;
+		this.isLoading = true;
+		try {
+			await this.getClient().restartApp();
+			this.showFeedback('success', KIOSK_TEXTS.SUCCESS_RESTART_APP);
+		} catch {
+			this.showFeedback('error', KIOSK_TEXTS.ERROR_COMMAND);
+		} finally {
+			this.isLoading = false;
+		}
+	}
+
+	async rebootDevice() {
+		if (!window.confirm(KIOSK_TEXTS.CONFIRM_REBOOT_DEVICE)) return;
+		this.isLoading = true;
+		try {
+			await this.getClient().rebootDevice();
+			this.showFeedback('success', KIOSK_TEXTS.SUCCESS_REBOOT_DEVICE);
+		} catch {
+			this.showFeedback('error', KIOSK_TEXTS.ERROR_COMMAND);
+		} finally {
+			this.isLoading = false;
+		}
+	}
+
+	async takeScreenshot(): Promise<string | null> {
+		try {
+			const blob = await this.getClient().getScreenshot();
+			return URL.createObjectURL(blob);
+		} catch {
+			this.showFeedback('error', KIOSK_TEXTS.ERROR_COMMAND);
+			return null;
 		}
 	}
 

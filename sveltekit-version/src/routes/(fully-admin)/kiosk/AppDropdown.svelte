@@ -62,7 +62,7 @@
 				dir="rtl"
 			/>
 			<div class="list">
-				{#each filtered as app (app.package)}
+				{#each filtered as app (`${app.package}::${app.label}`)}
 					<button
 						class="item"
 						class:active={app.package === value}

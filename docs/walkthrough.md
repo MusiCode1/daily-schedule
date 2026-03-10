@@ -1,5 +1,58 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-03-10 22:00
+
+### שדרוג ממשק ניהול קיוסק — טאבים, פיצ'רים חדשים ותיקוני UI
+
+ארגון מחדש של ממשק ניהול הקיוסק מ-4 סקשנים בגלילה ל-3 טאבים, עם הוספת 7 פיצ'רים חדשים ותיקוני רספונסיביות.
+
+#### מה בוצע?
+
+**1. מבנה 3 טאבים (`+page.svelte`)**
+
+- **טאב מכשיר**: מידע מכשיר, toggle מצב קיוסק, toggle נעילה זמנית, toggle מצב תחזוקה, ווליום + פרוגרס בר, toggle מסך, כפתורי ריסטארט
+- **טאב ניווט**: רשת אתרים + הוספה, `ActionsPanel` (foreground/background, URL, app launcher)
+- **טאב מסך חי**: `ScreenTab.svelte` — צילום מסך חד-פעמי ו-live view בפולינג
+
+**2. `fullyKioskClient.ts` — API חדשים**
+
+- נוספו: `lockKiosk`, `unlockKiosk`, `enableKioskMode`, `disableKioskMode`, `enableLockedMode`, `disableLockedMode`, `restartApp`, `rebootDevice`, `setAudioVolume`, `getScreenshot` (מחזיר Blob, לא JSON)
+
+**3. `kioskController.svelte.ts` — state ומתודות חדשות**
+
+- State: `volumeLevel`, `isMuted`, `prevVolume`
+- מתודות: `toggleKioskMode`, `toggleKiosk`, `toggleMaintenance`, `setVolume`, `volumeUp`, `volumeDown`, `toggleMute`, `restartApp`, `rebootDevice`, `takeScreenshot`
+- `restartApp` ו-`rebootDevice` — עם `window.confirm` לפני ביצוע
+
+**4. `ScreenTab.svelte` — קומפוננט חדש**
+
+- `capture()` — קריאה ל-`ctrl.takeScreenshot()`, revoke של URL קודם
+- `startLiveView()` — `setInterval(capture, 1500)` עם cleanup ב-`onDestroy`
+
+**5. ניסוח toggles קיוסק**
+
+- הובהר ההבדל: `kioskMode` (הגדרות, דרך `setBooleanSetting`) vs `kioskLocked` (נעילה זמנית, דרך `lockKiosk`/`unlockKiosk`)
+- `toggle-warning` אדום מוצג רק כשמצב קיוסק פעיל — מזהיר שכיבוי יסגור את פולי קיוסק
+- `toggle-hint` אפור מתחת לנעילה זמנית — "פועל רק כשמצב קיוסק מופעל"
+- כפתור נעילה זמנית disabled כש-`kioskMode=false`
+
+**6. תיקוני UI**
+
+- כפתורי ריסטארט: `flex-direction: column` + `width: 100%` — מונע גלישת טקסט
+- פרוגרס בר ווליום: הוזז מעל ללחצנים, `width: 100%` בגובה 8px
+
+#### החלטות ארכיטקטורה
+
+- **Volume state מקומי**: אין GET API לרמת הווליום הנוכחית — state מתחיל ב-70 ומנוהל מקומית
+- **Live view ב-component**: interval מנוהל ב-`ScreenTab.svelte` עם `onDestroy` cleanup — לא בcontroller, למניעת memory leaks
+- **Screenshot כ-Blob**: `getScreenshot` לא מוסיף `type=json` ל-URL — מחזיר PNG binary
+
+#### מעקפים ופתרונות
+
+- **`getScreenshot` נפרד מ-`request()`**: הפונקציה הגנרית מוסיפה `type=json` שגורם לשגיאה ב-screenshot endpoint — לכן גישה ישירה עם `fetch` ו-`response.blob()`
+
+---
+
 ## 2026-03-09 23:00
 
 ### QR Code לחיבור מהיר לממשק ניהול הקיוסק
