@@ -1,5 +1,53 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-03-10 23:30
+
+### proxy-server — Caddy + שרת Node לניהול Fully Kiosk + חיבור חכם בממשק
+
+הוספת שכבת ניהול מלאה לפרוקסי: טיפול בשגיאות, הפעלה מחדש אוטומטית של Fully Kiosk, endpoints לניטור, ו-flow חיבור חכם עם שורת מצב בממשק.
+
+#### מה בוצע?
+
+**1. `Caddyfile` — שדרוג הפרוקסי**
+
+- `lb_try_duration 2s` — timeout מהיר ל-upstream
+- `respond /ping "pong" 200` — endpoint בדיקת חיות ישיר מ-Caddy
+- `handle /restart*` ו-`handle /status*` — מפנה לשרת Node
+- `handle_errors 502 503 504` — בשגיאת upstream, מפנה לשרת Node (הפעלה מחדש אוטומטית)
+
+**2. `kiosk-restart-server.js` — שרת Node חדש (פורט 9000)**
+
+- `GET /restart` — מריץ `am start -n com.fullykiosk.emm/de.ozerov.fully.MainActivity`
+- `GET /status` — בודק אם Fully Kiosk מגיבה ב-HTTP (fetch עם timeout 3s)
+- כל בקשה אחרת (מ-Caddy על שגיאה) — הפעלה מחדש אוטומטית + מחזיר `{ restart: true }`
+
+**3. `proxy-server/README.md` — תיעוד שרת Node**
+
+- הוספת סקשן "שרת Node — kiosk-restart-server" עם endpoints, הוראות Termux service, ומשתני סביבה
+
+**4. `texts.ts` — type ו-map חדשים**
+
+- `ConnectionStatus` type עם 9 מצבים
+- `CONNECTION_STATUS_TEXT` — מפה מ-status לטקסט עברי למשתמש
+
+**5. `kioskController.svelte.ts` — flow חיבור חכם**
+
+- `connectionStatus = $state<ConnectionStatus>('idle')` — state חדש
+- `proxyBaseUrl` getter — בונה כתובת פרוקסי מ-`baseUrl` + `KIOSK_PROXY_PORT`
+- `pingProxy()`, `checkKioskStatus()`, `triggerKioskRestart()` — helpers פרטיים
+- `connect()` — שודרג לflow בן 5 שלבים: חיבור ישיר → בדיקת פרוקסי → בדיקת פולי → הפעלה מחדש → המתנה (30s retry loop)
+
+**6. `+page.svelte` + `LoginCard.svelte` — שורת מצב**
+
+- שורת `.status-text` / `.status-line` מתחת לספינר ומתחת לכפתור Connect
+- אדומה לשגיאות (`error-proxy`, `error-device`), אפורה לשלבי טעינה
+
+#### החלטות ארכיטקטורה
+
+- **Caddy + Node במקום Node בלבד**: Caddy מצוין ב-proxy/CORS, Node עושה מה שCaddy לא יכול (הרצת `am start`). כל אחד בתפקידו ללא כפילות.
+- **HTTP fetch לבדיקת פולי (לא pidof)**: Termux לא מורשה לראות PIDs של אפליקציות אחרות. fetch לפורט 2323 בודק ישירות את מה שמעניין — האם ה-API עונה.
+- **flow בשרת הלקוח**: הלוגיקה של retry/restart היא ב-controller (לא ב-Caddy) כי היא דורשת state ו-UX (שורת מצב).
+
 ## 2026-03-10 22:00
 
 ### שדרוג ממשק ניהול קיוסק — טאבים, פיצ'רים חדשים ותיקוני UI

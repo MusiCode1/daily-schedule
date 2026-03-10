@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { KIOSK_TEXTS } from './texts';
+	import { KIOSK_TEXTS, CONNECTION_STATUS_TEXT } from './texts';
 	import { ctrl } from './kioskController.svelte';
 
 	let { onConnect }: { onConnect: () => void } = $props();
@@ -36,6 +36,12 @@
 			>
 				{ctrl.isConnecting ? KIOSK_TEXTS.CONNECTING : KIOSK_TEXTS.CONNECT_BTN}
 			</button>
+
+			{#if CONNECTION_STATUS_TEXT[ctrl.connectionStatus]}
+				<p class="status-line" class:error={ctrl.connectionStatus.startsWith('error')}>
+					{CONNECTION_STATUS_TEXT[ctrl.connectionStatus]}
+				</p>
+			{/if}
 		</div>
 
 		{#if ctrl.feedback}
@@ -149,6 +155,19 @@
 		width: 100%;
 		padding: 0.75rem;
 		font-size: 1rem;
+	}
+
+	.status-line {
+		font-size: 0.85rem;
+		color: #64748b;
+		text-align: center;
+		margin: 0;
+		padding: 0.25rem 0;
+	}
+
+	.status-line.error {
+		color: #dc2626;
+		font-weight: 600;
 	}
 
 	.feedback {

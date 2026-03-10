@@ -15,7 +15,24 @@
 		-Server
 	}
 
+	# בדיקת חיות של הפרוקסי עצמו
+	respond /ping "pong" 200
+
+	# ניהול Fully Kiosk — מעביר לשרת Node
+	handle /restart* {
+		reverse_proxy localhost:{$RESTART_PORT:9000}
+	}
+	handle /status* {
+		reverse_proxy localhost:{$RESTART_PORT:9000}
+	}
+
+	# כל השאר — proxy לFully Kiosk
 	reverse_proxy {$KIOSK_URL:http://localhost:2323} {
 		header_up Host {upstream_hostport}
+		lb_try_duration 2s
+	}
+
+	handle_errors 502 503 504 {
+		reverse_proxy localhost:{$RESTART_PORT:9000}
 	}
 }

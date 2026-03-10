@@ -1,5 +1,28 @@
 // טקסטים מקומיים למסך ניהול קיוסק פולי
 
+export type ConnectionStatus =
+	| 'idle'
+	| 'connecting'
+	| 'checking-proxy'
+	| 'checking-kiosk'
+	| 'restarting'
+	| 'waiting'
+	| 'connected'
+	| 'error-proxy'
+	| 'error-device';
+
+export const CONNECTION_STATUS_TEXT: Record<ConnectionStatus, string> = {
+	idle: '',
+	connecting: 'מתחבר...',
+	'checking-proxy': 'בודק חיבור לפרוקסי...',
+	'checking-kiosk': 'בודק אם המכשיר פועל...',
+	restarting: 'מפעיל את Fully Kiosk...',
+	waiting: 'ממתין לאתחול המכשיר...',
+	connected: '',
+	'error-proxy': '⚠️ הפרוקסי אינו פעיל. הפעל את Caddy.',
+	'error-device': '⚠️ המכשיר אינו זמין. האם הוא פועל?',
+};
+
 export const KIOSK_TEXTS = {
 	PAGE_TITLE: 'ניהול קיוסק פולי',
 

@@ -1,7 +1,8 @@
 import { SvelteURL } from "svelte/reactivity";
 import { FullyKioskClient } from './fullyKioskClient';
 import type { AppListItem, DeviceInfoResponse, RecentApp } from './fullyKioskTypes';
-import { KIOSK_TEXTS } from './texts';
+import { KIOSK_TEXTS, type ConnectionStatus } from './texts';
+import { KIOSK_PROXY_PORT } from '$lib/config';
 
 // localStorage keys
 const KEY_URL = 'fully-kiosk-url';
@@ -39,6 +40,7 @@ class KioskController {
 	deviceInfo = $state<DeviceInfoResponse | null>(null);
 	websites = $state<SavedWebsite[]>([]);
 	isConnecting = $state(false);
+	connectionStatus = $state<ConnectionStatus>('idle');
 	isLoading = $state(false);
 	appsLoading = $state(false);
 	appList = $state<AppListItem[]>([]);
@@ -55,6 +57,45 @@ class KioskController {
 
 	private getClient(): FullyKioskClient {
 		return new FullyKioskClient(this.baseUrl, this.password);
+	}
+
+	private get proxyBaseUrl(): string {
+		try {
+			const url = new URL(this.baseUrl);
+			url.port = String(KIOSK_PROXY_PORT);
+			return url.origin;
+		} catch {
+			return '';
+		}
+	}
+
+	private async pingProxy(): Promise<boolean> {
+		try {
+			const res = await fetch(`${this.proxyBaseUrl}/ping`, { signal: AbortSignal.timeout(3000) });
+			return res.ok;
+		} catch {
+			return false;
+		}
+	}
+
+	private async checkKioskStatus(): Promise<boolean> {
+		try {
+			const res = await fetch(`${this.proxyBaseUrl}/status`, { signal: AbortSignal.timeout(3000) });
+			const data = await res.json();
+			return data.alive === true;
+		} catch {
+			return false;
+		}
+	}
+
+	private async triggerKioskRestart(): Promise<boolean> {
+		try {
+			const res = await fetch(`${this.proxyBaseUrl}/restart`, { signal: AbortSignal.timeout(5000) });
+			const data = await res.json();
+			return data.ok === true;
+		} catch {
+			return false;
+		}
 	}
 
 	private showFeedback(type: 'success' | 'error', message: string) {
@@ -91,17 +132,62 @@ class KioskController {
 		if (!this.baseUrl) return;
 		this.isConnecting = true;
 		this.deviceInfo = null;
+
 		try {
-			const info = await this.getClient().getDeviceInfo();
-			// getDeviceInfo מחזיר JSON ישיר ללא שדה status — בודקים לפי deviceId
-			if (info?.deviceId || info?.deviceName) {
-				this.deviceInfo = info;
-				this.saveConnectionToStorage();
-			} else {
-				this.showFeedback('error', KIOSK_TEXTS.ERROR_CONNECTION);
+			// שלב 1 — ניסיון חיבור ישיר
+			this.connectionStatus = 'connecting';
+			try {
+				const info = await this.getClient().getDeviceInfo();
+				if (info?.deviceId || info?.deviceName) {
+					this.deviceInfo = info;
+					this.saveConnectionToStorage();
+					this.connectionStatus = 'connected';
+					return;
+				}
+			} catch { /* ממשיך לשלב 2 */ }
+
+			// שלב 2 — בדוק אם הפרוקסי עונה
+			this.connectionStatus = 'checking-proxy';
+			const proxyAlive = await this.pingProxy();
+			if (!proxyAlive) {
+				this.connectionStatus = 'error-proxy';
+				return;
 			}
-		} catch {
-			this.showFeedback('error', KIOSK_TEXTS.ERROR_CONNECTION);
+
+			// שלב 3 — בדוק אם פולי רצה
+			this.connectionStatus = 'checking-kiosk';
+			const kioskAlive = await this.checkKioskStatus();
+			if (kioskAlive) {
+				// פולי רצה אבל לא מגיבה — מצב לא ברור
+				this.connectionStatus = 'error-device';
+				return;
+			}
+
+			// שלב 4 — הפעל מחדש
+			this.connectionStatus = 'restarting';
+			const restarted = await this.triggerKioskRestart();
+			if (!restarted) {
+				this.connectionStatus = 'error-device';
+				return;
+			}
+
+			// שלב 5 — המתן לאתחול (עד 30 שניות)
+			this.connectionStatus = 'waiting';
+			const deadline = Date.now() + 30_000;
+			while (Date.now() < deadline) {
+				await new Promise((r) => setTimeout(r, 3000));
+				try {
+					const info = await this.getClient().getDeviceInfo();
+					if (info?.deviceId || info?.deviceName) {
+						this.deviceInfo = info;
+						this.saveConnectionToStorage();
+						this.connectionStatus = 'connected';
+						return;
+					}
+				} catch { /* ממשיך לנסות */ }
+			}
+
+			this.connectionStatus = 'error-device';
 		} finally {
 			this.isConnecting = false;
 		}

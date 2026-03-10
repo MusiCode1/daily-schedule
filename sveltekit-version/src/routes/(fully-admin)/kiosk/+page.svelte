@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { KIOSK_TEXTS } from './texts';
 	import { ctrl, extractDomain } from './kioskController.svelte';
+	import { CONNECTION_STATUS_TEXT } from './texts';
 	import DeviceInfoPanel from './DeviceInfoPanel.svelte';
 	import ActionsPanel from './ActionsPanel.svelte';
 	import ScreenTab from './ScreenTab.svelte';
@@ -46,6 +47,11 @@
 {#if !initialized}
 	<div class="splash">
 		<div class="spinner"></div>
+		{#if CONNECTION_STATUS_TEXT[ctrl.connectionStatus]}
+			<p class="status-text" class:error={ctrl.connectionStatus.startsWith('error')}>
+				{CONNECTION_STATUS_TEXT[ctrl.connectionStatus]}
+			</p>
+		{/if}
 	</div>
 {:else if !ctrl.deviceInfo}
 	<LoginCard onConnect={() => ctrl.connect()} />
@@ -369,6 +375,18 @@
 
 	@keyframes spin {
 		to { transform: rotate(360deg); }
+	}
+
+	.status-text {
+		margin-top: 1rem;
+		font-size: 0.9rem;
+		color: #64748b;
+		text-align: center;
+	}
+
+	.status-text.error {
+		color: #dc2626;
+		font-weight: 600;
 	}
 
 	/* ===== מסך ניהול ===== */
