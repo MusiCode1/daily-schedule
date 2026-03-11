@@ -52,10 +52,8 @@ pkg install caddy termux-services
 ### 2. העתקת קובץ התצורה
 
 ```bash
-cp /path/to/Caddyfile ~/caddy/Caddyfile
-# or
-mkdir -p ~/caddy
-nano ~/caddy/Caddyfile
+mkdir -p ~/.config/kiosk-proxy
+cp /path/to/Caddyfile ~/.config/kiosk-proxy/Caddyfile
 ```
 
 ### 3. יצירת הסרוויס
@@ -67,7 +65,7 @@ mkdir -p $PREFIX/var/service/caddy/log
 
 cat > $PREFIX/var/service/caddy/run << 'EOF'
 #!/data/data/com.termux/files/usr/bin/sh
-exec caddy run --config /data/data/com.termux/files/home/caddy/Caddyfile 2>&1
+exec caddy run --config /data/data/com.termux/files/home/.config/kiosk-proxy/Caddyfile 2>&1
 EOF
 
 cat > $PREFIX/var/service/caddy/log/run << 'EOF'
@@ -102,6 +100,10 @@ sv restart caddy  # הפעל מחדש
 
 שרת קטן שמאפשר ל-Caddy להפעיל מחדש את Fully Kiosk בעת שגיאה, ולבדוק את סטטוסה.
 
+```sh
+nano ~/.config/kiosk-proxy/kiosk-restart-server.js
+```
+
 ### Endpoints
 
 | Path | תיאור |
@@ -118,7 +120,7 @@ mkdir -p $PREFIX/var/service/kiosk-restart/log
 
 cat > $PREFIX/var/service/kiosk-restart/run << 'EOF'
 #!/data/data/com.termux/files/usr/bin/sh
-exec node /data/data/com.termux/files/home/caddy/kiosk-restart-server.js 2>&1
+exec node /data/data/com.termux/files/home/.config/kiosk-proxy/kiosk-restart-server.js 2>&1
 EOF
 
 cat > $PREFIX/var/service/kiosk-restart/log/run << 'EOF'
@@ -182,7 +184,7 @@ settings put global adb_wifi_port 5588
 
 settings put global adb_enabled 1
 
-settings put global adb_enabled
+settings get global adb_enabled
 settings get global adb_wifi_enabled
 settings get global adb_wifi_port
 ```
@@ -232,6 +234,8 @@ content://com.llamalab.automate.provider/flows/8/statements/1
 adb shell /data/app/~~azd7SKPJ5Yy1YTTkeHk2VQ==/moe.shizuku.privileged.api-MpIAVywetQjjVOP2oGD-CQ==/lib/arm64/libshizuku.so
 
 ss -ltn
+
+am start -n moe.shizuku.privileged.api/moe.shizuku.manager.MainActivity
 ```
 
 ```sh
@@ -251,7 +255,7 @@ scrcpy.exe `
 scrcpy.exe `
   --video-source camera `
   --video-bit-rate 128K `
-  --max-fps 3 `
+  --max-fps 1 `
   --video-codec h264 `
   --audio-codec opus `
   --audio-bit-rate 16K `
