@@ -79,3 +79,5 @@ scripts/screenshots/
 .worktrees
 .worktrees/**
 .gitnexus
+sveltekit-version/src/lib/data/tts-registry.json
+**/tts-registry.json

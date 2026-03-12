@@ -1,3 +1,4 @@
+
 @import './layout.css';
 
 /* ============================================
@@ -1181,7 +1182,7 @@
 	.theme-gradient {
 		.task-card {
 			@apply backdrop-blur-md;
-			-webkit-backdrop-filter: blur(12px);
+			backdrop-filter: blur(12px);
 		}
 	}
 
