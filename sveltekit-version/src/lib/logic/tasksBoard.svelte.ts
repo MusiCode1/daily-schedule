@@ -77,6 +77,13 @@ export class TasksBoardController {
 
 	toggleEditMode() {
 		this.isEditMode = !this.isEditMode;
+		if (typeof window !== 'undefined') {
+			if (this.isEditMode) {
+				window.history.replaceState(null, '', '#edit');
+			} else {
+				window.history.replaceState(null, '', window.location.pathname + window.location.search);
+			}
+		}
 	}
 
 	async toggleTask(taskId: string) {
