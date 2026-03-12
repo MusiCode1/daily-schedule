@@ -13,6 +13,7 @@
     { id: 'people', label: TEXTS.PEOPLE_TAB, icon: '👨‍👩‍👧‍👦', path: '/settings/people' },
     { id: 'backup', label: TEXTS.BACKUP_TAB, icon: '☁️', path: '/settings/backup' },
     { id: 'kiosk', label: TEXTS.KIOSK_TAB, icon: '🖥️', path: '/settings/kiosk' },
+    { id: 'websites', label: TEXTS.WEBSITES_TAB, icon: '🌐', path: '/settings/websites' },
     { id: 'general', label: TEXTS.GENERAL_TAB, icon: '⚙️', path: '/settings/general' }
   ] as const;
 

@@ -1,6 +1,6 @@
 import QRCode from 'qrcode';
 import { TEXTS } from '$lib/services/language';
-import { KIOSK_PROXY_PORT } from '$lib/config';
+import { KIOSK_PROXY_PORT, KIOSK_ADMIN_URL } from '$lib/config';
 
 const proxyPort = KIOSK_PROXY_PORT; // פורט ברירת המחדל של Fully Kiosk Remote Admin
 
@@ -55,7 +55,7 @@ class KioskQrController {
 
 			this.deviceIp = ip;
 
-			const adminBaseUrl = `${window.location.origin}/kiosk`;
+			const adminBaseUrl = KIOSK_ADMIN_URL;
 			const payload = btoa(JSON.stringify({ ip, password, port: 2323 }));
 			const adminUrl = `${adminBaseUrl}?auth=${payload}`;
 
