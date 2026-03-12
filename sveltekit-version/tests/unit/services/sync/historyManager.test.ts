@@ -288,7 +288,8 @@ function createMinimalState(overrides?: Partial<AppState>): AppState {
 		settings: {
 			activeListId: { u1: 'l1' },
 			currentUserId: 'u1',
-			childLockEnabled: false
+			childLockEnabled: false,
+			websiteShortcuts: []
 		},
 		localDevice: {
 			lastModified: 1000,

@@ -304,7 +304,21 @@ const TEXTS_ADMIN = {
 	SAVING_AND_REFRESHING: 'שומר נתונים ומרענן...',
 
 	// Legacy / מיגרציות
-	LEGACY_GREETING_HELLO: 'שלום'
+	LEGACY_GREETING_HELLO: 'שלום',
+
+	// קיצורי דרך לאתרים
+	WEBSITES_TAB: 'אתרים',
+	WEBSITES_TITLE: 'קיצורי דרך לאתרים',
+	WEBSITES_ADD: '+ הוסף אתר',
+	WEBSITES_EDIT: 'עריכת אתר',
+	WEBSITES_LABEL: 'שם האתר',
+	WEBSITES_URL: 'כתובת (URL)',
+	WEBSITES_EMOJI: "אמוג'י (אופציונלי)",
+	WEBSITES_EMOJI_PLACEHOLDER: '🌐',
+	WEBSITES_DELETE_CONFIRM: 'למחוק קיצור דרך זה?',
+	WEBSITES_OPEN: 'פתח אתר',
+	WEBSITES_NO_SHORTCUTS: 'אין קיצורי דרך. לחץ על "+ הוסף אתר" כדי להתחיל.',
+	WEBSITES_INVALID_URL: 'כתובת לא תקינה. יש להזין כתובת שמתחילה ב-http:// או https://'
 } as const;
 
 export const TEXTS = {

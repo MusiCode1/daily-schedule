@@ -174,7 +174,11 @@ function normalizeSettings(rawSettings: any): AppState['settings'] {
 		childLockEnabled:
 			rawSettings && typeof rawSettings.childLockEnabled === 'boolean'
 				? rawSettings.childLockEnabled
-				: false
+				: false,
+		websiteShortcuts:
+			rawSettings && Array.isArray(rawSettings.websiteShortcuts)
+				? rawSettings.websiteShortcuts
+				: []
 	};
 }
 

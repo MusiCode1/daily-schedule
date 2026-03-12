@@ -204,7 +204,7 @@ export function createDefaultLists(): { [listId: string]: List } {
 }
 
 export const INITIAL_STATE: AppState = {
-	version: 16, // עדכון גרסה!
+	version: 17, // עדכון גרסה!
 	users: DEFAULT_USERS_BAR,
 	lists: LISTS_BAR,
 	images: {}, // מאגר מטאדטה של תמונות
@@ -225,7 +225,12 @@ export const INITIAL_STATE: AppState = {
 			u_adam: 'morning_routine'
 		},
 		currentUserId: null,
-		childLockEnabled: false
+		childLockEnabled: false,
+		websiteShortcuts: [
+			{ id: 'ws_gingim', label: "ג'ינג'ים — משחקים לימודיים", url: 'https://gingim.net/games/', emoji: '🎮' },
+			{ id: 'ws_puzzle', label: 'פאזל', url: 'https://puzzle.aybritman.workers.dev/', emoji: '🧩' },
+			{ id: 'ws_google', label: 'גוגל', url: 'https://www.google.com/', emoji: '🔍' }
+		]
 	},
 	localDevice: {
 		lastModified: Date.now(),

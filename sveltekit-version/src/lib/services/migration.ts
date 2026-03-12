@@ -519,6 +519,20 @@ function migrateToV16(state: AnyState): AnyState {
 	return state;
 }
 
+function migrateToV17(state: AnyState): AnyState {
+	log.info('v16 → v17: הוספת קיצורי דרך לאתרים');
+
+	if (!state.settings) {
+		state.settings = {};
+	}
+	if (!state.settings.websiteShortcuts) {
+		state.settings.websiteShortcuts = [];
+	}
+
+	state.version = 17;
+	return state;
+}
+
 export const STATE_MIGRATIONS: Record<number, (state: AnyState) => AnyState> = {
 	2: migrateToV2,
 	3: migrateToV3,
@@ -534,7 +548,8 @@ export const STATE_MIGRATIONS: Record<number, (state: AnyState) => AnyState> = {
 	13: migrateToV13,
 	14: migrateToV14,
 	15: migrateToV15,
-	16: migrateToV16
+	16: migrateToV16,
+	17: migrateToV17
 };
 
 function runStateMigrations(input: AnyState): AnyState {

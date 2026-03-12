@@ -68,6 +68,13 @@ export interface UserProfile {
 	theme?: ThemeType;
 }
 
+export interface WebsiteShortcut {
+	id: string;
+	label: string; // שם תצוגה
+	url: string; // כתובת האתר
+	emoji?: string; // אייקון אמוג'י אופציונלי (ברירת מחדל: 🌐)
+}
+
 export interface AppState {
 	version: number;
 
@@ -85,6 +92,7 @@ export interface AppState {
 		activeListId: { [userId: string]: string };
 		currentUserId: string | null;
 		childLockEnabled: boolean;
+		websiteShortcuts: WebsiteShortcut[];
 	};
 
 	// ─── Device-local (לא מסונכרן) ───
