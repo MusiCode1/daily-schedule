@@ -346,7 +346,63 @@ src/
 
 ---
 
-## 8. סיכונים וחסמים
+## 8. הנחות ברירת מחדל לשלב 1 — מוכן לביצוע
+
+> סעיף זה מספק לסוכן מבצע את כל ההחלטות הנדרשות כדי להתחיל לעבוד בלי לשאול שאלות.
+
+### סביבת פיתוח (כבר מוגדרת בריפו)
+| פרמטר | ערך |
+|---|---|
+| **ריפו** | `MusiCode1/aac-board` |
+| **Package manager** | bun |
+| **Framework** | SvelteKit 2 + Svelte 5 (runes) |
+| **UI** | shadcn-svelte + Tailwind CSS 4 |
+| **Deployment** | Cloudflare Workers (`@sveltejs/adapter-cloudflare`) |
+| **Testing** | Vitest 4 (unit) + Playwright (E2E) |
+| **Linting** | ESLint 9 + Prettier 4 (tabs, single quotes, 100 chars) |
+| **TypeScript** | strict mode |
+| **שפת קוד** | אנגלית (identifiers), עברית (docs/comments) |
+
+### RTL ועברית
+- **RTL מהיום הראשון** — כל הקומפוננטות חייבות לתמוך ב-`dir="rtl"`
+- **שפת ברירת מחדל**: עברית (`he`)
+- **כיוון טקסט**: `dir="auto"` על תוכן שעלול להיות דו-כיווני; `dir="rtl"` על ה-layout הראשי
+- Tailwind: להשתמש ב-`rtl:` / `ltr:` variants כשנדרש, ולהעדיף `logical properties` (`ps-4` במקום `pl-4`, `ms-2` במקום `ml-2`)
+
+### סמלי AAC (Symbols)
+- **שלב 1**: סמלים חופשיים — **Mulberry Symbols** (SVG, CC BY-SA) + **ARASAAC** (API חינמי)
+- **שלב עתידי**: הטמעת **PCS** (Tobii Dynavox, מסחרי — דורש רישיון)
+- **מקור נתוני לוחות**: קבצי `boards.json` של Cboard (כוללים קישורים לסמלי ARASAAC)
+- **ARASAAC API**: `https://api.arasaac.org` — לא דורש API key, חינמי לשימוש לא-מסחרי
+
+### cboard-api — חיבור בשלב 1
+- **גישה בשלב 1**: עבודה **מקומית בלבד** עם נתונים סטטיים (boards.json מ-Cboard repo)
+- **אין צורך בחיבור API** בשלב הראשון — הליבה היא רנדור לוחות + TTS + ניווט
+- **שלב 2+**: חיבור ל-cboard-api עם `https://api.app.cboard.io` (production)
+- **Auth flow**: Email+Password → POST `/user/login` → Bearer Token
+
+### מכשירי יעד
+- **עדיפות ראשונה**: טאבלטים (iPad, Android) — זה המכשיר העיקרי לשימוש AAC
+- **עדיפות שנייה**: דסקטופ (Chrome, Firefox, Safari)
+- **גודל מסך מינימלי**: 768px (iPad Mini)
+- **Touch-first**: כל האינטראקציות חייבות לעבוד ב-touch לפני mouse
+
+### קבצי Cboard לייבוא נתונים
+- **boards**: `https://github.com/cboard-org/cboard/tree/master/src/api` — קבצי JSON עם לוחות ברירת מחדל
+- **תרגומים**: `https://github.com/cboard-org/cboard/tree/master/src/translations` — ~50 שפות
+- **סמלים**: URL pattern של ARASAAC: `https://api.arasaac.org/v1/pictograms/{id}?download=false`
+
+### מה לא לעשות בשלב 1
+- ❌ לא לבנות auth/login — עובדים עם נתונים מקומיים
+- ❌ לא לבנות settings מלאים — רק toggle בסיסי (grid size, TTS on/off)
+- ❌ לא לבנות Grid Sets — זה שלב 2
+- ❌ לא drag & drop — זה שלב 3
+- ❌ לא ElevenLabs/Azure TTS — רק Web Speech API מובנה
+- ❌ לא i18n מלא — עברית hardcoded, i18n infrastructure בלבד
+
+---
+
+## 9. סיכונים וחסמים
 
 | סיכון | חומרה | מיטיגציה |
 |---|---|---|
@@ -359,7 +415,7 @@ src/
 
 ---
 
-## 9. שורה תחתונה
+## 10. שורה תחתונה
 
 **האם זה אפשרי?** — כן, בהחלט.
 
