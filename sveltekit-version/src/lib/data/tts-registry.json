@@ -2,1405 +2,361 @@
   {
     "id": "USER_SELECTOR_TITLE",
     "text": "מי משתמש בלוח היום?",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/who_is_playing.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/who_is_playing.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/who_is_playing.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "APP_TITLE_PART1",
     "text": "סדר יום",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/app_title_part1.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/app_title_part1.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "APP_TITLE_PART2",
     "text": "ויזואלי",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/app_title_part2.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/app_title_part2.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "LOADING_APP",
     "text": "טוען סדר יום...",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/loading_app.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/loading_app.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "PRAISE_ALUF_BOY",
     "text": "אתה אלוף!",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/aluf.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/aluf.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/aluf.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "PRAISE_ALUF_GIRL",
     "text": "את אלופה!",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/alufa.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/alufa.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/alufa.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "WELL_DONE",
     "text": "כל הכבוד!",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/well_done_all_boy.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/well_done_all_boy.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/well_done_all_boy.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "ALL_DONE_MESSAGE",
     "text": "סיימת את כל המשימות להיום!",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/all_done_boy.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/all_done_boy.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/all_done_boy.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "DEFAULT_GREETING_WITH_COMMA",
     "text": "בהצלחה,",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/good_luck.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/good_luck.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/good_luck.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "TODAY_NO",
     "text": "היום אין",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/today_no.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/today_no.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "FINISHED_PREFIX",
     "text": "סיימת את",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/finished_boy.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/finished_boy.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/finished_boy.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "NOW_PREFIX",
     "text": "עכשיו,",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/now_prefix.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/now_prefix.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "CHANGE_LABEL",
     "text": "שינוי!",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/change_label.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/change_label.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "NOW_LABEL",
     "text": "עכשיו",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/now_label.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/now_label.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "DONE_LABEL",
     "text": "בוצע",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/done_label.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/done_label.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "WHO_WILL_BE_WITH_US",
     "text": "מי יהיה איתנו היום?",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/who_will_be_with_us.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/who_will_be_with_us.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "COMMUNICATION_BOARD_LABEL",
     "text": "לוח תקשורת",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/communication_board_label.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/communication_board_label.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "OPEN_COMMUNICATION_BOARD",
     "text": "פתח לוח תקשורת",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/open_communication_board.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/open_communication_board.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "CLOSE_LABEL",
     "text": "סגור",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/close_label.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/close_label.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "FLOATING_WINDOW_TITLE",
     "text": "חלון צף",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/floating_window_title.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/floating_window_title.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "toilet",
     "text": "שירותים",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/toilet.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/toilet.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/toilet.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "breakfast",
     "text": "ארוחת בוקר",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/breakfast.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/breakfast.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/breakfast.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "lunch",
     "text": "ארוחת צהריים",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/lunch.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/lunch.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/lunch.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "dinner",
     "text": "ארוחת ערב",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/dinner.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/dinner.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/dinner.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "brushing_teeth",
     "text": "לצחצח שיניים",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/brushing_teeth.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/brushing_teeth.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/brushing_teeth.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "shower",
     "text": "להתקלח",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/shower.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/shower.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/shower.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "getting_dressed",
     "text": "להתלבש",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/getting_dressed.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/getting_dressed.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/getting_dressed.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "going_to_car",
     "text": "ללכת לאוטו",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/going_to_car.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/going_to_car.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/going_to_car.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "play_time",
     "text": "זמן משחק",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/play_time.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/play_time.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/play_time.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "sleep_time",
     "text": "זמן שינה",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/sleep_time.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/sleep_time.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/sleep_time.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "tablet",
     "text": "טאבלט",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/tablet.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/tablet.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/tablet.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "lesson",
     "text": "שיעור",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/lesson.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/lesson.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/lesson.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "playground",
     "text": "ללכת לגינה",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/playground.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/playground.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/playground.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "arts_and_crafts",
     "text": "ציור ויצירה",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/arts_and_crafts.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/arts_and_crafts.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/arts_and_crafts.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "medicine",
     "text": "לקחת תרופות",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/medicine.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/medicine.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/medicine.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "grandparents",
     "text": "ללכת לסבא וסבתא",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/grandparents.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/grandparents.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/grandparents.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "prayer",
     "text": "תפילה",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/prayer.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/prayer.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/prayer.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "box_work",
     "text": "עבודה בקופסאות עבודה",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/box_work.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/box_work.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/box_work.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "yard",
     "text": "חצר",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/yard.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/yard.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/yard.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "animal_therapy",
     "text": "חוג בעלי חיים",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/animal_therapy.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/animal_therapy.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/animal_therapy.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "travel_car",
     "text": "נוסעים באוטו",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/travel_car.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/travel_car.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "visit_building",
     "text": "הולכים לביקור",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/visit_building.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/visit_building.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "guests_arrive",
     "text": "אורחים מגיעים",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/guests_arrive.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/guests_arrive.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "guests_leave",
     "text": "נפרדים מהאורחים",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/guests_leave.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/guests_leave.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "back_home",
     "text": "חזרנו הביתה",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/back_home.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/back_home.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "LIST_MORNING",
     "text": "שגרת בוקר",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/list_morning.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/list_morning.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/list_morning.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "GREETING_MORNING",
     "text": "בוקר טוב",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/good_morning.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/good_morning.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/good_morning.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "LIST_AFTERNOON",
     "text": "אחרי הצהריים",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/list_afternoon.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/list_afternoon.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/list_afternoon.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "GREETING_AFTERNOON",
     "text": "אחרי צהריים טובים",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/good_afternoon.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.1-t1/good_afternoon.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/good_afternoon.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "LIST_GRANDPARENTS",
     "text": "נוסעים לסבא וסבתא",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/list_grandparents.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/list_grandparents.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "TITLE_GRANDPARENTS",
     "text": "מתכוננים לנסוע לסבא וסבתא",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/title_grandparents.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/title_grandparents.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "GREETING_GRANDPARENTS",
     "text": "נסיעה טובה",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/greeting_grandparents.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/greeting_grandparents.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "LIST_GUESTS",
     "text": "דודים באים לבקר",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/list_guests.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/list_guests.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "TITLE_GUESTS",
     "text": "מתכוננים לביקור של דודים",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/title_guests.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/title_guests.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "GREETING_GUESTS",
     "text": "ברוכים הבאים",
-    "files": [
-      {
-        "path": "/sounds/hope-v0.2-t1/greeting_guests.mp3",
-        "voice": "hope",
-        "version": "v0.2",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/river-v0.2-t2/greeting_guests.mp3",
-        "voice": "river",
-        "version": "v0.2",
-        "take": "t2"
-      }
-    ]
+    "files": []
   },
   {
     "id": "SETTINGS_TITLE",
     "text": "הגדרות מערכת",
-    "files": [
-      {
-        "path": "/sounds/river-v0.1-t1/settings_title.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "SAVE",
     "text": "שמור",
-    "files": [
-      {
-        "path": "/sounds/river-v0.1-t1/save.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "ASITA_ZE_BOY",
     "text": "עשית את זה!",
-    "files": [
-      {
-        "path": "/sounds/river-v0.1-t1/asita_ze_boy.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "ASITA_ZE_GIRL",
     "text": "עשית את זה!",
-    "files": [
-      {
-        "path": "/sounds/river-v0.1-t1/asita_ze_girl.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "EIZE_KEF",
     "text": "איזה כיף!",
-    "files": [
-      {
-        "path": "/sounds/river-v0.1-t1/eize_kef.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "NEHEDAR",
     "text": "ילד נהדר",
-    "files": [
-      {
-        "path": "/sounds/river-v0.1-t1/nehedar.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "NEHEDERET",
     "text": "ילדה נהדרת",
-    "files": [
-      {
-        "path": "/sounds/river-v0.1-t1/nehederet.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "MEULE",
     "text": "מעולה!",
-    "files": [
-      {
-        "path": "/sounds/river-v0.1-t1/meule.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "YOFI",
     "text": "יופי!",
-    "files": [
-      {
-        "path": "/sounds/river-v0.1-t1/yofi.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "FINISHED_OPT_BOY",
     "text": "סיימת",
-    "files": [
-      {
-        "path": "/sounds/river-v0.1-t1/finished_opt_boy.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "FINISHED_OPT_GIRL",
     "text": "סיימת",
-    "files": [
-      {
-        "path": "/sounds/river-v0.1-t1/finished_opt_girl.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "FINISHED_TASK_BOY",
     "text": "כל הכבוד סיימת הכל (בן)",
-    "files": [
-      {
-        "path": "/sounds/river-v0.1-t1/finished_task_boy.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "FINISHED_TASK_GIRL",
     "text": "כל הכבוד סיימת הכל (בת)",
-    "files": [
-      {
-        "path": "/sounds/river-v0.1-t1/finished_task_girl.mp3",
-        "voice": "river",
-        "version": "v0.1",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "NAME_TAMAR",
     "text": "תמר",
-    "files": [
-      {
-        "path": "/sounds/names/tamar.mp3",
-        "voice": "hope",
-        "version": "names",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/names/tamar.mp3",
-        "voice": "river",
-        "version": "names",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "NAME_YONATAN",
     "text": "יונתן",
-    "files": [
-      {
-        "path": "/sounds/names/yonatan.mp3",
-        "voice": "hope",
-        "version": "names",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/names/yonatan.mp3",
-        "voice": "river",
-        "version": "names",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "NAME_ARIEL",
     "text": "אריאל",
-    "files": [
-      {
-        "path": "/sounds/names/ariel.mp3",
-        "voice": "hope",
-        "version": "names",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/names/ariel.mp3",
-        "voice": "river",
-        "version": "names",
-        "take": "t1"
-      }
-    ]
+    "files": []
   },
   {
     "id": "NAME_AVISHAI",
     "text": "אבישי",
-    "files": [
-      {
-        "path": "/sounds/names/avishai.mp3",
-        "voice": "hope",
-        "version": "names",
-        "take": "t1"
-      },
-      {
-        "path": "/sounds/names/avishai.mp3",
-        "voice": "river",
-        "version": "names",
-        "take": "t1"
-      }
-    ]
+    "files": []
   }
 ]
