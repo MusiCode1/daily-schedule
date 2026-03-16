@@ -46,7 +46,7 @@ const staleWhileRevalidate = async (request: Request): Promise<Response> => {
 	const cached = await cache.match(request);
 	const networkPromise = fetch(request)
 		.then((response) => {
-			if (response.ok) {
+			if (response.ok && response.status === 200) {
 				void cache.put(request, response.clone());
 			}
 			return response;
@@ -67,7 +67,7 @@ const networkFirst = async (request: Request): Promise<Response> => {
 
 	try {
 		const response = await fetch(request);
-		if (response.ok) {
+		if (response.ok && response.status === 200) {
 			void cache.put(request, response.clone());
 		}
 		return response;

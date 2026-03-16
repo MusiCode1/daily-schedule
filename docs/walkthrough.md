@@ -1,5 +1,23 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-03-16 18:00
+
+### תיקון שגיאת 206 Partial Content ב-Service Worker
+
+#### מה בוצע?
+
+**`service-worker.ts` — מניעת cache של תגובות חלקיות**
+
+- תוקן bug שגרם לשגיאה `TypeError: Failed to execute 'put' on 'Cache': Partial response (status code 206) is unsupported`
+- הוספת בדיקת `response.status === 200` ב-`staleWhileRevalidate` וב-`networkFirst` לפני כתיבה ל-cache
+- הדפדפן שולח `Range` header לקבצי אודיו MP3 לצורך streaming — מקבל HTTP 206 Partial Content. ה-Cache API מסרב לשמור תגובות חלקיות, מה שגרם לשגיאה בכל ניגון אודיו ראשון
+
+#### מעקפים ופתרונות
+
+- **HTTP 206 vs Cache API**: הבעיה מובנית — קבצי אודיו מתבקשים עם Range header, אבל Cache API דורש תגובות מלאות. הפתרון: לדלג על cache.put() לכל תגובה שאינה 200, ולאפשר לבקשות עתידיות להגיע לרשת עד שיתקבל response מלא.
+
+---
+
 ## 2026-03-16 14:00
 
 ### שלושה שיפורים ל-UX של לוח המשימות: הפסקת אודיו, חסימת לחיצות וסימון בעריכה
