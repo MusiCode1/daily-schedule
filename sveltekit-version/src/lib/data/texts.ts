@@ -322,7 +322,11 @@ const TEXTS_ADMIN = {
 
 	// הגדרות כלליות – חסימת לחיצות
 	TASK_CLICK_COOLDOWN_LABEL: 'חסימת לחיצות לאחר סימון משימה',
-	TASK_CLICK_COOLDOWN_DESC: 'לאחר לחיצה על משימה, ניתן ללחוץ שוב רק לאחר 30 שניות'
+	TASK_CLICK_COOLDOWN_DESC: 'לאחר לחיצה על משימה, ניתן ללחוץ שוב רק לאחר 30 שניות',
+
+	// עריכת מטא-דאטה של רשימה (inline בתוך הכותרת)
+	LIST_TITLE_ADD_HINT: '+ הוסף כותרת',
+	LIST_DESC_ADD_HINT: '+ הוסף תיאור'
 } as const;
 
 export const TEXTS = {

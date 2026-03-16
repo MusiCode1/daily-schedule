@@ -1,5 +1,90 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-03-17 17:30
+
+### עריכה inline מלאה בתוך `ListHeader` + תיקון גלישת תמונות ב-`ListSwitcher`
+
+העברת כל עריכת מטא-נתוני הרשימה (שם, כותרת, תיאור, לוגו) לתוך `ListHeader` עצמה, בלחיצה ישירה על האלמנטים — במקום עורך נפרד.
+
+#### מה בוצע?
+
+**1. עריכה inline ב-`ListHeader.svelte` (click-to-edit)**
+
+- שם הרשימה: `<h2>` במצב תצוגה, `<button>` לחיץ במצב עריכה — לחיצה הופכת אותו ל-`<input>`
+- כותרת (`title`): לחיצה הופכת ל-`<input>`; אם ריקה — מוצג כפתור "+ הוסף כותרת"
+- תיאור (`description`): לחיצה הופכת ל-`<textarea>`; אם ריק — מוצג כפתור "+ הוסף תיאור"
+- כל שדה נשמר ב-`onblur` ומבוטל ב-`Escape`; `tick()` מבטיח focus אחרי עדכון ה-DOM
+- `$effect` מאפס את כל מצבי העריכה כש-`name` משתנה (מעבר בין רשימות)
+
+**2. עריכת לוגו inline (`ListHeader.svelte`)**
+
+- במצב עריכה: `ImageDisplay` מוחלף ב-`ImageUploader` ישירות בתוך הכותרת
+- הוסף CSS ייעודי (`.logo-edit-mode`) שמבטל `overflow: hidden` ומאפשר לעורך הcrop להיות גלוי
+
+**3. callbacks ב-`+page.svelte`**
+
+- הוסרו `editTitle`, `editDescription` ו-`saveListMeta()` (לוגיקה עברה ל-`ListHeader`)
+- הוסרו: בלוק `list-meta-editor` מה-HTML
+- נוספו: `saveListName`, `saveListTitle`, `saveListDescription`, `saveListLogo` — מועברים כ-`onRename`/`onUpdateTitle`/`onUpdateDescription`/`onUpdateLogo`
+
+**4. תיקון גלישת תמונות ב-`ListSwitcher.svelte`**
+
+- תמונות עם crop שאינו בפינה גלשו מחוץ למכל לתוך הרכיב שמתחת
+- פתרון: הוספת `isolation: isolate` ל-`.image-container`
+
+#### החלטות ארכיטקטורה
+
+- **click-to-edit ב-`ListHeader` ולא ב-`+page.svelte`**: מקורב לנתון שהוא משפיע עליו — הרכיב עצמו אחראי לעריכתו. `+page.svelte` רק מספק callbacks לשמירה.
+- **`<button>` ולא `<h2 tabindex>` לכותרת לחיצה**: a11y אוסר על `role="button"` ו-`tabindex` על אלמנטים non-interactive. פתרון: `<button>` עם `font-size`/`font-weight` זהים ל-`<h2>`, ללא border/background.
+
+#### מעקפים ופתרונות
+
+- **`overflow: hidden` לא חוסם `transform` של צאצא**: הדפדפן לא יוצר stacking context חדש ב-overflow בלבד כשיש `border-radius`. הוספת `isolation: isolate` כופה stacking context ומבטיחה ש-`overflow: hidden` חותך את התמונה כראוי.
+
+---
+
+## 2026-03-17 15:00
+
+### שיפורי מצב עריכה בלוח המשימות + תיקון ניווט `#edit`
+
+עדכון ממשק מצב עריכה: כותרת רשימה תמיד גלויה, כפתור "רשימה חדשה" בתוך ListSwitcher, עורך inline לכותרת/תיאור, וסדר אלמנטים מחודש בדף.
+
+#### מה בוצע?
+
+**1. ניווט ישיר למצב עריכה (`tasksBoard.svelte.ts`, `+page.svelte`)**
+
+- `toggleEditMode()` כותב `#edit` ל-URL בכניסה למצב עריכה ומסיר אותו ביציאה
+- `onMount` ב-`+page.svelte` קורא `window.location.hash === '#edit'` ומפעיל `board.isEditMode = true` — מאפשר ניווט ישיר לכתובת `/tasks#edit`
+
+**2. כותרת רשימה תמיד גלויה (`ListHeader.svelte`, `+page.svelte`)**
+
+- הוסף prop `name: string` ל-`ListHeader` — שם הרשימה מוצג תמיד (גם בתצוגה וגם בעריכה)
+- `title` ו-`description` מועברים רק במצב תצוגה (`!board.isEditMode ? value : undefined`)
+
+**3. כפתור "רשימה חדשה" ב-`ListSwitcher` (`ListSwitcher.svelte`)**
+
+- הוסף props: `isEditMode` ו-`onAddList`
+- בסוף רשימת הכרטיסיות מוצג כפתור "+" עם מסגרת מקוטעת (dashed) כשהמשתמש במצב עריכה
+- הכפתור הוסר מ-`list-actions-panel` ב-`+page.svelte`
+
+**4. עורך inline לכותרת/תיאור (`+page.svelte`)**
+
+- הוסף state: `editTitle`, `editDescription` — מסונכרנים עם הרשימה הפעילה דרך `$effect`
+- `saveListMeta()` שומר ב-`listStore.updateList()` בכל יציאה מהשדה (`onblur`)
+- שדות ריקים מוצגים עם מסגרת כתומה ומקוטעת (class `empty`) + הודעת רמז
+- הוסף מפתח `LIST_META_EMPTY_HINT` ל-`texts.ts`
+
+**5. סדר אלמנטים מחודש ב-`+page.svelte`**
+
+- הסדר החדש: ListSwitcher → כותרת (name+logo) → פאנל פעולות → עורך inline → PeopleDisplay → משימות
+- PeopleDisplay הועבר מעל לפאנל הפעולות למיקום אחרי עורך ה-inline
+
+#### מעקפים ופתרונות
+
+- **`\!` בקובץ Svelte**: בעת כתיבת קבצי Svelte דרך Python בתוך bash double-quoted string, bash מסנן `!` ל-`\!`. הפתרון: ריצת סקריפט Python נוסף שמחליף `chr(92) + '!'` ב-`'!'` ישירות בקובץ.
+
+---
+
 ## 2026-03-16 18:00
 
 ### תיקון שגיאת 206 Partial Content ב-Service Worker

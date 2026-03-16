@@ -1,15 +1,20 @@
 <script lang="ts">
   import ImageDisplay from '$lib/components/ImageDisplay.svelte';
   import { DEFAULT_LIST_IMAGE } from '$lib/config';
-  
-  let { 
-    activeListId = $bindable("morning_routine"), 
+  import { TEXTS } from '$lib/services/language';
+
+  let {
+    activeListId = $bindable("morning_routine"),
     listsData = [],
-    onchange
-  } = $props<{ 
-    activeListId?: string; 
+    isEditMode = false,
+    onchange,
+    onAddList
+  } = $props<{
+    activeListId?: string;
     listsData?: any[];
+    isEditMode?: boolean;
     onchange?: (detail: { listId: string }) => void;
+    onAddList?: () => void;
   }>();
 
   function selectList(listId: string) {
@@ -23,13 +28,13 @@
 <div class="switcher-container">
   <div class="list-switcher">
     {#each listsData as list (list.id)}
-      <button 
-        class="list-card" 
+      <button
+        class="list-card"
         class:active={activeListId === list.id}
         onclick={() => selectList(list.id)}
       >
         <div class="image-container">
-          <ImageDisplay 
+          <ImageDisplay
             imageSrc={list.logo || DEFAULT_LIST_IMAGE}
             alt={list.name}
           />
@@ -37,6 +42,13 @@
         <span class="list-name">{list.name}</span>
       </button>
     {/each}
+
+    {#if isEditMode}
+      <button class="list-card add-list-card" onclick={onAddList}>
+        <div class="add-icon">＋</div>
+        <span class="list-name">{TEXTS.NEW_LIST_ACTION}</span>
+      </button>
+    {/if}
   </div>
 </div>
 
@@ -47,8 +59,8 @@
     border: 1px solid rgba(255, 255, 255, 0.8);
     border-radius: 20px;
     padding: 0.5rem;
-    box-shadow: 
-      0 4px 6px -1px rgba(0, 0, 0, 0.05), 
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.05),
       0 2px 4px -1px rgba(0, 0, 0, 0.03),
       inset 0 1px 0 rgba(255, 255, 255, 0.5);
     margin: 0 auto;
@@ -97,6 +109,7 @@
     border-radius: 10px;
     overflow: hidden;
     position: relative;
+    isolation: isolate;
   }
 
   .image-container :global(.image-display) {
@@ -117,6 +130,42 @@
   }
 
   .list-card.active .list-name {
+    color: var(--primary-accent, #6366f1);
+  }
+
+  /* כפתור "רשימה חדשה" */
+  .add-list-card {
+    border: 2px dashed #cbd5e1;
+    background: rgba(248, 250, 252, 0.8);
+  }
+
+  .add-list-card:hover {
+    border-color: var(--primary-accent, #6366f1);
+    background: white;
+  }
+
+  .add-icon {
+    width: 100%;
+    aspect-ratio: 16/9;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: #94a3b8;
+    background: #f1f5f9;
+  }
+
+  .add-list-card:hover .add-icon {
+    color: var(--primary-accent, #6366f1);
+    background: #eef2ff;
+  }
+
+  .add-list-card .list-name {
+    color: #94a3b8;
+  }
+
+  .add-list-card:hover .list-name {
     color: var(--primary-accent, #6366f1);
   }
 </style>

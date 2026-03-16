@@ -41,6 +41,26 @@
 	let editingListForModal: List | null = $state(null);
 	let isFullScreen = $state(false);
 
+	function saveListName(newName: string) {
+		if (!session.currentUser || !nav.activeList) return;
+		listStore.updateList(session.currentUser.id, nav.activeList.id, { name: newName });
+	}
+
+	function saveListTitle(newTitle: string | undefined) {
+		if (!session.currentUser || !nav.activeList) return;
+		listStore.updateList(session.currentUser.id, nav.activeList.id, { title: newTitle });
+	}
+
+	function saveListDescription(newDesc: string | undefined) {
+		if (!session.currentUser || !nav.activeList) return;
+		listStore.updateList(session.currentUser.id, nav.activeList.id, { description: newDesc });
+	}
+
+	function saveListLogo(newLogo: string) {
+		if (!session.currentUser || !nav.activeList) return;
+		listStore.updateList(session.currentUser.id, nav.activeList.id, { logo: newLogo || undefined });
+	}
+
 	function toggleFullScreen() {
 		if (!document.fullscreenElement) {
 			document.documentElement.requestFullscreen().catch((e) => {
@@ -55,6 +75,9 @@
 
 	onMount(() => {
 		isLoaded = true;
+		if (window.location.hash === '#edit') {
+			board.isEditMode = true;
+		}
 		if (!session.currentUser) {
 			void goto(resolve('/login'), { replaceState: true }).catch((error) => {
 				console.warn('[TasksPage] navigation to /login failed', error);
@@ -177,7 +200,9 @@
 				<ListSwitcher
 					activeListId={nav.activeList?.id || ''}
 					listsData={nav.userLists}
+					isEditMode={board.isEditMode}
 					onchange={(e) => nav.switchList(e.listId)}
+					onAddList={() => { editingListForModal = null; isListEditModalOpen = true; }}
 				/>
 
 				{#if nav.activeList?.isLocked}
@@ -187,19 +212,17 @@
 				{/if}
 			{/if}
 
-			{#if nav.activeList?.title || nav.activeList?.description}
+			{#if nav.activeList}
 				<ListHeader
+					name={nav.activeList.name}
 					logo={nav.activeList.logo}
 					title={nav.activeList.title}
 					description={nav.activeList.description}
-				/>
-			{/if}
-
-			{#if nav.activeList?.peopleIds && nav.activeList.peopleIds.length > 0}
-				<PeopleDisplay
-					peopleIds={nav.activeList.peopleIds}
-					isVisible={nav.activeList.isPeopleSectionVisible ?? true}
-					ontoggle={() => board.togglePeopleSection()}
+					isEditMode={board.isEditMode}
+					onRename={(newName) => saveListName(newName)}
+					onUpdateTitle={(t) => saveListTitle(t)}
+					onUpdateDescription={(d) => saveListDescription(d)}
+					onUpdateLogo={(logo) => saveListLogo(logo)}
 				/>
 			{/if}
 
@@ -211,16 +234,6 @@
 					</div>
 
 					<div class="panel-actions">
-						<BoardActionCard
-							variant="primary"
-							icon="➕"
-							label={TEXTS.NEW_LIST_ACTION}
-							onclick={() => {
-								editingListForModal = null;
-								isListEditModalOpen = true;
-							}}
-						/>
-
 						{#if nav.activeList}
 							<BoardActionCard
 								variant="edit"
@@ -276,6 +289,14 @@
 						/>
 					</div>
 				</div>
+			{/if}
+
+			{#if nav.activeList?.peopleIds && nav.activeList.peopleIds.length > 0}
+				<PeopleDisplay
+					peopleIds={nav.activeList.peopleIds}
+					isVisible={nav.activeList.isPeopleSectionVisible ?? true}
+					ontoggle={() => board.togglePeopleSection()}
+				/>
 			{/if}
 
 			{#each board.tasks as task, index (task.id)}
@@ -699,4 +720,5 @@
 		align-items: center;
 		gap: 0.5rem;
 	}
+
 </style>
