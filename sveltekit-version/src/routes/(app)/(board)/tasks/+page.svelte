@@ -295,9 +295,11 @@
 						taskNumber={index + 1}
 						isActive={index === board.activeTaskIndex}
 						isEditMode={board.isEditMode}
+						isBlocked={board.isTaskClickBlocked}
 						isFirst={index === 0}
 						isLast={index === board.tasks.length - 1}
 						ontoggle={() => board.toggleTask(task.id)}
+						ontogglecompletion={() => board.toggleTaskCompletionInEditMode(task.id)}
 						ondelete={() => board.deleteTask(task.id)}
 						onedit={() => board.openAddModal(task)}
 						onduplicate={() => board.duplicateTask(task.id)}

@@ -32,6 +32,10 @@ export class TasksBoardController {
 	iframeBoardUrl = $state('');
 	iframeBoardVisible = $state(false);
 
+	// מצב חסימת לחיצות (cooldown לאחר toggle)
+	isTaskClickBlocked = $state(false);
+	private _blockTimer: ReturnType<typeof setTimeout> | null = null;
+
 	// -- תלויות --
 	dnd: DragDropManager;
 
@@ -75,6 +79,20 @@ export class TasksBoardController {
 
 	// -- פעולות --
 
+	/**
+	 * מפעיל חסימת לחיצות על משימות למשך durationMs מילישניות.
+	 * פועל רק אם ההגדרה taskClickCooldownEnabled מופעלת.
+	 */
+	private startClickBlock(durationMs = 30_000) {
+		if (!globalState.state.settings.taskClickCooldownEnabled) return;
+		if (this._blockTimer) clearTimeout(this._blockTimer);
+		this.isTaskClickBlocked = true;
+		this._blockTimer = setTimeout(() => {
+			this.isTaskClickBlocked = false;
+			this._blockTimer = null;
+		}, durationMs);
+	}
+
 	toggleEditMode() {
 		this.isEditMode = !this.isEditMode;
 		if (typeof window !== 'undefined') {
@@ -88,6 +106,7 @@ export class TasksBoardController {
 
 	async toggleTask(taskId: string) {
 		if (this.isEditMode || !this.currentUser || !this.activeList) return;
+		if (this.isTaskClickBlocked) return; // חסימת cooldown פעילה
 
 		// אם הרשימה נעולה - רק השמעת שם המשימה (מצב תרגול/הכנה)
 		if (this.activeList.isLocked) {
@@ -112,6 +131,9 @@ export class TasksBoardController {
 		// עדכון progress ב-taskProgress
 		const wasDone = globalState.state.taskProgress[taskId] ?? false;
 		globalState.state.taskProgress[taskId] = !wasDone;
+
+		// הפעלת חסימת לחיצות לאחר כל שינוי מצב
+		this.startClickBlock();
 
 		if (!wasDone) {
 			// טריגר חגיגה (לא מחכים)
@@ -359,6 +381,17 @@ export class TasksBoardController {
 		sortedTasks.forEach((task, index) => {
 			task.order = index;
 		});
+	}
+
+	/**
+	 * toggle השלמת משימה במצב עריכה – ללא אודיו, חגיגה או חסימת לחיצות.
+	 * פועל רק כשה-Controller במצב עריכה.
+	 */
+	toggleTaskCompletionInEditMode(taskId: string) {
+		if (!this.isEditMode || !this.currentUser || !this.activeList) return;
+		const wasDone = globalState.state.taskProgress[taskId] ?? false;
+		globalState.state.taskProgress[taskId] = !wasDone;
+		globalState.save();
 	}
 
 	resetAllTasks() {

@@ -11,8 +11,10 @@
 		isEditMode = false,
 		isFirst = false,
 		isLast = false,
+		isBlocked = false,
 		taskNumber,
 		ontoggle,
+		ontogglecompletion,
 		ondelete,
 		onedit,
 		onduplicate,
@@ -27,8 +29,10 @@
 		isEditMode?: boolean;
 		isFirst?: boolean;
 		isLast?: boolean;
+		isBlocked?: boolean;
 		taskNumber?: number;
 		ontoggle?: (id: string) => void;
+		ontogglecompletion?: (id: string) => void;
 		ondelete?: (id: string) => void;
 		onedit?: (task: Task) => void;
 		onduplicate?: (id: string) => void;
@@ -38,9 +42,16 @@
 		[key: string]: any;
 	}>();
 
+	// משתנה לזיהוי גרירה – מונע toggle בסיום גרירה
+	let isDragging = $state(false);
+
 	function handleToggle(e: Event) {
 		e.stopPropagation();
-		ontoggle?.(task.id);
+		if (isEditMode) {
+			if (!isDragging) ontogglecompletion?.(task.id);
+		} else {
+			ontoggle?.(task.id);
+		}
 	}
 
 	function handleOpenBoard(e: Event) {
@@ -69,8 +80,11 @@
 		class="task-card"
 		draggable={isEditMode}
 		class:editable={isEditMode}
+		class:click-blocked={isBlocked}
 		onclick={handleToggle}
 		onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && handleToggle(e)}
+		ondragstart={() => { isDragging = true; }}
+		ondragend={() => { isDragging = false; }}
 		role="button"
 		tabindex="0"
 		{...rest}
@@ -182,6 +196,29 @@
 		cursor: pointer;
 		/*border: 2px solid transparent;*/
 		position: relative;
+	}
+
+	/* מצב חסימת לחיצות – glow */
+	.task-card.click-blocked {
+		pointer-events: none;
+		box-shadow:
+			0 0 0 3px var(--primary),
+			0 0 16px 6px color-mix(in srgb, var(--primary) 40%, transparent);
+		animation: blocked-pulse 1.5s ease-in-out infinite;
+	}
+
+	@keyframes blocked-pulse {
+		0%,
+		100% {
+			box-shadow:
+				0 0 0 3px var(--primary),
+				0 0 16px 6px color-mix(in srgb, var(--primary) 40%, transparent);
+		}
+		50% {
+			box-shadow:
+				0 0 0 3px var(--primary),
+				0 0 24px 10px color-mix(in srgb, var(--primary) 25%, transparent);
+		}
 	}
 
 	/* מצב גרירה (Dragging) */

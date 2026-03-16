@@ -318,7 +318,11 @@ const TEXTS_ADMIN = {
 	WEBSITES_DELETE_CONFIRM: 'למחוק קיצור דרך זה?',
 	WEBSITES_OPEN: 'פתח אתר',
 	WEBSITES_NO_SHORTCUTS: 'אין קיצורי דרך. לחץ על "+ הוסף אתר" כדי להתחיל.',
-	WEBSITES_INVALID_URL: 'כתובת לא תקינה. יש להזין כתובת שמתחילה ב-http:// או https://'
+	WEBSITES_INVALID_URL: 'כתובת לא תקינה. יש להזין כתובת שמתחילה ב-http:// או https://',
+
+	// הגדרות כלליות – חסימת לחיצות
+	TASK_CLICK_COOLDOWN_LABEL: 'חסימת לחיצות לאחר סימון משימה',
+	TASK_CLICK_COOLDOWN_DESC: 'לאחר לחיצה על משימה, ניתן ללחוץ שוב רק לאחר 30 שניות'
 } as const;
 
 export const TEXTS = {

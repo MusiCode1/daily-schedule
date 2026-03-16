@@ -93,6 +93,7 @@ export interface AppState {
 		currentUserId: string | null;
 		childLockEnabled: boolean;
 		websiteShortcuts: WebsiteShortcut[];
+		taskClickCooldownEnabled: boolean;
 	};
 
 	// ─── Device-local (לא מסונכרן) ───

@@ -1,5 +1,40 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-03-16 14:00
+
+### שלושה שיפורים ל-UX של לוח המשימות: הפסקת אודיו, חסימת לחיצות וסימון בעריכה
+
+#### מה בוצע?
+
+**1. הפסקת הקלטה קודמת (`audioSequencer.ts`)**
+
+- הוסף `_sequenceVersion` (מונה) ו-`_stopCurrentAudio` (callback) לאובייקט
+- הוסף מתודת `stop()` ציבורית שמגדילה את המונה ומפעילה את ה-callback לעצירה מיידית
+- `playSequence()` קורא ל-`stop()` בתחילה — ה-sequence הקודם מסתיים מיד ומפנה את הדרך לחדש
+- ב-`playFile()` ו-`playTTS()` נשמר callback שעושה `audio.pause()` / `speechSynthesis.cancel()` ו-resolve, ומתאפס ב-`onended/onerror`
+
+**2. חסימת לחיצות 30 שניות (אופציונלי) (`tasksBoard.svelte.ts`, `TaskRow.svelte`)**
+
+- הוסף `isTaskClickBlocked = $state(false)` ו-`startClickBlock()` ל-Controller
+- `toggleTask()` בודק `isTaskClickBlocked` בתחילה ומפעיל `startClickBlock()` אחרי כל שינוי `taskProgress`
+- לחיצות על רשימה נעולה / משימה מבוטלת (שמע בלבד) — לא מפעילות חסימה
+- `TaskRow.svelte`: prop `isBlocked` מוסיף class `click-blocked` עם `pointer-events: none` + אנימציית glow (pulse)
+- העלאת גרסת סכמה: **v17 → v18**, שדה `taskClickCooldownEnabled` (ברירת מחדל `true`)
+- Toggle הגדרה ב-`settings/general/+page.svelte`
+
+**3. סימון משימה בלחיצה קצרה במצב עריכה (`TaskRow.svelte`, `tasksBoard.svelte.ts`)**
+
+- הוסף `isDragging = $state(false)` + handlers על `ondragstart/ondragend` בכרטיס המשימה
+- `handleToggle` במצב עריכה: אם `isDragging` שקרי — קורא ל-`ontogglecompletion`, אחרת מדלג
+- הוסף `toggleTaskCompletionInEditMode()` ל-Controller: toggle פשוט של `taskProgress` ללא אודיו/חגיגה/חסימה
+- גרירה רגילה (drag-and-drop) ממשיכה לעבוד ללא שינוי
+
+#### החלטות ארכיטקטורה
+
+- **`_sequenceVersion` + callback במקום AbortController**: פתרון קל משקל שפועל גם ב-Web Audio API וגם ב-Web Speech API, ומסיים את ה-Promise הנוכחי מיד (ולא מחכה לסיום טבעי).
+- **`isDragging` flag לאבחנה בין click לגרירה**: הדפדפן שולח `click` גם אחרי גרירה. ה-flag מונע toggle לא מכוון כשהמשתמש מעביר משימה.
+- **toggle בעריכה ללא cooldown**: סימון ידני על-ידי המפרגן/מדריך שונה מהפעלה של הילד — אין צורך בהגנת 30 שניות.
+
 ## 2026-03-10 23:30
 
 ### proxy-server — Caddy + שרת Node לניהול Fully Kiosk + חיבור חכם בממשק

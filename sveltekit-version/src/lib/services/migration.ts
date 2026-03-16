@@ -533,6 +533,20 @@ function migrateToV17(state: AnyState): AnyState {
 	return state;
 }
 
+function migrateToV18(state: AnyState): AnyState {
+	log.info('v17 → v18: הוספת taskClickCooldownEnabled להגדרות');
+
+	if (!state.settings) {
+		state.settings = {};
+	}
+	if (state.settings.taskClickCooldownEnabled === undefined) {
+		state.settings.taskClickCooldownEnabled = true;
+	}
+
+	state.version = 18;
+	return state;
+}
+
 export const STATE_MIGRATIONS: Record<number, (state: AnyState) => AnyState> = {
 	2: migrateToV2,
 	3: migrateToV3,
@@ -549,7 +563,8 @@ export const STATE_MIGRATIONS: Record<number, (state: AnyState) => AnyState> = {
 	14: migrateToV14,
 	15: migrateToV15,
 	16: migrateToV16,
-	17: migrateToV17
+	17: migrateToV17,
+	18: migrateToV18
 };
 
 function runStateMigrations(input: AnyState): AnyState {

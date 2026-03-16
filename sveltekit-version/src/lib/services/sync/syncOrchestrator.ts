@@ -178,7 +178,11 @@ function normalizeSettings(rawSettings: any): AppState['settings'] {
 		websiteShortcuts:
 			rawSettings && Array.isArray(rawSettings.websiteShortcuts)
 				? rawSettings.websiteShortcuts
-				: []
+				: [],
+		taskClickCooldownEnabled:
+			rawSettings && typeof rawSettings.taskClickCooldownEnabled === 'boolean'
+				? rawSettings.taskClickCooldownEnabled
+				: true
 	};
 }
 
