@@ -13,7 +13,7 @@ describe('/tasks/+page.svelte', () => {
 
 		// חשוב: הייבוא חייב לקרות אחרי כתיבה ל-localStorage,
 		// כי ה-GlobalState נטען בזמן import.
-		const { default: Page } = await import('../../src/routes/(board)/tasks/+page.svelte');
+		const { default: Page } = await import('../../src/routes/(app)/(board)/tasks/+page.svelte');
 		render(Page);
 
 		const heading = page.getByRole('heading', { level: 1 });

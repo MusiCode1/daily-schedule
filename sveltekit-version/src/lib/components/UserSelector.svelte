@@ -6,7 +6,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 
-	import favicon from '$lib/assets/logo.svg';
+	// import favicon from '$lib/assets/logo.svg';
 
 	let { users }: { users: UserProfile[] } = $props();
 
@@ -23,16 +23,16 @@
 				<span>{TEXTS.APP_TITLE_PART1}</span>
 				<span class="highlight">{TEXTS.APP_TITLE_PART2}</span>
 			</div>
-			<img src={favicon} alt={TEXTS.APP_LOGO_ALT} class="app-logo" />
+			<img src="/favicon.svg" alt={TEXTS.APP_LOGO_ALT} class="app-logo" />
 		</div>
 	</header>
-	
+
 	<h2 class="prompt">{TEXTS.USER_SELECTOR_TITLE}</h2>
-	
+
 	<div class="users-grid">
 		{#each users as user (user.id)}
-			<button 
-				class="user-card" 
+			<button
+				class="user-card"
 				style="--theme-color: {user.themeColor}"
 				onclick={() => handleLogin(user.id)}
 				aria-label={TEXTS.LOGIN_AS(user.name)}
@@ -41,10 +41,7 @@
 					<div class="initials" aria-hidden="true">{user.name[0]}</div>
 					{#if user.avatar}
 						<div class="avatar-image">
-							<ImageDisplay 
-								imageSrc={user.avatar}
-								alt={user.name}
-							/>
+							<ImageDisplay imageSrc={user.avatar} alt={user.name} />
 						</div>
 					{/if}
 				</div>
@@ -87,7 +84,7 @@
 	.app-logo {
 		width: 72px;
 		height: 72px;
-		filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+		filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
 	}
 
 	.title-stack {
@@ -103,13 +100,12 @@
 		color: #1e293b;
 		letter-spacing: -0.02em;
 	}
-	
+
 	.title-stack span.highlight {
 		color: #334155;
 		font-weight: 900;
 		font-size: 2.2rem;
 	}
-
 
 	.prompt {
 		font-size: 2rem;
@@ -136,14 +132,16 @@
 		align-items: center;
 		gap: 1rem;
 		cursor: pointer;
-		transition: transform 0.2s, box-shadow 0.2s;
-		box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+		transition:
+			transform 0.2s,
+			box-shadow 0.2s;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 		min-width: 150px;
 	}
 
 	.user-card:hover {
 		transform: translateY(-5px);
-		box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+		box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 	}
 
 	.user-card:active {
