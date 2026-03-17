@@ -1,5 +1,48 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-03-17 20:00
+
+### סידור רשימות — הזזה שמאלה/ימינה
+
+הוספת שדה `order` לרשימות ולחצני ← → בפאנל הפעולות (מצב עריכה) לשינוי סדר הרשימות.
+
+#### מה בוצע?
+
+**1. סכמה וטיפוסים (`types.ts`, `defaults.ts`)**
+
+- הוסף `order?: number` לממשק `List`
+- `createDefaultLists()` מוסיפה `order: defIndex` לכל רשימת ברירת מחדל
+
+**2. מיגרציה (`migration.ts`)**
+
+- `migrateToV18` עודכן להוסיף `order` לרשימות קיימות לפי סדר אלפביתי נוכחי (גרסה נשארת 18)
+
+**3. Store (`listStore.svelte.ts`)**
+
+- `getUserLists()` ממיין לפי `order` (fallback לשם אם `order` חסר)
+- `addList()` מוסיף `order: maxOrder + 1` לרשימה חדשה
+- נוסף `moveList(userId, listId, direction)` — מחליף `order` עם הרשימה הסמוכה
+
+**4. Controller (`tasksBoard.svelte.ts`)**
+
+- `moveListLeft()` / `moveListRight()` — קוראים ל-`listStore.moveList()`
+
+**5. ממשק משתמש (`+page.svelte`, `BoardActionCard.svelte`)**
+
+- כפתורי ← → בפאנל הפעולות, מושבתים כשהרשימה בקצה
+- הוסף variant `neutral` ל-`BoardActionCard` + CSS למצב `disabled`
+
+**6. טסטים (`state.migration.test.ts`)**
+
+- הוסף assertion: אחרי מיגרציה לכל רשימה יש `order: number`
+
+#### החלטות ארכיטקטורה
+
+- **גרסת סכמה נשארת 18**: השינוי בוצע היום — עדכון in-place של `migrateToV18` במקום הוספת v19
+- **sortLists defensive**: אם `order` חסר (state ישן שעלה ל-18 לפני השינוי) — fallback לשם, כדי שהאפליקציה תפעל גם ללא מיגרציה מחדש
+
+---
+
 ## 2026-03-17 17:30
 
 ### עריכה inline מלאה בתוך `ListHeader` + תיקון גלישת תמונות ב-`ListSwitcher`

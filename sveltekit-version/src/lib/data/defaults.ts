@@ -167,7 +167,7 @@ const LISTS_BAR = {
 
 // Helper to create initial lists for a user
 export function createDefaultLists(): { [listId: string]: List } {
-	const listsArray = DEFAULT_LIST_DEFINITIONS.map((def) => {
+	const listsArray = DEFAULT_LIST_DEFINITIONS.map((def, defIndex) => {
 		const tasks: { [taskId: string]: any } = {};
 
 		def.items.forEach((item, index) => {
@@ -190,6 +190,7 @@ export function createDefaultLists(): { [listId: string]: List } {
 			greeting: (def as any).greeting,
 			title: (def as any).title,
 			peopleIds: (def as any).peopleIds,
+			order: defIndex, // סדר הרשימה
 			tasks // object
 		};
 	});

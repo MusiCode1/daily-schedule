@@ -202,7 +202,10 @@
 					listsData={nav.userLists}
 					isEditMode={board.isEditMode}
 					onchange={(e) => nav.switchList(e.listId)}
-					onAddList={() => { editingListForModal = null; isListEditModalOpen = true; }}
+					onAddList={() => {
+						editingListForModal = null;
+						isListEditModalOpen = true;
+					}}
 				/>
 
 				{#if nav.activeList?.isLocked}
@@ -269,6 +272,23 @@
 								/>
 							{/if}
 						{/if}
+
+						<BoardActionCard
+							variant="neutral"
+							icon="→"
+							label={TEXTS.MOVE_LIST_RIGHT}
+							disabled={nav.userLists.findIndex((l) => l.id === nav.activeList?.id) === 0}
+							onclick={() => board.moveListLeft()}
+						/>
+
+						<BoardActionCard
+							variant="neutral"
+							icon="←"
+							label={TEXTS.MOVE_LIST_LEFT}
+							disabled={nav.userLists.findIndex((l) => l.id === nav.activeList?.id) ===
+								nav.userLists.length - 1}
+							onclick={() => board.moveListRight()}
+						/>
 
 						<BoardActionCard
 							variant="danger"
@@ -634,6 +654,26 @@
 		border-color: rgba(100, 116, 139, 0.3);
 	}
 
+	:global(.action-card.neutral) {
+		color: #64748b;
+		background: rgba(148, 163, 184, 0.08);
+		border-color: rgba(148, 163, 184, 0.15);
+	}
+
+	:global(.action-card.neutral:hover:not(:disabled)) {
+		background: rgba(148, 163, 184, 0.18);
+		transform: translateY(-3px);
+		box-shadow: 0 8px 20px rgba(148, 163, 184, 0.2);
+		border-color: rgba(148, 163, 184, 0.3);
+	}
+
+	:global(.action-card:disabled) {
+		opacity: 0.35;
+		cursor: not-allowed;
+		transform: none !important;
+		box-shadow: none !important;
+	}
+
 	@media (max-width: 600px) {
 		.panel-actions {
 			grid-template-columns: repeat(2, 1fr);
@@ -720,5 +760,4 @@
 		align-items: center;
 		gap: 0.5rem;
 	}
-
 </style>

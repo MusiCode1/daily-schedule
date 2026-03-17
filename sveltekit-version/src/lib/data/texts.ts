@@ -95,6 +95,8 @@ const TEXTS_ADMIN = {
 	NEW_LIST_ACTION: 'רשימה חדשה',
 	EDIT_LIST_ACTION: 'ערוך רשימה',
 	DELETE_LIST_ACTION: 'מחק רשימה',
+	MOVE_LIST_LEFT: '← הזז שמאלה',
+	MOVE_LIST_RIGHT: 'הזז ימינה →',
 	RESET_TASKS_ACTION: 'אפס משימות',
 	RESET_TASKS_CONFIRM_BOARD: 'האם אתה בטוח שברצונך לאפס את כל המשימות?',
 	NO_TASKS_IN_LIST: 'אין משימות ברשימה זו.',

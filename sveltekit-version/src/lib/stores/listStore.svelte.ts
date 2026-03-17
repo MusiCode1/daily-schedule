@@ -5,16 +5,28 @@ import { TEXTS } from '$lib/data/texts';
 
 export class ListStore {
 	/**
-	 * קבלת רשימות משתמש (ממוין לפי שם)
+	 * מיון רשימות לפי order (ובמידה ואין order — לפי שם)
+	 */
+	private sortLists(lists: List[]): List[] {
+		return lists.sort((a, b) => {
+			const aOrder = a.order ?? Infinity;
+			const bOrder = b.order ?? Infinity;
+			if (aOrder !== bOrder) return aOrder - bOrder;
+			return a.name.localeCompare(b.name);
+		});
+	}
+
+	/**
+	 * קבלת רשימות משתמש (ממוין לפי order)
 	 */
 	getUserLists(userId: string, includeHidden: boolean = false): List[] {
 		const listsObj = globalState.state.lists[userId] || {};
 		const lists = Object.values(listsObj);
 
 		if (includeHidden) {
-			return lists.sort((a, b) => a.name.localeCompare(b.name));
+			return this.sortLists(lists);
 		}
-		return lists.filter((l) => !l.isHidden).sort((a, b) => a.name.localeCompare(b.name));
+		return this.sortLists(lists.filter((l) => !l.isHidden));
 	}
 
 	/**
@@ -54,10 +66,13 @@ export class ListStore {
 	 */
 	addList(userId: string, name: string) {
 		const id = crypto.randomUUID();
+		const existingLists = this.getUserLists(userId, true);
+		const maxOrder = existingLists.reduce((max, l) => Math.max(max, l.order ?? -1), -1);
 		const newList: List = {
 			id,
 			name,
 			greeting: TEXTS.DEFAULT_GREETING,
+			order: maxOrder + 1,
 			tasks: {} // object ריק במקום מערך!
 		};
 
@@ -264,6 +279,21 @@ export class ListStore {
 
 		globalState.save();
 		return newId;
+	}
+	/**
+	 * הזזת רשימה שמאלה או ימינה (החלפת order עם הרשימה הסמוכה)
+	 */
+	moveList(userId: string, listId: string, direction: 'left' | 'right') {
+		const lists = this.getUserLists(userId, true);
+		const idx = lists.findIndex((l) => l.id === listId);
+		const swapIdx = direction === 'left' ? idx - 1 : idx + 1;
+		if (idx < 0 || swapIdx < 0 || swapIdx >= lists.length) return;
+
+		const a = lists[idx];
+		const b = lists[swapIdx];
+		const tmpOrder = a.order ?? idx;
+		this.updateList(userId, a.id, { order: b.order ?? swapIdx });
+		this.updateList(userId, b.id, { order: tmpOrder });
 	}
 }
 

@@ -534,7 +534,7 @@ function migrateToV17(state: AnyState): AnyState {
 }
 
 function migrateToV18(state: AnyState): AnyState {
-	log.info('v17 → v18: הוספת taskClickCooldownEnabled להגדרות');
+	log.info('v17 → v18: הוספת taskClickCooldownEnabled + order לרשימות');
 
 	if (!state.settings) {
 		state.settings = {};
@@ -542,6 +542,20 @@ function migrateToV18(state: AnyState): AnyState {
 	if (state.settings.taskClickCooldownEnabled === undefined) {
 		state.settings.taskClickCooldownEnabled = true;
 	}
+
+	// הוספת order לרשימות לפי סדר אלפביתי נוכחי
+	const users = Object.keys(state.lists || {});
+	users.forEach((userId) => {
+		const userListsMap = state.lists[userId] || {};
+		const userLists = Object.values(userListsMap) as AnyState[];
+		userLists
+			.sort((a, b) => a.name.localeCompare(b.name))
+			.forEach((list, index) => {
+				if (list.order === undefined) {
+					list.order = index;
+				}
+			});
+	});
 
 	state.version = 18;
 	return state;

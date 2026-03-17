@@ -2,7 +2,7 @@
 	import type { HTMLButtonAttributes } from 'svelte/elements';
 	import type { ClassValue } from 'svelte/elements';
 
-	export type BoardActionCardVariant = 'primary' | 'edit' | 'visibility' | 'lock' | 'danger' | 'warning';
+	export type BoardActionCardVariant = 'primary' | 'edit' | 'visibility' | 'lock' | 'danger' | 'warning' | 'neutral';
 
 	type Props = Omit<HTMLButtonAttributes, 'class' | 'children'> & {
 		variant: BoardActionCardVariant;

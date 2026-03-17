@@ -342,6 +342,22 @@ export class TasksBoardController {
 	}
 
 	/**
+	 * הזזת הרשימה הפעילה שמאלה בשורת הכרטיסיות
+	 */
+	moveListLeft() {
+		if (!this.currentUser || !this.activeList) return;
+		listStore.moveList(this.currentUser.id, this.activeList.id, 'left');
+	}
+
+	/**
+	 * הזזת הרשימה הפעילה ימינה בשורת הכרטיסיות
+	 */
+	moveListRight() {
+		if (!this.currentUser || !this.activeList) return;
+		listStore.moveList(this.currentUser.id, this.activeList.id, 'right');
+	}
+
+	/**
 	 * שכפול משימה - יוצר עותק מתחת למשימה המקורית
 	 */
 	duplicateTask(taskId: string) {

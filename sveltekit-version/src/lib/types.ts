@@ -41,6 +41,7 @@ export interface List {
 	description?: string; // תיאור קצר אופציונלי
 	peopleIds?: string[]; // מזהי אנשים (צוות/משפחה) לרשימה זו
 	isPeopleSectionVisible?: boolean; // האם סקשן האנשים גלוי (ברירת מחדל: true)
+	order?: number; // סדר הרשימה בשורת הכרטיסיות (0, 1, 2...)
 }
 
 // איש (צוות/משפחה)

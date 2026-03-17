@@ -46,6 +46,16 @@ describe('State Migration Fixtures', () => {
 				typeof migrated.localDevice?.lastModified,
 				`fixture ${fileName} localDevice.lastModified should exist`
 			).toBe('number');
+
+			// בדיקה שכל רשימה יש לה order אחרי מיגרציה
+			for (const userId of Object.keys(migrated.lists)) {
+				for (const list of Object.values(migrated.lists[userId]) as any[]) {
+					expect(
+						typeof list.order,
+						`list "${list.name}" in ${fileName} should have order`
+					).toBe('number');
+				}
+			}
 		}
 	});
 });
