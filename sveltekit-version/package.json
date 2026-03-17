@@ -60,6 +60,7 @@
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@tailwindcss/vite": "^4.1.18",
 		"@types/qrcode": "^1.5.6",
+		"arktype": "^2.2.0",
 		"jsondiffpatch": "^0.7.3",
 		"jszip": "^3.10.1",
 		"qrcode": "^1.5.4",

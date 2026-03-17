@@ -1,5 +1,41 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-03-17 21:30
+
+### הטמעת סכמות ArkType לוולידציה
+
+הוספת ספריית ArkType והגדרת סכמות וולידציה לכל טיפוסי הפרויקט, כהכנה לוולידציה בזמן ריצה בעתיד.
+
+#### מה בוצע?
+
+**1. התקנת arktype (`package.json`)**
+
+- הותקן `arktype 2.2.0` כתלות
+
+**2. סכמות (`src/lib/schemas.ts` — חדש)**
+
+- כל הטיפוסים מוגדרים כסכמות ArkType בתוך `type.scope()`:
+  - תמונות: `imageCropData`, `imageMetadata`, `imageData`
+  - משימות: `taskChangeType`, `task`
+  - רשימות: `list` (כולל `Record<string, task>` עבור tasks)
+  - אנשים ומשתמשים: `person`, `gender`, `themeType`, `userProfile`
+  - קיצורי דרך: `websiteShortcut`
+  - סנכרון: `syncMetadata`
+  - הגדרות: `appSettings`, `localDevice`
+  - מצב ראשי: `appState` (כולל records מקוננים)
+- הטיפוסים מיוצאים אוטומטית מהסכמות (`typeof schema.infer`)
+- הסכמות מיוצאות דרך `schemas` לשימוש בוולידציה עתידית
+
+**3. עדכון טיפוסים (`src/lib/types.ts`)**
+
+- הקובץ הפך מ-interfaces ידניים לקובץ re-exports מ-`schemas.ts`
+- כל 42 הקבצים שמייבאים ממנו ממשיכים לעבוד ללא שינוי
+
+#### החלטות ארכיטקטורה
+
+- **scope במקום type בודדים**: נבחר `type.scope()` כי הוא מאפשר הפניות בין טיפוסים כמחרוזות (למשל `'Record<string, task>'`) — נקי יותר מהעברת אובייקטי Type ידנית
+- **re-exports ב-types.ts**: שומר על תאימות לאחור — אין צורך לשנות imports ב-42 קבצים
+
 ## 2026-03-17 20:00
 
 ### סידור רשימות — הזזה שמאלה/ימינה

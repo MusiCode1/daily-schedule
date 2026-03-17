@@ -1,115 +1,16 @@
-// מידע על חיתוך תמונה (crop)
-export interface ImageCropData {
-	x: number; // מיקום X באחוזים (0-100)
-	y: number; // מיקום Y באחוזים (0-100)
-	scale: number; // זום (1 = מקורי, 2 = פי 2, וכו')
-}
-
-// מטאדטה של תמונה (נשמר בנפרד מהאובייקטים)
-export interface ImageMetadata {
-	crop?: ImageCropData; // נתוני חיתוך
-}
-
-// נתוני תמונה עם crop (לשימוש זמני בממשק)
-export interface ImageData {
-	src: string; // URL או idb:xxx
-	crop?: ImageCropData; // אופציונלי - אם אין, מציג את כל התמונה
-}
-
-// סוגי שינוי למשימות
-export type TaskChangeType = 'cancelled' | 'added';
-
-export interface Task {
-	id: string;
-	name: string;
-	imageSrc: string | null; // רק מזהה תמונה (idb:xxx או URL)
-	order: number; // סדר מפורש (0, 1, 2...)
-	communicationBoardUrl?: string; // קישור ללוח תקשורת (אופציונלי)
-	changeType?: TaskChangeType; // סוג השינוי - משימה בוטלה או נוספה (אופציונלי)
-}
-
-export interface List {
-	id: string;
-	name: string;
-	tasks: { [taskId: string]: Task }; // object במקום מערך!
-	isDefault?: boolean;
-	logo?: string; // רק מזהה תמונה
-	greeting?: string;
-	isHidden?: boolean;
-	isLocked?: boolean; // במצב נעול, לחיצה על משימה רק משמיעה את שמה (ללא חגיגה)
-	title?: string; // כותרת אופציונלית (להכנה לאירועים)
-	description?: string; // תיאור קצר אופציונלי
-	peopleIds?: string[]; // מזהי אנשים (צוות/משפחה) לרשימה זו
-	isPeopleSectionVisible?: boolean; // האם סקשן האנשים גלוי (ברירת מחדל: true)
-	order?: number; // סדר הרשימה בשורת הכרטיסיות (0, 1, 2...)
-}
-
-// איש (צוות/משפחה)
-export interface Person {
-	id: string;
-	name: string;
-	avatar: string; // מזהה תמונה (idb:xxx או URL)
-}
-
-export type Gender = 'boy' | 'girl';
-
-export type ThemeType =
-	| 'theme-focus'
-	| 'theme-playful'
-	| 'theme-gradient'
-	| 'theme-contrast'
-	| 'default';
-
-export interface UserProfile {
-	id: string;
-	name: string;
-	gender: Gender;
-	avatar: string; // רק מזהה תמונה
-	themeColor: string; // Hex color for borders/backgrounds
-	theme?: ThemeType;
-}
-
-export interface WebsiteShortcut {
-	id: string;
-	label: string; // שם תצוגה
-	url: string; // כתובת האתר
-	emoji?: string; // אייקון אמוג'י אופציונלי (ברירת מחדל: 🌐)
-}
-
-export interface AppState {
-	version: number;
-
-	// ─── Content (מסונכרן כמבנה) ───
-	users: { [userId: string]: UserProfile };
-	people: { [personId: string]: Person };
-	lists: { [userId: string]: { [listId: string]: List } };
-	images: { [imageId: string]: ImageMetadata };
-
-	// ─── Progress (מסונכרן בנפרד, קל) ───
-	taskProgress: { [taskId: string]: boolean }; // taskId → isDone
-
-	// ─── Settings (מסונכרן כהגדרות) ───
-	settings: {
-		activeListId: { [userId: string]: string };
-		currentUserId: string | null;
-		childLockEnabled: boolean;
-		websiteShortcuts: WebsiteShortcut[];
-		taskClickCooldownEnabled: boolean;
-	};
-
-	// ─── Device-local (לא מסונכרן) ───
-	localDevice: {
-		lastModified: number;
-		lastActiveTime: number;
-		syncMetadata?: SyncMetadata;
-	};
-}
-
-export interface SyncMetadata {
-	lastModified: number;
-	lastModifiedByDeviceId: string;
-	writeId: string;
-	// שדות לאבחון בלבד:
-	parentWriteId?: string;
-	parentTimestamp?: number;
-}
+// טיפוסים מיוצאים מהסכמות — ראו schemas.ts למקור האמת.
+export type {
+	ImageCropData,
+	ImageMetadata,
+	ImageData,
+	TaskChangeType,
+	Task,
+	List,
+	Person,
+	Gender,
+	ThemeType,
+	UserProfile,
+	WebsiteShortcut,
+	SyncMetadata,
+	AppState
+} from './schemas';
