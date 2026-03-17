@@ -1,4 +1,5 @@
 import { SvelteURL } from "svelte/reactivity";
+import { type } from 'arktype';
 import { FullyKioskClient } from './fullyKioskClient';
 import type { AppListItem, DeviceInfoResponse, RecentApp } from './fullyKioskTypes';
 import { KIOSK_TEXTS, type ConnectionStatus } from './texts';
@@ -21,6 +22,19 @@ export interface SavedWebsite {
 	url: string;
 	logoUrl?: string;
 }
+
+// סכמות וולידציה מקומיות
+const SavedWebsiteSchema = type({
+	label: 'string',
+	url: 'string',
+	'logoUrl?': 'string'
+});
+
+const RecentAppSchema = type({
+	package: 'string',
+	label: 'string',
+	icon: 'string'
+});
 
 export function extractDomain(url: string): string {
 	try {
@@ -111,10 +125,34 @@ class KioskController {
 	loadFromStorage() {
 		this.baseUrl = localStorage.getItem(KEY_URL) ?? '';
 		this.password = localStorage.getItem(KEY_PASS) ?? '';
-		const stored = localStorage.getItem(KEY_WEBSITES);
-		this.websites = stored ? (JSON.parse(stored) as SavedWebsite[]) : DEFAULT_WEBSITES;
-		const storedRecents = localStorage.getItem(KEY_RECENT_APPS);
-		this.recentApps = storedRecents ? (JSON.parse(storedRecents) as RecentApp[]) : [];
+
+		try {
+			const stored = localStorage.getItem(KEY_WEBSITES);
+			if (stored) {
+				const parsed = JSON.parse(stored);
+				this.websites = Array.isArray(parsed)
+					? parsed.filter((item) => !(SavedWebsiteSchema(item) instanceof type.errors))
+					: DEFAULT_WEBSITES;
+			} else {
+				this.websites = DEFAULT_WEBSITES;
+			}
+		} catch {
+			this.websites = DEFAULT_WEBSITES;
+		}
+
+		try {
+			const storedRecents = localStorage.getItem(KEY_RECENT_APPS);
+			if (storedRecents) {
+				const parsed = JSON.parse(storedRecents);
+				this.recentApps = Array.isArray(parsed)
+					? parsed.filter((item) => !(RecentAppSchema(item) instanceof type.errors))
+					: [];
+			} else {
+				this.recentApps = [];
+			}
+		} catch {
+			this.recentApps = [];
+		}
 	}
 
 	private saveConnectionToStorage() {

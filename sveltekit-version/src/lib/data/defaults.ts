@@ -1,7 +1,7 @@
 // src/lib/data/defaults.ts
-import type { AppState, List, UserProfile } from '$lib/types';
+import type { Activity, AppState, Task, List, UserProfile, WebsiteShortcut } from '$lib/types';
 
-export const ACTIVITIES = [
+export const ACTIVITIES: Activity[] = [
 	{ id: 'toilet', name: 'שירותים', image: 'activity_toilet.png' },
 	{ id: 'breakfast', name: 'ארוחת בוקר', image: 'activity_breakfast.png' },
 	{ id: 'lunch', name: 'ארוחת צהריים', image: 'activity_lunch.png' },
@@ -104,6 +104,7 @@ export const DEFAULT_LIST_DEFINITIONS = [
 
 type UsersList = Record<string, UserProfile>;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const DEFAULT_USERS: UsersList = {
 	// object עם מפתח userId
 	u_ezra: {
@@ -165,10 +166,17 @@ const LISTS_BAR = {
 	u_ariel: createDefaultLists()
 };
 
+const DEFAULT_WEBSITES: WebsiteShortcut[] = [
+	{ id: 'ws_gingim', label: "ג'ינג'ים — משחקים לימודיים", url: 'https://gingim.net/games/', emoji: '🎮' },
+	{ id: 'ws_puzzle', label: 'פאזל', url: 'https://puzzle.aybritman.workers.dev/', emoji: '🧩' },
+	{ id: 'ws_google', label: 'גוגל', url: 'https://www.google.com/', emoji: '🔍' }
+];
+
+
 // Helper to create initial lists for a user
 export function createDefaultLists(): { [listId: string]: List } {
 	const listsArray = DEFAULT_LIST_DEFINITIONS.map((def, defIndex) => {
-		const tasks: { [taskId: string]: any } = {};
+		const tasks: { [taskId: string]: Task } = {};
 
 		def.items.forEach((item, index) => {
 			const activity = ACTIVITIES.find((a) => a.id === item.activityId);
@@ -187,9 +195,9 @@ export function createDefaultLists(): { [listId: string]: List } {
 			id: def.id,
 			name: def.name,
 			logo: def.logo,
-			greeting: (def as any).greeting,
-			title: (def as any).title,
-			peopleIds: (def as any).peopleIds,
+			greeting: (def).greeting,
+			title: (def).title,
+			peopleIds: (def).peopleIds,
 			order: defIndex, // סדר הרשימה
 			tasks // object
 		};
@@ -227,11 +235,7 @@ export const INITIAL_STATE: AppState = {
 		},
 		currentUserId: null,
 		childLockEnabled: false,
-		websiteShortcuts: [
-			{ id: 'ws_gingim', label: "ג'ינג'ים — משחקים לימודיים", url: 'https://gingim.net/games/', emoji: '🎮' },
-			{ id: 'ws_puzzle', label: 'פאזל', url: 'https://puzzle.aybritman.workers.dev/', emoji: '🧩' },
-			{ id: 'ws_google', label: 'גוגל', url: 'https://www.google.com/', emoji: '🔍' }
-		],
+		websiteShortcuts: DEFAULT_WEBSITES,
 		taskClickCooldownEnabled: true
 	},
 	localDevice: {

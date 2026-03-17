@@ -3,6 +3,12 @@
 import { type } from 'arktype';
 
 const $ = type.scope({
+
+	activity: {
+		id: 'string',
+		name: 'string',
+		image: 'string | null'
+	},
 	// ─── תמונות ───
 
 	imageCropData: {
@@ -121,13 +127,21 @@ const $ = type.scope({
 		taskProgress: 'Record<string, boolean>',
 		settings: 'appSettings',
 		localDevice: 'localDevice'
+	},
+
+	savedWebsite: {
+		id: 'string',
+		label: 'string',
+		url: 'string',
+		'logoUrl?': 'string'
 	}
 });
+
 
 export const schemas = $.export();
 
 // ─── ייצוא טיפוסים ───
-
+export type Activity = typeof schemas.activity.infer;
 export type ImageCropData = typeof schemas.imageCropData.infer;
 export type ImageMetadata = typeof schemas.imageMetadata.infer;
 export type ImageData = typeof schemas.imageData.infer;
@@ -141,3 +155,4 @@ export type UserProfile = typeof schemas.userProfile.infer;
 export type WebsiteShortcut = typeof schemas.websiteShortcut.infer;
 export type SyncMetadata = typeof schemas.syncMetadata.infer;
 export type AppState = typeof schemas.appState.infer;
+export type SavedWebsite = typeof schemas.savedWebsite.infer;

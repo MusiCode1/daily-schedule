@@ -1,5 +1,42 @@
 # יומן פיתוח (Walkthrough)
 
+## 2026-03-17 22:57
+
+### שילוב וולידציית ArkType בטעינה מ-localStorage
+
+הפעלת סכמות ArkType בפועל — וולידציה בכל נקודות הטעינה מ-localStorage (AppState, DeviceState, Kiosk).
+
+#### מה בוצע?
+
+**1. וולידציה ב-`persistence.ts`**
+
+- הוספת וולידציה עם `schemas.appState()` אחרי מיגרציה ב-`load()`
+- שגיאות וולידציה נרשמות ל-Console כ-warning (ללא חסימת טעינה)
+
+**2. וולידציה ב-`deviceState.ts`**
+
+- הוספת סכמות ArkType מקומיות: `FloatingBoardPositionSchema`, `DeviceStateSchema`
+- וולידציה ב-`load()` אחרי מיגרציה ונורמליזציה
+- הסכמות מקומיות כי DeviceState הוא self-contained ולא חלק מ-`schemas.ts`
+
+**3. תיקון באג + וולידציה ב-`kioskController.svelte.ts`**
+
+- תיקון באג: `JSON.parse` ללא try-catch — עטיפה ב-try-catch עם fallback לברירות מחדל
+- הוספת סכמות מקומיות: `SavedWebsiteSchema`, `RecentAppSchema`
+- סינון פריטים לא תקינים מהמערכים (websites ו-recentApps)
+
+**4. תיקון טיפוס ב-`defaults.ts`**
+
+- שינוי `DEFAULT_WEBSITES` מטיפוס `SavedWebsite[]` ל-`WebsiteShortcut[]` (התאמה ל-`appSettings.websiteShortcuts`)
+
+#### החלטות ארכיטקטורה
+
+- **logging בלבד, ללא חסימה**: בשלב זה הוולידציה רק מתריעה ב-Console — לא חוסמת טעינה ולא מפעילה אסטרטגיית שחזור (תיושם בהמשך)
+- **סכמות מקומיות ב-deviceState ו-kiosk**: DeviceState ו-Kiosk הם self-contained ולא חולקים טיפוסים עם שאר האפליקציה, לכן הסכמות מוגדרות באופן מקומי
+- **סינון פריטים ב-kiosk**: בניגוד ל-persistence/deviceState שרק מתריעים, ה-kiosk מסנן פריטים לא תקינים מהמערכים — כי מערך חלקי עדיף על מערך עם פריטים שבורים
+
+---
+
 ## 2026-03-17 21:30
 
 ### הטמעת סכמות ArkType לוולידציה

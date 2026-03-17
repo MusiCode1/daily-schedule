@@ -1,5 +1,9 @@
 import { browser } from '$app/environment';
+import { type } from 'arktype';
+import { createLogger } from '$lib/logger';
 import { migrationService, type GoogleAuthStorage } from '$lib/services/migration';
+
+const log = createLogger('DeviceState');
 
 /** מפתח localStorage לשמירת מצב המכשיר */
 export const DEVICE_STATE_STORAGE_KEY = 'daily-schedule-device-state';
@@ -102,6 +106,36 @@ const DEFAULT_FLOATING_BOARD: FloatingBoardPosition = {
 	width: 800,
 	height: 600
 };
+
+// סכמת וולידציה ל-DeviceState — בודקת מבנה כללי
+const FloatingBoardPositionSchema = type({
+	top: 'number',
+	left: 'number',
+	width: 'number',
+	height: 'number'
+});
+
+const DeviceStateSchema = type({
+	version: 'number',
+	drive: {
+		deviceId: 'string',
+		deviceName: 'string',
+		lastKnownWriteId: 'string | null',
+		autoBackupEnabled: 'boolean',
+		useRedirectMode: 'boolean',
+		clientIdOverride: 'string',
+		v2Cache: 'object'
+	},
+	providers: 'object',
+	auth: {
+		googleAuthStorage: 'object | null'
+	},
+	settings: {
+		ui: {
+			floatingBoard: FloatingBoardPositionSchema
+		}
+	}
+});
 
 function createDeviceId(): string {
 	return crypto.randomUUID();
@@ -408,6 +442,13 @@ export const deviceState = {
 		if (cached) return cached;
 
 		const migrated = migrateDeviceStateInStorage(localStorage);
+
+		// וולידציה אחרי מיגרציה ונורמליזציה
+		const result = DeviceStateSchema(migrated);
+		if (result instanceof type.errors) {
+			log.warn('DeviceState validation issues:', result.summary);
+		}
+
 		cached = migrated;
 		return migrated;
 	},

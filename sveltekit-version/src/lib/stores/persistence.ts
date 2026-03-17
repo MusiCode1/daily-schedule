@@ -1,7 +1,12 @@
 import { browser } from '$app/environment';
+import { type } from 'arktype';
 import type { AppState } from '../types';
 import { INITIAL_STATE } from '../data/defaults';
+import { createLogger } from '../logger';
+import { schemas } from '../schemas';
 import { migrationService } from '../services/migration';
+
+const log = createLogger('Persistence');
 
 export const STORAGE_KEY = 'daily-schedule-data';
 // גרסת ה-state הנוכחית חייבת להיות זהה לגרסה שב-INITIAL_STATE (מקור האמת).
@@ -15,10 +20,17 @@ export const persistence = {
 		if (stored) {
 			try {
 				const parsed = JSON.parse(stored);
-				// יישום מיגרציות כאן
-				return this.migrateState(parsed);
+				const migrated = this.migrateState(parsed);
+
+				// וולידציה אחרי מיגרציה
+				const result = schemas.appState(migrated);
+				if (result instanceof type.errors) {
+					log.warn('AppState validation issues:', result.summary);
+				}
+
+				return migrated;
 			} catch (e) {
-				console.error('Failed to load state', e);
+				log.error('Failed to load state', e);
 				return null;
 			}
 		}

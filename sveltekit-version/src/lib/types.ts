@@ -1,5 +1,6 @@
 // טיפוסים מיוצאים מהסכמות — ראו schemas.ts למקור האמת.
 export type {
+	Activity,
 	ImageCropData,
 	ImageMetadata,
 	ImageData,
@@ -12,5 +13,6 @@ export type {
 	UserProfile,
 	WebsiteShortcut,
 	SyncMetadata,
-	AppState
+	AppState,
+	SavedWebsite
 } from './schemas';
